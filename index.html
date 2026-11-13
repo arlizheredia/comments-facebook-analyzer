@@ -1,0 +1,2600 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Obtén, analiza, filtra, copia y exporta los comentarios de publicaciones de Facebook.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f8fafd" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#131314" media="(prefers-color-scheme: dark)">
+<title>Analizador de Comentarios</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2248%22 height=%2248%22 viewBox=%220 0 48 48%22%3E%3Cdefs%3E%3ClinearGradient id=%22g%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%232d88ff%22/%3E%3Cstop offset=%221%22 stop-color=%22%230b57d0%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2248%22 height=%2248%22 rx=%2212%22 fill=%22url(%23g)%22/%3E%3Cpath d=%22M11 8h26a5 5 0 0 1 5 5v16a5 5 0 0 1-5 5H23l-8.5 7v-7H11a5 5 0 0 1-5-5V13a5 5 0 0 1 5-5z%22 fill=%22%23fff%22/%3E%3Crect x=%2213%22 y=%2221%22 width=%225.5%22 height=%228%22 rx=%221.8%22 fill=%22%231877f2%22/%3E%3Crect x=%2221.25%22 y=%2216.5%22 width=%225.5%22 height=%2212.5%22 rx=%221.8%22 fill=%22%231877f2%22/%3E%3Crect x=%2229.5%22 y=%2212%22 width=%225.5%22 height=%2217%22 rx=%221.8%22 fill=%22%231877f2%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0&display=block">
+<style>
+/* ================== TOKENS (Material 3) ================== */
+:root{
+  --primary:#0b57d0;--on-primary:#fff;--primary-container:#d3e3fd;--on-primary-container:#041e49;
+  --secondary-container:#c2e7ff;--on-secondary-container:#001d35;
+  --surface:#ffffff;--surface-dim:#f8fafd;--surface-container:#f0f4f9;--surface-container-high:#e9eef6;
+  --on-surface:#1f1f1f;--on-surface-variant:#444746;--outline:#747775;--outline-variant:#c4c7c5;
+  --error:#b3261e;--error-container:#f9dedc;--success:#146c2e;--success-container:#c4eed0;--warning:#7a5900;--warning-container:#ffefc2;
+  --fb:#1877f2;--scrim:rgba(0,0,0,.32);
+  --elev1:0 1px 2px rgba(0,0,0,.3),0 1px 3px 1px rgba(0,0,0,.15);
+  --elev2:0 1px 2px rgba(0,0,0,.3),0 2px 6px 2px rgba(0,0,0,.15);
+  --elev3:0 4px 8px 3px rgba(0,0,0,.15),0 1px 3px rgba(0,0,0,.3);
+  --font:"Google Sans Text","Google Sans",Roboto,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-display:"Google Sans","Google Sans Display",Roboto,system-ui,sans-serif;
+  --mono:"Roboto Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --primary:#a8c7fa;--on-primary:#062e6f;--primary-container:#0842a0;--on-primary-container:#d3e3fd;
+    --secondary-container:#004a77;--on-secondary-container:#c2e7ff;
+    --surface:#1e1f20;--surface-dim:#131314;--surface-container:#282a2c;--surface-container-high:#333537;
+    --on-surface:#e3e3e3;--on-surface-variant:#c4c7c5;--outline:#8e918f;--outline-variant:#444746;
+    --error:#f2b8b5;--error-container:#601410;--success:#6dd58c;--success-container:#0f5223;--warning:#f9dc8c;--warning-container:#4a3800;
+    --scrim:rgba(0,0,0,.6);color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --primary:#a8c7fa;--on-primary:#062e6f;--primary-container:#0842a0;--on-primary-container:#d3e3fd;
+  --secondary-container:#004a77;--on-secondary-container:#c2e7ff;
+  --surface:#1e1f20;--surface-dim:#131314;--surface-container:#282a2c;--surface-container-high:#333537;
+  --on-surface:#e3e3e3;--on-surface-variant:#c4c7c5;--outline:#8e918f;--outline-variant:#444746;
+  --error:#f2b8b5;--error-container:#601410;--success:#6dd58c;--success-container:#0f5223;--warning:#f9dc8c;--warning-container:#4a3800;
+  --scrim:rgba(0,0,0,.6);color-scheme:dark;
+}
+
+/* ================== BASE ================== */
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;height:100%}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{overflow-x:hidden}
+img,svg{max-width:100%}
+.cmp-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+body{background:var(--surface-dim);color:var(--on-surface);font:400 14px/20px var(--font);-webkit-font-smoothing:antialiased;letter-spacing:.01em}
+a{color:var(--primary);text-underline-offset:2px}
+h1,h2,h3,h4{font-family:var(--font-display);font-weight:400;margin:0;letter-spacing:0}
+h1{font-size:28px;line-height:36px}
+h2{font-size:22px;line-height:28px}
+h3{font-size:16px;line-height:24px;font-weight:500}
+p{margin:0 0 8px}
+code,kbd{font-family:var(--mono);font-size:12.5px;background:var(--surface-container);border-radius:4px;padding:1px 6px}
+kbd{border:1px solid var(--outline-variant);border-bottom-width:2px}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.ms{font-family:"Material Symbols Rounded";font-weight:normal;font-style:normal;font-size:24px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;direction:ltr;-webkit-font-smoothing:antialiased;font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;user-select:none;flex:none}
+.ms.fill{font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24}
+.ms.sm{font-size:18px}
+.muted{color:var(--on-surface-variant)}
+.small{font-size:12px;line-height:16px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.hidden{display:none!important}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* ================== BOTONES ================== */
+.btn{--bg:transparent;--fg:var(--primary);position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 24px;border-radius:20px;border:0;background:var(--bg);color:var(--fg);font:500 14px/20px var(--font);letter-spacing:.01em;cursor:pointer;white-space:nowrap;text-decoration:none;overflow:hidden;transition:box-shadow .2s}
+.btn::after{content:"";position:absolute;inset:0;background:currentColor;opacity:0;transition:opacity .15s}
+.btn:hover::after{opacity:.08}.btn:active::after{opacity:.12}
+.btn .ms{font-size:18px;margin-left:-8px}
+.btn.filled{--bg:var(--primary);--fg:var(--on-primary)}
+.btn.filled:hover{box-shadow:var(--elev1)}
+.btn.tonal{--bg:var(--secondary-container);--fg:var(--on-secondary-container)}
+.btn.outlined{border:1px solid var(--outline);--fg:var(--primary)}
+.btn.text{padding:0 12px}.btn.text .ms{margin-left:-4px}
+.btn.danger{--fg:var(--error)}
+.btn.fb{--bg:var(--fb);--fg:#fff}
+.btn.sm{height:32px;padding:0 16px;font-size:13px}
+.btn:disabled{opacity:.38;cursor:not-allowed;box-shadow:none}
+.btn:disabled::after{display:none}
+.icon-btn{position:relative;width:40px;height:40px;border-radius:50%;border:0;background:transparent;color:var(--on-surface-variant);display:inline-grid;place-items:center;cursor:pointer;text-decoration:none;flex:none}
+.icon-btn::after{content:"";position:absolute;inset:0;border-radius:50%;background:currentColor;opacity:0;transition:opacity .15s}
+.icon-btn:hover::after{opacity:.08}
+.icon-btn.sm{width:32px;height:32px}.icon-btn.sm .ms{font-size:20px}
+
+/* ================== APP BAR / NAV ================== */
+.appbar{position:sticky;top:0;z-index:30;height:64px;display:flex;align-items:center;gap:4px;padding:0 8px 0 16px;background:var(--surface-dim)}
+.brand{display:flex;align-items:center;gap:12px;font-family:var(--font-display);font-size:20px;color:var(--on-surface-variant);text-decoration:none;padding-left:8px}
+.brand-logo{width:36px;height:36px;display:grid;place-items:center;flex:none}
+.brand-logo svg{display:block;filter:drop-shadow(0 1px 1px rgba(0,0,0,.15))}
+.brand-logo .ms{font-size:22px}
+.brand b{font-weight:500;color:var(--on-surface)}
+.spacer{flex:1}
+.layout{display:grid;grid-template-columns:88px 1fr;min-height:calc(100vh - 64px);min-height:calc(100dvh - 64px)}
+.rail{display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0;position:sticky;top:64px;height:calc(100vh - 64px)}
+.nav-item{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;border:0;background:none;color:var(--on-surface-variant);font:500 12px/16px var(--font);cursor:pointer;width:80px;padding:0;text-decoration:none}
+.nav-item .pill{width:56px;height:32px;border-radius:16px;display:grid;place-items:center;position:relative;transition:background .2s}
+.nav-item:hover .pill{background:color-mix(in srgb,var(--on-surface) 8%,transparent)}
+.nav-item[aria-current="page"]{color:var(--on-surface)}
+.nav-item[aria-current="page"] .pill{background:var(--secondary-container);color:var(--on-secondary-container)}
+.nav-item[aria-current="page"] .ms{font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24}
+.nav-badge{position:absolute;top:-2px;left:32px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--error);color:#fff;font-size:11px;line-height:16px;text-align:center;font-weight:500}
+[data-theme] .nav-badge,:root .nav-badge{color:var(--surface)}
+main{background:var(--surface);border-radius:16px 16px 0 0;margin-right:16px;min-width:0;padding:32px 40px 64px}
+.view{display:none;max-width:1180px;margin:0 auto;animation:fadein .25s ease}
+.view.active{display:block}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+@media (max-width:720px){
+  .layout{grid-template-columns:1fr}
+  .rail{position:fixed;top:auto;bottom:0;left:0;right:0;height:auto;flex-direction:row;justify-content:space-around;padding:12px 0 calc(12px + env(safe-area-inset-bottom));background:var(--surface-container);z-index:30;gap:0}
+  main{margin:0;border-radius:16px 16px 0 0;padding:20px 16px 112px}
+  .brand .long{display:none}
+  h1{font-size:24px;line-height:32px}
+}
+
+/* ================== COMPONENTES ================== */
+.page-head{margin-bottom:24px}
+.page-head p{color:var(--on-surface-variant);font-size:16px;line-height:24px;margin-top:4px}
+.card{background:var(--surface);border:1px solid var(--outline-variant);border-radius:12px;padding:20px}
+.card.filled{background:var(--surface-container);border-color:transparent}
+.card h3{margin-bottom:12px}
+.grid{display:grid;gap:16px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.grow{flex:1 1 240px;min-width:0}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label{font-size:12px;font-weight:500;color:var(--on-surface-variant)}
+.field .hint{font-size:12px;color:var(--on-surface-variant)}
+.input,select.input,textarea.input{width:100%;height:48px;padding:0 16px;border:1px solid var(--outline);border-radius:8px;background:var(--surface);color:var(--on-surface);font:400 14px var(--font);outline:none;transition:border-color .15s,box-shadow .15s}
+textarea.input{height:auto;min-height:140px;padding:12px 16px;font-family:var(--mono);font-size:12px;line-height:18px;resize:vertical}
+.input:hover{border-color:var(--on-surface)}
+.input:focus{border-color:var(--primary);box-shadow:inset 0 0 0 1px var(--primary)}
+select.input{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--on-surface-variant) 50%),linear-gradient(135deg,var(--on-surface-variant) 50%,transparent 50%);background-position:calc(100% - 20px) 21px,calc(100% - 15px) 21px;background-size:5px 5px;background-repeat:no-repeat;padding-right:40px}
+input[type=checkbox]{accent-color:var(--primary);width:18px;height:18px;margin:0;cursor:pointer}
+.check{display:inline-flex;gap:10px;align-items:center;cursor:pointer;font-size:14px}
+.divider{height:1px;background:var(--outline-variant);margin:24px 0;border:0}
+.or{display:flex;align-items:center;gap:16px;color:var(--on-surface-variant);font-size:12px;margin:24px 0}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--outline-variant)}
+
+.banner{display:flex;gap:12px;align-items:flex-start;padding:12px 16px;border-radius:12px;background:var(--surface-container);font-size:14px;line-height:20px;margin:16px 0}
+.banner .ms{font-size:20px;color:var(--primary);margin-top:1px}
+.banner.warn{background:var(--warning-container)}.banner.warn .ms{color:var(--warning)}
+.banner.err{background:var(--error-container)}.banner.err .ms{color:var(--error)}
+.banner.ok{background:var(--success-container)}.banner.ok .ms{color:var(--success)}
+
+.status{font-size:13px;color:var(--on-surface-variant);min-height:20px;margin-top:8px}
+.status.err{color:var(--error)}
+.linear{height:4px;border-radius:2px;background:var(--primary-container);overflow:hidden;margin-top:12px}
+.linear>div{height:100%;width:40%;background:var(--primary);border-radius:2px;animation:lin 1.4s infinite cubic-bezier(.4,0,.2,1)}
+@keyframes lin{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}
+
+.chip-status{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:8px;border:1px solid var(--outline-variant);font-size:12px;font-weight:500;color:var(--on-surface-variant)}
+.chip-status .dot{width:8px;height:8px;border-radius:50%;background:var(--outline)}
+.chip-status.ok{color:var(--success);border-color:color-mix(in srgb,var(--success) 50%,transparent)}
+.chip-status.ok .dot{background:var(--success)}
+
+/* Método */
+.methods{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:12px;margin-bottom:24px}
+.method{position:relative;display:flex;gap:16px;align-items:flex-start;text-align:left;padding:16px;border-radius:16px;border:1px solid var(--outline-variant);background:var(--surface);color:var(--on-surface);cursor:pointer;font:inherit;transition:background .15s,border-color .15s}
+.method:hover{background:var(--surface-container)}
+.method[aria-checked="true"]{background:var(--primary-container);border-color:transparent;color:var(--on-primary-container)}
+.method .mi{width:40px;height:40px;border-radius:12px;background:var(--surface-container-high);display:grid;place-items:center;color:var(--primary);flex:none}
+.method[aria-checked="true"] .mi{background:var(--primary);color:var(--on-primary)}
+.method h3{margin:0 0 2px;font-size:15px}
+.method p{margin:0;font-size:13px;line-height:18px;color:inherit;opacity:.85}
+.tag{display:inline-block;margin-top:8px;font-size:11px;font-weight:500;padding:2px 8px;border-radius:6px;background:var(--success-container);color:var(--success)}
+
+/* Stepper vertical */
+.steps{list-style:none;margin:0;padding:0;counter-reset:st}
+.step{position:relative;padding:0 0 28px 52px;counter-increment:st}
+.step::before{content:counter(st);position:absolute;left:0;top:0;width:32px;height:32px;border-radius:50%;background:var(--primary);color:var(--on-primary);display:grid;place-items:center;font-weight:500;font-size:14px}
+.step.done::before{content:"✓"}
+.step::after{content:"";position:absolute;left:15.5px;top:40px;bottom:6px;width:1px;background:var(--outline-variant)}
+.step:last-child{padding-bottom:0}.step:last-child::after{display:none}
+.step>h3{line-height:32px;margin-bottom:4px}
+.step>.desc{color:var(--on-surface-variant);margin-bottom:12px}
+
+.dropzone{border:2px dashed var(--outline-variant);border-radius:16px;padding:32px 16px;text-align:center;cursor:pointer;transition:background .15s,border-color .15s}
+.dropzone:hover,.dropzone.over{background:var(--primary-container);border-color:var(--primary)}
+.dropzone .ms{font-size:40px;color:var(--primary)}
+.bookmarklet{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 20px;border-radius:20px;background:var(--fb);color:#fff;font-weight:500;text-decoration:none;cursor:grab;box-shadow:var(--elev1)}
+.bookmarklet:active{cursor:grabbing}
+/* El icono va en CSS para que no forme parte del nombre del marcador al arrastrarlo */
+.bookmarklet::before{content:"";width:22px;height:22px;flex:none;border-radius:6px;background:#fff url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2248%22 height=%2248%22 viewBox=%220 0 48 48%22%3E%3Cdefs%3E%3ClinearGradient id=%22g%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%232d88ff%22/%3E%3Cstop offset=%221%22 stop-color=%22%230b57d0%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2248%22 height=%2248%22 rx=%2212%22 fill=%22url(%23g)%22/%3E%3Cpath d=%22M11 8h26a5 5 0 0 1 5 5v16a5 5 0 0 1-5 5H23l-8.5 7v-7H11a5 5 0 0 1-5-5V13a5 5 0 0 1 5-5z%22 fill=%22%23fff%22/%3E%3Crect x=%2213%22 y=%2221%22 width=%225.5%22 height=%228%22 rx=%221.8%22 fill=%22%231877f2%22/%3E%3Crect x=%2221.25%22 y=%2216.5%22 width=%225.5%22 height=%2212.5%22 rx=%221.8%22 fill=%22%231877f2%22/%3E%3Crect x=%2229.5%22 y=%2212%22 width=%225.5%22 height=%2217%22 rx=%221.8%22 fill=%22%231877f2%22/%3E%3C/svg%3E") center/22px 22px no-repeat;box-shadow:0 0 0 1.5px rgba(255,255,255,.9)}
+.posts{display:grid;gap:8px;max-height:440px;overflow:auto;margin-top:8px;padding:2px}
+.post{display:flex;gap:12px;align-items:flex-start;text-align:left;border:1px solid var(--outline-variant);background:var(--surface);color:var(--on-surface);border-radius:12px;padding:12px;cursor:pointer;font:inherit;width:100%}
+.post:hover{background:var(--surface-container)}
+.post.sel{border-color:var(--primary);box-shadow:inset 0 0 0 1px var(--primary)}
+.post img{width:56px;height:56px;object-fit:cover;border-radius:8px;flex:none}
+.post .pt{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.post .pm{font-size:12px;color:var(--on-surface-variant);margin-top:4px}
+details.adv{margin-top:16px}
+details.adv summary{cursor:pointer;color:var(--primary);font-weight:500;list-style:none;display:inline-flex;align-items:center;gap:4px}
+details.adv summary::-webkit-details-marker{display:none}
+details.adv summary .ms{transition:transform .2s}
+details.adv[open] summary .ms{transform:rotate(180deg)}
+.demo-line{text-align:center;margin-top:32px;color:var(--on-surface-variant)}
+
+/* Menús */
+.menu-anchor{position:relative;display:inline-flex}
+.menu{position:absolute;top:calc(100% + 4px);right:0;min-width:240px;background:var(--surface-container);border-radius:8px;box-shadow:var(--elev2);padding:8px 0;z-index:40;display:none}
+.menu.open{display:block;animation:fadein .12s}
+.menu.left{right:auto;left:0}
+.menu button,.menu a{display:flex;align-items:center;gap:12px;width:100%;height:48px;padding:0 16px;border:0;background:none;color:var(--on-surface);font:400 14px var(--font);text-align:left;cursor:pointer;text-decoration:none}
+.menu button:hover,.menu a:hover{background:color-mix(in srgb,var(--on-surface) 8%,transparent)}
+.menu .ms{font-size:20px;color:var(--on-surface-variant)}
+.menu hr{border:0;height:1px;background:var(--outline-variant);margin:8px 0}
+.menu .mh{font-size:12px;font-weight:500;color:var(--on-surface-variant);padding:4px 16px 8px}
+
+/* ================== RESULTADOS ================== */
+.empty-state{text-align:center;padding:72px 16px}
+.empty-state .art{width:120px;height:120px;border-radius:50%;background:var(--surface-container);display:grid;place-items:center;margin:0 auto 24px}
+.empty-state .art .ms{font-size:56px;color:var(--primary)}
+.empty-state p{color:var(--on-surface-variant);max-width:420px;margin:8px auto 24px}
+.res-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-bottom:8px}
+.res-head h1{word-break:break-word;font-size:24px;line-height:32px}
+.res-meta{display:flex;flex-wrap:wrap;gap:4px 16px;color:var(--on-surface-variant);font-size:13px;margin-top:6px}
+.res-meta span{display:inline-flex;align-items:center;gap:4px}
+.res-meta .ms{font-size:16px}
+.tabs{display:flex;border-bottom:1px solid var(--outline-variant);margin:16px 0 24px;overflow-x:auto}
+.tab{position:relative;height:48px;padding:0 20px;border:0;background:none;color:var(--on-surface-variant);font:500 14px var(--font);cursor:pointer;display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.tab:hover{background:color-mix(in srgb,var(--on-surface) 6%,transparent)}
+.tab[aria-selected="true"]{color:var(--primary)}
+.tab[aria-selected="true"]::after{content:"";position:absolute;left:12px;right:12px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--primary)}
+.tab .count{font-size:12px;background:var(--surface-container-high);padding:0 8px;border-radius:10px;color:var(--on-surface-variant)}
+.tabpanel{display:none}.tabpanel.active{display:block}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(140px,100%),1fr));gap:12px;margin-bottom:16px}
+.stat{background:var(--surface-container);border-radius:16px;padding:16px}
+.stat .k{font-size:13px;color:var(--on-surface-variant);display:flex;align-items:center;gap:6px}
+.stat .k .ms{font-size:18px}
+.stat .v{font-family:var(--font-display);font-size:28px;line-height:36px;margin-top:4px;font-variant-numeric:tabular-nums}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(340px,100%),1fr));gap:16px}
+.chart-card h3{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.chart svg{width:100%;height:auto;display:block}
+.chart .axis{fill:var(--on-surface-variant);font:11px var(--font)}
+.chart rect.bar{fill:var(--primary)}
+.chart rect.bar:hover{opacity:.8}
+.hbar{display:grid;grid-template-columns:minmax(90px,40%) 1fr 56px;gap:12px;align-items:center;margin:8px 0}
+.hbar .lbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:0;background:none;color:var(--on-surface);font:inherit;text-align:left;padding:0;cursor:pointer}
+.hbar .lbl:hover{color:var(--primary);text-decoration:underline}
+.hbar .track{height:8px;background:var(--surface-container-high);border-radius:4px;overflow:hidden}
+.hbar .fill{height:100%;background:var(--primary);border-radius:4px}
+.hbar .num{font-variant-numeric:tabular-nums;color:var(--on-surface-variant);font-size:12px;text-align:right}
+.sentbar{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--surface-container-high);margin:8px 0 12px;gap:2px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--on-surface-variant)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+.approx{color:var(--warning);cursor:help}
+.tag-chips{display:flex;flex-wrap:wrap;gap:8px}
+.tchip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--outline-variant);background:var(--surface);color:var(--on-surface);font:500 13px var(--font);cursor:pointer}
+.tchip:hover{background:var(--surface-container)}
+.tchip b{font-weight:400;color:var(--on-surface-variant)}
+
+.searchbar{display:flex;align-items:center;gap:8px;height:48px;padding:0 4px 0 16px;border-radius:24px;background:var(--surface-container);flex:1 1 320px;transition:background .15s,box-shadow .15s}
+.searchbar:focus-within{background:var(--surface);box-shadow:var(--elev2)}
+.searchbar{min-width:0}.searchbar input{flex:1;border:0;outline:none;background:none;color:var(--on-surface);font:400 16px var(--font);min-width:0}
+.searchbar .ms{color:var(--on-surface-variant)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 16px}
+.fchip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 16px;border-radius:8px;border:1px solid var(--outline);background:transparent;color:var(--on-surface-variant);font:500 13px var(--font);cursor:pointer;transition:background .15s}
+.fchip:hover{background:color-mix(in srgb,var(--on-surface) 8%,transparent)}
+.fchip .ms{font-size:18px;display:none;margin-left:-6px}
+.fchip[aria-pressed="true"]{background:var(--secondary-container);color:var(--on-secondary-container);border-color:transparent}
+.fchip[aria-pressed="true"] .ms{display:inline-block}
+.fsep{width:1px;background:var(--outline-variant);margin:4px 4px}
+.selbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 8px 8px 16px;border-radius:12px;background:var(--secondary-container);color:var(--on-secondary-container);margin-bottom:12px}
+.selbar .btn{--fg:var(--on-secondary-container)}
+
+.table-wrap{border:1px solid var(--outline-variant);border-radius:12px;overflow:auto;max-height:70vh}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:12px 16px;text-align:left;vertical-align:top;border-bottom:1px solid var(--outline-variant)}
+tbody tr:last-child td{border-bottom:0}
+th{position:sticky;top:0;z-index:2;background:var(--surface);font-weight:500;color:var(--on-surface-variant);font-size:13px;white-space:nowrap;user-select:none}
+th[data-sort]{cursor:pointer}
+th[data-sort]:hover{color:var(--on-surface)}
+th .ms{font-size:18px;vertical-align:-4px;margin-left:2px}
+tbody tr{transition:background .1s}
+tbody tr:hover{background:var(--surface-container)}
+tbody tr.selected{background:color-mix(in srgb,var(--primary-container) 55%,transparent)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.author{display:flex;gap:12px;align-items:center;min-width:170px}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--primary-container);color:var(--on-primary-container);display:grid;place-items:center;font-weight:500;font-size:13px;flex:none;overflow:hidden;position:relative}
+.avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.author .nm{font-weight:500;word-break:break-word;color:var(--on-surface);text-decoration:none}
+a.nm:hover{text-decoration:underline}
+.pill-s{display:inline-flex;align-items:center;height:20px;padding:0 8px;border-radius:6px;font-size:11px;font-weight:500;background:var(--surface-container-high);color:var(--on-surface-variant);white-space:nowrap;margin-top:2px}
+.pill-s.reply{background:var(--primary-container);color:var(--on-primary-container)}
+.pill-s.pos{background:var(--success-container);color:var(--success)}
+.pill-s.neg{background:var(--error-container);color:var(--error)}
+td.c-text{min-width:260px;max-width:560px}
+td.c-text .txt{white-space:pre-wrap;word-break:break-word;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+tr.reply td.c-text{padding-left:40px;position:relative}
+tr.reply td.c-text::before{content:"subdirectory_arrow_right";font-family:"Material Symbols Rounded";position:absolute;left:14px;top:12px;font-size:18px;color:var(--on-surface-variant)}
+.att{display:flex;gap:4px;align-items:center;font-size:12px;color:var(--on-surface-variant);margin-top:6px}
+.att .ms{font-size:16px}
+td.c-date{white-space:nowrap;font-size:13px;color:var(--on-surface-variant)}
+.rowacts{display:flex;gap:0;opacity:.55;transition:opacity .15s}
+tr:hover .rowacts,tr:focus-within .rowacts{opacity:1}
+mark{background:#fde293;color:#1f1f1f;border-radius:2px;padding:0 1px}
+.pager{display:flex;justify-content:flex-end;align-items:center;gap:16px;flex-wrap:wrap;margin-top:8px;font-size:13px;color:var(--on-surface-variant)}
+.pager select{height:36px;width:auto;padding:0 32px 0 12px;background-position:calc(100% - 16px) 15px,calc(100% - 11px) 15px}
+.no-rows{padding:48px 16px;text-align:center;color:var(--on-surface-variant)}
+
+@media (max-width:720px){
+  .table-wrap{max-height:none;border:0;border-radius:0;overflow:visible}
+  table,thead,tbody,tr,td{display:block}
+  thead{display:none}
+  tbody tr{border:1px solid var(--outline-variant);border-radius:12px;margin-bottom:8px;padding:12px;display:grid;grid-template-columns:auto 1fr auto;gap:4px 12px}
+  td{border:0;padding:0}
+  td.c-chk{grid-row:1;grid-column:1;align-self:center}
+  td.c-idx{display:none}
+  td.c-author{grid-row:1;grid-column:2}
+  td.c-acts{grid-row:1;grid-column:3}
+  td.c-text,td.c-date,td.c-meta{grid-column:1/-1;max-width:none;min-width:0}
+  tr.reply td.c-text{padding-left:24px}
+  tr.reply td.c-text::before{left:0;top:0}
+  td.c-date{order:5}
+  td.num{text-align:left;display:inline}
+  td.c-r::before{content:"♥ "}
+  td.c-rp::before{content:"💬 "}
+  .rowacts{opacity:1}
+  .author{min-width:0}
+}
+
+/* ================== VISTA CONVERSACIÓN ================== */
+.seg{display:inline-flex;border:1px solid var(--outline);border-radius:20px;overflow:hidden;height:40px;flex:none}
+.seg button{display:inline-flex;align-items:center;gap:6px;border:0;background:none;color:var(--on-surface);font:500 14px var(--font);padding:0 16px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--outline)}
+.seg button .ms{font-size:18px}
+.seg button:not([aria-checked="true"]):hover{background:color-mix(in srgb,var(--on-surface) 8%,transparent)}
+.seg button[aria-checked="true"]{background:var(--secondary-container);color:var(--on-secondary-container)}
+.conv-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;min-height:40px;font-size:13px;color:var(--on-surface-variant)}
+.conv-bar select.input{height:36px;width:auto;padding:0 36px 0 12px;background-position:calc(100% - 18px) 15px,calc(100% - 13px) 15px}
+.conv{--line:var(--outline-variant);max-width:780px}
+.cnode{position:relative}
+.cthread{padding:4px 0 12px}
+.cthread+.cthread{border-top:1px solid var(--outline-variant);padding-top:8px}
+.crow{display:flex;gap:8px;padding-top:8px}
+.cav{position:relative;flex:none;display:flex;flex-direction:column;align-items:center}
+.cav .avatar{width:32px;height:32px}
+.creplies .cav .avatar{width:24px;height:24px;font-size:10px}
+.cnode.has-kids>.crow>.cav::after{content:"";position:absolute;top:36px;bottom:0;left:calc(50% - 1px);width:2px;background:var(--line)}
+.creplies .cnode.has-kids>.crow>.cav::after{top:28px}
+.cmain{min-width:0;flex:1}
+.bubble-wrap{position:relative;display:inline-block;max-width:100%}
+.bubble-wrap.has-react{margin-bottom:8px;margin-right:12px}
+.bubble{display:inline-block;max-width:100%;background:var(--surface-container);border-radius:18px;padding:8px 12px;cursor:pointer;outline-offset:2px;transition:background .15s}
+.bubble:hover{background:var(--surface-container-high)}
+.cnode.selected>.crow .bubble{box-shadow:inset 0 0 0 2px var(--primary)}
+.cname{display:inline-block;font-weight:500;font-size:13px;line-height:18px;color:var(--on-surface);text-decoration:none}
+a.cname:hover{text-decoration:underline}
+.cbadge{display:flex;align-items:center;gap:4px;font-size:11px;line-height:14px;color:var(--on-surface-variant)}
+.cbadge .ms{font-size:14px;color:var(--primary)}
+.ctext{font-size:15px;line-height:20px;white-space:pre-wrap;word-break:break-word;margin-top:1px}
+.cmention{font-weight:500;color:var(--primary)}
+.ctext.clamp{display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+.cmore-txt{border:0;background:none;padding:0;margin-top:2px;font:500 14px var(--font);color:var(--on-surface);cursor:pointer}
+.cmore-txt:hover{text-decoration:underline}
+.creact{position:absolute;right:-10px;bottom:-10px;display:inline-flex;align-items:center;gap:3px;background:var(--surface);border-radius:10px;padding:1px 6px 1px 2px;box-shadow:var(--elev1);font-size:12px;line-height:18px;color:var(--on-surface-variant);white-space:nowrap}
+.creact .rx{width:18px;height:18px;border-radius:50%;background:var(--fb);display:grid;place-items:center}
+.creact .rx .ms{font-size:11px;color:#fff}
+.cimg{display:block;max-width:min(240px,100%);max-height:240px;border-radius:12px;margin-top:6px;object-fit:cover}
+.cmeta{display:flex;flex-wrap:wrap;gap:2px 12px;align-items:center;font-size:12px;line-height:20px;font-weight:500;color:var(--on-surface-variant);padding:4px 12px 0}
+.cmeta button,.cmeta a{border:0;background:none;padding:0;font:inherit;color:inherit;cursor:pointer;text-decoration:none}
+.cmeta button:hover,.cmeta a:hover{text-decoration:underline;color:var(--on-surface)}
+.sdot{display:inline-flex;align-items:center;gap:4px}
+.sdot i{width:8px;height:8px;border-radius:50%}
+/* Columna fija de selección a la izquierda, alineada en todos los niveles */
+.conv{position:relative;padding-left:var(--selcol)}
+.conv{--selcol:44px;--pad:28px;--m1:15px;--m2:11px}
+.crow{position:relative}
+.csel{position:absolute;top:15px;display:grid;place-items:center;width:var(--selcol);height:24px;cursor:pointer;
+  left:calc(-1 * var(--selcol) - min(var(--lvl),1) * (var(--m1) + var(--pad)) - max(var(--lvl) - 1, 0) * (var(--m2) + var(--pad)))}
+.csel input,.csel-head input{width:18px;height:18px}
+.conv-head{position:relative;display:flex;align-items:center;min-height:40px;font-size:13px;color:var(--on-surface-variant);border-bottom:1px solid var(--outline-variant)}
+.csel-head{position:absolute;left:calc(-1 * var(--selcol));width:var(--selcol);display:grid;place-items:center;cursor:pointer}
+.conv-head+.cthread{border-top:0}
+.cthread+.cthread::before,.conv-head::before{content:"";position:absolute;left:calc(-1 * var(--selcol));top:-1px;width:var(--selcol);border-top:1px solid var(--outline-variant)}
+.conv-head::before{top:auto;bottom:-1px}
+.cctx{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--on-surface-variant);margin:4px 0 -4px 40px}
+.cctx .ms{font-size:16px}
+.creplies{position:relative;margin-left:15px;padding-left:28px}
+.creplies .creplies{margin-left:11px}
+.creplies>.cnode::before{content:"";position:absolute;left:-28px;top:0;width:22px;height:20px;border-left:2px solid var(--line);border-bottom:2px solid var(--line);border-bottom-left-radius:12px}
+.creplies>.cnode:not(:last-child)::after{content:"";position:absolute;left:-28px;top:0;bottom:0;border-left:2px solid var(--line)}
+.ctoggle{padding-top:8px}
+.ctoggle button{display:inline-flex;align-items:center;gap:6px;border:0;background:none;padding:2px 0;color:var(--on-surface-variant);font:500 13px var(--font);cursor:pointer}
+.ctoggle button:hover{color:var(--on-surface);text-decoration:underline}
+.ctoggle .avatar{width:20px;height:20px;font-size:9px}
+@media (max-width:720px){
+  .conv{--selcol:36px;--pad:22px}
+  .seg button{padding:0 12px}
+  .creplies{padding-left:22px}
+  .creplies>.cnode::before{left:-22px;width:16px}
+  .creplies>.cnode:not(:last-child)::after{left:-22px}
+  .ctext{font-size:14px}
+}
+
+/* ================== AYUDA ================== */
+.help-layout{display:grid;grid-template-columns:240px 1fr;gap:40px;align-items:start}
+.help-layout>*{min-width:0}
+.help-article{overflow-wrap:anywhere}
+.help-article code{word-break:break-word}
+.toc{position:sticky;top:96px;display:flex;flex-direction:column;gap:2px}
+.toc a{display:block;padding:8px 16px;border-radius:20px;color:var(--on-surface-variant);text-decoration:none;font-weight:500;font-size:14px}
+.toc a:hover{background:var(--surface-container)}
+.toc a.active{background:var(--secondary-container);color:var(--on-secondary-container)}
+.help-article{scroll-margin-top:88px;padding-bottom:32px;margin-bottom:32px;border-bottom:1px solid var(--outline-variant)}
+.help-article:last-child{border-bottom:0}
+.help-article h2{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.help-article h2 .ms{color:var(--primary);font-size:26px}
+.help-article h3{margin:20px 0 8px}
+.help-article p,.help-article li{font-size:15px;line-height:24px}
+.help-article ul,.help-article ol{padding-left:22px;margin:8px 0}
+.help-article li{margin:4px 0}
+.cmp{width:100%;border:1px solid var(--outline-variant);border-radius:12px;border-collapse:separate;border-spacing:0;overflow:hidden;margin:12px 0}
+.cmp th,.cmp td{padding:10px 12px;font-size:14px;position:static}
+.cmp th{background:var(--surface-container)}
+.cmp tr:last-child td{border-bottom:0}
+.faq details{border:1px solid var(--outline-variant);border-radius:12px;margin:8px 0;overflow:hidden}
+.faq summary{padding:14px 16px;cursor:pointer;font-weight:500;list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:center}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"expand_more";font-family:"Material Symbols Rounded";font-size:22px;transition:transform .2s;color:var(--on-surface-variant)}
+.faq details[open] summary::after{transform:rotate(180deg)}
+.faq details[open] summary{background:var(--surface-container)}
+.faq .ans{padding:12px 16px 16px;font-size:15px;line-height:24px;color:var(--on-surface-variant)}
+.kbd-table td{padding:8px 0;border:0}
+.help-hero{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:24px;border-radius:24px;background:var(--primary-container);color:var(--on-primary-container);margin-bottom:32px}
+.help-hero h1{font-size:28px}
+.help-search{display:flex;align-items:center;gap:8px;height:48px;padding:0 16px;border-radius:24px;background:var(--surface);flex:0 1 380px;color:var(--on-surface)}
+.help-search input{flex:1;border:0;outline:0;background:none;font:400 15px var(--font);color:var(--on-surface);min-width:0}
+@media (max-width:900px){.help-layout{grid-template-columns:1fr}.toc{position:static;flex-direction:row;flex-wrap:wrap}.toc a{padding:6px 12px;border:1px solid var(--outline-variant)}}
+
+/* ================== DIÁLOGOS / SNACKBAR ================== */
+dialog{border:0;padding:0;border-radius:28px;background:var(--surface-container);color:var(--on-surface);box-shadow:var(--elev3);max-width:min(560px,calc(100vw - 32px));width:100%;max-height:calc(100vh - 48px)}
+dialog::backdrop{background:var(--scrim)}
+dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
+@keyframes dlg{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+.dlg-body{padding:24px;overflow:auto;max-height:calc(100vh - 140px)}
+.dlg-actions{display:flex;justify-content:flex-end;gap:8px;padding:0 24px 24px;flex-wrap:wrap;align-items:center}
+.dlg-head{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:20px 16px 0 24px}
+#detailDlg{max-width:min(720px,calc(100vw - 32px))}
+.kv{display:grid;grid-template-columns:160px 1fr;gap:10px 16px;font-size:14px;margin:0}
+.kv dt{color:var(--on-surface-variant)}
+.kv dd{margin:0;word-break:break-word;white-space:pre-wrap}
+.quote{background:var(--surface);border-radius:16px;padding:16px;font-size:15px;line-height:24px;white-space:pre-wrap;word-break:break-word;margin:16px 0}
+@media (max-width:600px){.kv{grid-template-columns:1fr}.kv dd{margin-bottom:8px}}
+
+#onboarding{max-width:min(600px,calc(100vw - 32px))}
+.ob-art{height:180px;display:grid;place-items:center;background:var(--primary-container);border-radius:28px 28px 0 0;position:relative;overflow:hidden}
+.ob-art::before,.ob-art::after{content:"";position:absolute;border-radius:50%;background:var(--primary);opacity:.08}
+.ob-art::before{width:260px;height:260px;left:-60px;top:-80px}
+.ob-art::after{width:180px;height:180px;right:-40px;bottom:-70px}
+.ob-art .ms{font-size:80px;color:var(--primary);position:relative;font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 48}
+.ob-body{padding:24px 24px 8px}
+.ob-body h2{margin-bottom:8px}
+.ob-body p,.ob-body li{font-size:15px;line-height:24px;color:var(--on-surface-variant)}
+.ob-body ul{padding-left:20px;margin:8px 0}
+.ob-list{display:grid;gap:10px;margin-top:12px}
+.ob-item{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border-radius:12px;padding:12px}
+.ob-item .ms{color:var(--primary)}
+.ob-item b{display:block;color:var(--on-surface);font-weight:500}
+.ob-item span{font-size:13px;line-height:18px;color:var(--on-surface-variant)}
+.dots{display:flex;gap:6px;justify-content:center;padding:12px 0 4px}
+.dots i{width:8px;height:8px;border-radius:4px;background:var(--outline-variant);transition:width .2s,background .2s}
+.dots i.on{width:24px;background:var(--primary)}
+.ob-foot{display:flex;align-items:center;gap:8px;padding:12px 24px 24px;flex-wrap:wrap}
+.ob-foot .check{font-size:13px;color:var(--on-surface-variant);margin-right:auto}
+
+.snackbar{position:fixed;left:50%;bottom:24px;transform:translate(-50%,24px);min-width:288px;max-width:min(560px,calc(100vw - 32px));display:flex;align-items:center;gap:8px;padding:6px 8px 6px 16px;min-height:48px;border-radius:4px;background:#303030;color:#f2f2f2;box-shadow:var(--elev3);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:100;font-size:14px}
+.snackbar.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.snackbar .msg{flex:1;padding:8px 0}
+.snackbar .btn{--fg:#a8c7fa;padding:0 12px}
+:root[data-theme="dark"] .snackbar{background:#e3e3e3;color:#303030}
+:root[data-theme="dark"] .snackbar .btn{--fg:#0b57d0}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .snackbar{background:#e3e3e3;color:#303030}:root:not([data-theme="light"]) .snackbar .btn{--fg:#0b57d0}}
+@media (max-width:720px){.snackbar{bottom:96px}}
+
+/* ================== TÁCTIL / RESPONSIVE EXTRA ================== */
+.appbar{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(8px,env(safe-area-inset-right))}
+.no-icons tr.reply td.c-text::before{content:"↳";font-family:var(--font)}
+.no-icons .faq summary::after{content:"▾";font-family:var(--font)}
+@media (hover:none){ .rowacts{opacity:1} }
+@media (pointer:coarse){
+  .icon-btn.sm{width:40px;height:40px}
+  .fchip,.tchip{height:36px}
+  .input,select.input,textarea.input,.searchbar input,.help-search input{font-size:16px}
+  .menu button,.menu a{height:52px}
+}
+@media (max-width:720px){
+  .appbar{height:56px}
+  main{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+  .page-head p{font-size:15px}
+  .methods{grid-template-columns:1fr;gap:8px}
+  .method{padding:12px}
+  .card{padding:16px}
+  .step{padding-left:44px}
+  .res-head .row{width:100%}
+  .res-head .row .menu-anchor:nth-child(1),.res-head .row .menu-anchor:nth-child(2){flex:1}
+  .res-head .row .menu-anchor>.btn{width:100%}
+  .menu{max-width:calc(100vw - 32px)}
+  .res-head .menu{right:auto;left:0}
+  .res-head .menu-anchor:last-child .menu{left:auto;right:0}
+  .tab{flex:1;justify-content:center;padding:0 12px}
+  .help-hero{padding:20px;border-radius:20px}
+  .help-search{flex:1 1 100%}
+  .pager{justify-content:space-between;gap:8px}
+  .pager #countInfo{flex-basis:100%}
+  .hbar{grid-template-columns:minmax(80px,42%) 1fr 40px;gap:8px}
+  .ob-art{height:140px}
+  .ob-foot .check{flex-basis:100%;margin-bottom:4px}
+  .ob-foot .btn.filled{margin-left:auto}
+  dialog{max-height:calc(100dvh - 32px)}
+  .dlg-body{max-height:calc(100dvh - 160px)}
+}
+@media (max-width:380px){
+  .stats{grid-template-columns:1fr 1fr}
+  .stat .v{font-size:22px;line-height:30px}
+  .btn{padding:0 16px}
+}
+.ms-fb{font-family:var(--font)!important;font-size:18px!important;font-weight:500}
+.touch-only{display:none}
+@media (pointer:coarse) and (hover:none){ .touch-only{display:flex} }
+</style>
+</head>
+<body>
+<a href="#main" class="sr-only">Saltar al contenido</a>
+
+<header class="appbar">
+  <a class="brand" href="#obtener" aria-label="Analizador de Comentarios — inicio">
+    <span class="brand-logo"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 48 48"><defs><linearGradient id="brandGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2d88ff"/><stop offset="1" stop-color="#0b57d0"/></linearGradient></defs><rect width="36" height="36" rx="12" fill="url(#brandGrad)"/><path d="M11 8h26a5 5 0 0 1 5 5v16a5 5 0 0 1-5 5H23l-8.5 7v-7H11a5 5 0 0 1-5-5V13a5 5 0 0 1 5-5z" fill="#fff"/><rect x="13" y="21" width="5.5" height="8" rx="1.8" fill="#1877f2"/><rect x="21.25" y="16.5" width="5.5" height="12.5" rx="1.8" fill="#1877f2"/><rect x="29.5" y="12" width="5.5" height="17" rx="1.8" fill="#1877f2"/></svg></span>
+    <span>Comentarios <b class="long">Analyzer</b></span>
+  </a>
+  <div class="spacer"></div>
+  <button class="icon-btn" id="helpBtn" aria-label="Ayuda" title="Ayuda (?)"><span class="ms">help</span></button>
+  <button class="icon-btn" id="themeBtn" aria-label="Cambiar tema" title="Tema"><span class="ms" id="themeIcon">brightness_auto</span></button>
+  <div class="menu-anchor">
+    <button class="icon-btn" data-menu="moreMenu" aria-label="Más opciones" aria-haspopup="menu" aria-expanded="false"><span class="ms">more_vert</span></button>
+    <div class="menu" id="moreMenu" role="menu">
+      <button role="menuitem" data-action="tour"><span class="ms">school</span>Ver tutorial de inicio</button>
+      <button role="menuitem" data-action="docs"><span class="ms">menu_book</span>Documentación</button>
+      <button role="menuitem" data-action="shortcuts"><span class="ms">keyboard</span>Atajos de teclado</button>
+      <hr>
+      <button role="menuitem" data-action="theme-light"><span class="ms">light_mode</span>Tema claro</button>
+      <button role="menuitem" data-action="theme-dark"><span class="ms">dark_mode</span>Tema oscuro</button>
+      <button role="menuitem" data-action="theme-system"><span class="ms">brightness_auto</span>Usar tema del sistema</button>
+      <hr>
+      <button role="menuitem" data-action="reset-prefs"><span class="ms">restart_alt</span>Restablecer preferencias</button>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="rail" aria-label="Navegación principal">
+    <a class="nav-item" href="#obtener" data-view="obtener"><span class="pill"><span class="ms">add_comment</span></span>Obtener</a>
+    <a class="nav-item" href="#resultados" data-view="resultados"><span class="pill"><span class="ms">insights</span><span class="nav-badge hidden" id="navBadge"></span></span>Resultados</a>
+    <a class="nav-item" href="#ayuda" data-view="ayuda"><span class="pill"><span class="ms">menu_book</span></span>Ayuda</a>
+  </nav>
+
+  <main id="main" tabindex="-1">
+    <!-- ======================= OBTENER ======================= -->
+    <section class="view" id="view-obtener" aria-labelledby="h-obtener">
+      <div class="page-head">
+        <h1 id="h-obtener">Obtén los comentarios</h1>
+        <p>Elige cómo quieres obtener los comentarios de una publicación de Facebook.</p>
+      </div>
+
+      <div class="methods" role="radiogroup" aria-label="Método">
+        <button class="method" role="radio" aria-checked="false" data-method="fb">
+          <span class="mi"><span class="ms">verified_user</span></span>
+          <span><h3>Conectar con Facebook</h3><p>Para páginas que administras. Fechas exactas, reacciones y respuestas.</p><span class="tag">Datos más completos</span></span>
+        </button>
+        <button class="method" role="radio" aria-checked="false" data-method="extractor">
+          <span class="mi"><span class="ms">travel_explore</span></span>
+          <span><h3>Extractor de navegador</h3><p>Cualquier publicación que puedas ver con tu sesión de Facebook.</p></span>
+        </button>
+        <button class="method" role="radio" aria-checked="false" data-method="import">
+          <span class="mi"><span class="ms">upload_file</span></span>
+          <span><h3>Importar archivo</h3><p>JSON o CSV exportado antes o generado por otra herramienta.</p></span>
+        </button>
+      </div>
+
+      <!-- ===== Método: Facebook ===== -->
+      <div class="card method-panel" id="mp-fb">
+        <div class="banner warn hidden" id="protoWarn" role="alert">
+          <span class="ms">warning</span>
+          <div>El inicio de sesión de Facebook solo funciona en <b>https://</b> o <b>http://localhost</b>. Estás abriendo el archivo directamente.
+            Ejecuta <code>python3 -m http.server 8000</code> en la carpeta y abre <code>http://localhost:8000</code>.
+            <a href="#ayuda/facebook" class="help-link">Más información</a></div>
+        </div>
+        <ol class="steps">
+          <li class="step" id="stepApp">
+            <h3>Configura tu app de Facebook</h3>
+            <div class="desc">Solo la primera vez. Se guarda en este navegador. <a href="#ayuda/facebook">¿Cómo crear la app?</a></div>
+            <div class="row">
+              <div class="field grow">
+                <label for="fbAppId">App ID</label>
+                <input class="input" type="text" id="fbAppId" placeholder="123456789012345" inputmode="numeric" autocomplete="off">
+              </div>
+              <div class="field grow">
+                <label for="fbConfigId">Configuration ID <span class="muted">(opcional)</span></label>
+                <input class="input" type="text" id="fbConfigId" placeholder="Solo si usas Login for Business" autocomplete="off">
+              </div>
+            </div>
+          </li>
+          <li class="step" id="stepLogin">
+            <h3>Inicia sesión</h3>
+            <div class="desc">Se pedirá permiso para leer las páginas que administras y sus comentarios.</div>
+            <div class="row">
+              <button class="btn fb" id="fbLogin"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M24 12.07C24 5.41 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.04V9.41c0-3.02 1.8-4.7 4.54-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.5c-1.5 0-1.96.93-1.96 1.89v2.26h3.32l-.53 3.5h-2.8V24C19.62 23.1 24 18.1 24 12.07"/></svg>Continuar con Facebook</button>
+              <button class="btn outlined hidden" id="fbLogout"><span class="ms">logout</span>Cerrar sesión</button>
+              <span class="chip-status" id="fbState"><span class="dot"></span><span id="fbStateTxt">Sin conectar</span></span>
+            </div>
+          </li>
+          <li class="step" id="stepPage">
+            <h3>Elige la página y la publicación</h3>
+            <div class="desc" id="pageDesc">Disponible al iniciar sesión.</div>
+            <div id="fbPagesBox" class="hidden">
+              <div class="row" style="align-items:flex-end">
+                <div class="field grow">
+                  <label for="fbPage">Página</label>
+                  <select class="input" id="fbPage"></select>
+                </div>
+                <button class="btn tonal" id="fbLoadPosts"><span class="ms">article</span>Ver publicaciones</button>
+              </div>
+              <div class="status" id="fbTokInfo"></div>
+              <div id="fbPostsBox" class="hidden">
+                <div class="posts" id="fbPosts" role="list"></div>
+                <button class="btn text hidden" id="fbMorePosts" style="margin-top:8px"><span class="ms">expand_more</span>Cargar más</button>
+              </div>
+            </div>
+          </li>
+        </ol>
+        <div class="status" id="fbStatus" role="status"></div>
+
+        <div class="or">o usa una URL</div>
+        <div class="row" style="align-items:flex-end">
+          <div class="field grow">
+            <label for="gUrl">URL o ID de la publicación</label>
+            <input class="input" type="text" id="gUrl" placeholder="https://www.facebook.com/tu-pagina/posts/…">
+          </div>
+          <button class="btn filled" id="gFetch"><span class="ms">download</span>Obtener comentarios</button>
+          <button class="btn outlined danger hidden" id="gStop"><span class="ms">stop</span>Detener</button>
+        </div>
+        <div class="linear hidden" id="gProg"><div></div></div>
+        <div class="status" id="gStatus" role="status"></div>
+        <details class="adv">
+          <summary>Opciones avanzadas <span class="ms">expand_more</span></summary>
+          <div class="row" style="margin-top:12px">
+            <div class="field grow">
+              <label for="gToken">Token de acceso</label>
+              <input class="input" type="password" id="gToken" placeholder="Se completa al iniciar sesión" autocomplete="off">
+              <span class="hint">Puedes pegar un Page Access Token generado en Graph API Explorer.</span>
+            </div>
+            <div class="field" style="width:140px">
+              <label for="gVer">Versión de la API</label>
+              <input class="input" type="text" id="gVer" value="v23.0">
+            </div>
+          </div>
+          <label class="check" style="margin-top:12px"><input type="checkbox" id="gRemember"> Recordar el token mientras esté abierta esta pestaña</label>
+        </details>
+      </div>
+
+      <!-- ===== Método: Extractor ===== -->
+      <div class="card method-panel hidden" id="mp-extractor">
+        <div class="banner warn touch-only" style="margin-top:0"><span class="ms">computer</span>
+          <div>El extractor necesita un <b>ordenador</b> (Chrome, Edge, Firefox o Safari de escritorio): la versión móvil de Facebook no lo admite. Desde este dispositivo puedes <b>importar</b> el JSON generado en el ordenador o usar <b>Conectar con Facebook</b>.</div></div>
+        <ol class="steps">
+          <li class="step">
+            <h3>Abre la publicación en Facebook</h3>
+            <div class="desc">En el selector de orden de comentarios elige <b>“Todos los comentarios”</b> para no perder ninguno.</div>
+            <div class="row" style="align-items:flex-end">
+              <div class="field grow">
+                <label for="exUrl">URL de la publicación</label>
+                <input class="input" type="url" id="exUrl" placeholder="https://www.facebook.com/…">
+              </div>
+              <button class="btn tonal" id="exOpen"><span class="ms">open_in_new</span>Abrir</button>
+            </div>
+          </li>
+          <li class="step">
+            <h3>Ejecuta el extractor</h3>
+            <div class="desc">Arrastra este botón a tu barra de marcadores y púlsalo estando en la publicación. Abre las respuestas y los comentarios ocultos por ti.</div>
+            <div class="row">
+              <a class="bookmarklet" id="bookmarklet" href="#" title="Arrástrame a la barra de marcadores">Comments-Analyzer</a>
+              <button class="btn text" id="copyScript"><span class="ms">content_copy</span>Copiar código para la consola</button>
+            </div>
+            <p class="small muted" style="margin-top:8px">¿No ves la barra de marcadores? Pulsa <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> (<kbd>⌘</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> en Mac). <a href="#ayuda/extractor">Ver guía</a></p>
+          </li>
+          <li class="step">
+            <h3>Pega el resultado</h3>
+            <div class="desc">Cuando termine, pulsa <b>Copiar JSON</b> en el panel del extractor y pégalo aquí.</div>
+            <textarea class="input" id="exPaste" placeholder="{&quot;source&quot;:&quot;fb-dom-extractor&quot;, …}" aria-label="JSON del extractor"></textarea>
+            <div class="row" style="margin-top:12px">
+              <button class="btn filled" id="exAnalyze"><span class="ms">analytics</span>Analizar comentarios</button>
+            </div>
+          </li>
+        </ol>
+      </div>
+
+      <!-- ===== Método: Importar ===== -->
+      <div class="card method-panel hidden" id="mp-import">
+        <label class="dropzone" id="dropzone" for="fileIn">
+          <span class="ms">cloud_upload</span>
+          <h3 style="margin-top:8px">Arrastra un archivo aquí</h3>
+          <p class="muted" style="margin:4px 0 0">o haz clic para elegirlo · JSON, CSV o TXT</p>
+          <input type="file" id="fileIn" accept=".json,.csv,.txt,application/json,text/csv" class="sr-only">
+        </label>
+        <div class="or">o pega el contenido</div>
+        <textarea class="input" id="impPaste" placeholder="Pega aquí un JSON o CSV con encabezados (autor, texto, fecha…)" aria-label="Contenido a importar"></textarea>
+        <div class="row" style="margin-top:12px">
+          <button class="btn filled" id="impAnalyze"><span class="ms">analytics</span>Analizar</button>
+          <a class="btn text" href="#ayuda/importar">Formatos admitidos</a>
+        </div>
+      </div>
+
+      <div class="status" id="globalStatus" role="alert"></div>
+      <div class="demo-line">¿Solo quieres probar? <button class="btn text" id="demoBtn"><span class="ms">science</span>Cargar datos de ejemplo</button></div>
+    </section>
+
+    <!-- ======================= RESULTADOS ======================= -->
+    <section class="view" id="view-resultados" aria-labelledby="pTitle">
+      <div class="empty-state" id="resEmpty">
+        <div class="art"><span class="ms">forum</span></div>
+        <h2>Todavía no hay comentarios</h2>
+        <p>Obtén los comentarios de una publicación o carga los datos de ejemplo para ver el análisis.</p>
+        <a class="btn filled" href="#obtener"><span class="ms">add_comment</span>Obtener comentarios</a>
+      </div>
+
+      <div id="resContent" class="hidden">
+        <div class="res-head">
+          <div style="min-width:0;flex:1 1 400px">
+            <h1 id="pTitle">Publicación</h1>
+            <div class="res-meta" id="pMeta"></div>
+          </div>
+          <div class="row">
+            <div class="menu-anchor">
+              <button class="btn tonal" data-menu="copyMenu" aria-haspopup="menu" aria-expanded="false"><span class="ms">content_copy</span>Copiar</button>
+              <div class="menu" id="copyMenu" role="menu">
+                <div class="mh" data-scope></div>
+                <button role="menuitem" data-copy="tsv"><span class="ms">table</span>Como tabla (Excel / Sheets)</button>
+                <button role="menuitem" data-copy="text"><span class="ms">notes</span>Como texto legible</button>
+                <button role="menuitem" data-copy="textonly"><span class="ms">short_text</span>Solo el texto</button>
+                <button role="menuitem" data-copy="md"><span class="ms">markdown</span>Como Markdown</button>
+                <button role="menuitem" data-copy="json"><span class="ms">data_object</span>Como JSON</button>
+                <hr>
+                <button role="menuitem" data-copy="summary"><span class="ms">summarize</span>Resumen del análisis</button>
+              </div>
+            </div>
+            <div class="menu-anchor">
+              <button class="btn filled" data-menu="expMenu" aria-haspopup="menu" aria-expanded="false"><span class="ms">download</span>Exportar</button>
+              <div class="menu" id="expMenu" role="menu">
+                <div class="mh" data-scope></div>
+                <button role="menuitem" data-exp="xlsx"><span class="ms">grid_on</span>Excel (.xlsx) con resumen</button>
+                <button role="menuitem" data-exp="csv"><span class="ms">csv</span>CSV (.csv)</button>
+                <button role="menuitem" data-exp="json"><span class="ms">data_object</span>JSON (.json)</button>
+                <button role="menuitem" data-exp="txt"><span class="ms">description</span>Texto (.txt)</button>
+                <button role="menuitem" data-exp="html"><span class="ms">web</span>Informe HTML</button>
+              </div>
+            </div>
+            <div class="menu-anchor">
+              <button class="icon-btn" data-menu="resMenu" aria-label="Más acciones" aria-haspopup="menu" aria-expanded="false"><span class="ms">more_vert</span></button>
+              <div class="menu" id="resMenu" role="menu">
+                <a role="menuitem" href="#obtener"><span class="ms">add_comment</span>Analizar otra publicación</a>
+                <button role="menuitem" id="clearBtn"><span class="ms">delete</span>Borrar estos datos</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tabs" role="tablist" aria-label="Secciones de resultados">
+          <button class="tab" role="tab" id="tab-summary" aria-controls="tp-summary" aria-selected="true"><span class="ms sm">dashboard</span>Resumen</button>
+          <button class="tab" role="tab" id="tab-list" aria-controls="tp-list" aria-selected="false" tabindex="-1"><span class="ms sm">list</span>Comentarios <span class="count" id="tabCount">0</span></button>
+        </div>
+
+        <div class="tabpanel active" id="tp-summary" role="tabpanel" aria-labelledby="tab-summary">
+          <div class="stats" id="stats"></div>
+          <div class="charts">
+            <div class="card chart chart-card"><h3><span id="tlTitle">Comentarios en el tiempo</span><span id="tlApprox"></span></h3><div id="chartTimeline"></div></div>
+            <div class="card chart chart-card"><h3>Actividad por hora del día</h3><div id="chartHours"></div></div>
+            <div class="card"><h3>Autores más activos</h3><div id="topAuthors"></div></div>
+            <div class="card">
+              <h3>Sentimiento estimado</h3>
+              <div class="sentbar" id="sentBar" role="img"></div>
+              <div class="legend" id="sentLegend"></div>
+              <h3 style="margin-top:24px">Con más reacciones</h3>
+              <div id="topLiked"></div>
+            </div>
+            <div class="card"><h3>Palabras más frecuentes</h3><div class="tag-chips" id="topWords"></div></div>
+            <div class="card">
+              <h3>Emojis</h3><div class="tag-chips" id="topEmojis"></div>
+              <h3 style="margin-top:24px">Hashtags y menciones</h3><div class="tag-chips" id="topTags"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tabpanel" id="tp-list" role="tabpanel" aria-labelledby="tab-list">
+          <div class="row">
+            <label class="searchbar">
+              <span class="ms">search</span>
+              <input type="search" id="q" placeholder="Buscar en comentarios o autores" aria-label="Buscar comentarios" autocomplete="off">
+              <button class="icon-btn sm hidden" id="qClear" aria-label="Borrar búsqueda"><span class="ms">close</span></button>
+            </label>
+            <div class="seg" role="radiogroup" aria-label="Tipo de vista">
+              <button role="radio" data-lv="conv" aria-checked="true"><span class="ms">forum</span>Conversación</button>
+              <button role="radio" data-lv="table" aria-checked="false"><span class="ms">table_rows</span>Tabla</button>
+            </div>
+          </div>
+          <div class="filters" role="group" aria-label="Filtros">
+            <button class="fchip" data-fg="type" data-fv="comment" aria-pressed="false"><span class="ms">check</span>Comentarios</button>
+            <button class="fchip" data-fg="type" data-fv="reply" aria-pressed="false"><span class="ms">check</span>Respuestas</button>
+            <span class="fsep"></span>
+            <button class="fchip" data-fg="sent" data-fv="positivo" aria-pressed="false"><span class="ms">check</span>Positivos</button>
+            <button class="fchip" data-fg="sent" data-fv="neutral" aria-pressed="false"><span class="ms">check</span>Neutrales</button>
+            <button class="fchip" data-fg="sent" data-fv="negativo" aria-pressed="false"><span class="ms">check</span>Negativos</button>
+            <span class="fsep"></span>
+            <button class="fchip" data-fg="extra" data-fv="q" aria-pressed="false"><span class="ms">check</span>Preguntas</button>
+            <button class="fchip" data-fg="extra" data-fv="react" aria-pressed="false"><span class="ms">check</span>Con reacciones</button>
+            <button class="fchip" data-fg="extra" data-fv="att" aria-pressed="false"><span class="ms">check</span>Con adjuntos</button>
+            <button class="fchip" data-fg="extra" data-fv="noreply" aria-pressed="false"><span class="ms">check</span>Sin responder</button>
+            <button class="btn text sm hidden" id="fReset">Quitar filtros</button>
+          </div>
+          <div class="selbar hidden" id="selbar">
+            <button class="icon-btn sm" id="selNone" aria-label="Quitar selección"><span class="ms">close</span></button>
+            <b id="selCount"></b>
+            <span class="spacer"></span>
+            <button class="btn text sm" data-copy="tsv"><span class="ms">content_copy</span>Copiar</button>
+            <button class="btn text sm" data-exp="xlsx"><span class="ms">download</span>Excel</button>
+            <button class="btn text sm" data-exp="csv">CSV</button>
+          </div>
+          <div class="conv-bar">
+            <label class="row conv-only" style="gap:8px">Ordenar
+              <select class="input" id="convSort" aria-label="Ordenar conversación">
+                <option value="idx:asc">Orden original</option>
+                <option value="createdAt:asc">Más antiguos primero</option>
+                <option value="createdAt:desc">Más recientes primero</option>
+                <option value="reactions:desc">Más reacciones</option>
+                <option value="repliesCount:desc">Más respuestas</option>
+              </select>
+            </label>
+            <span class="spacer conv-only"></span>
+            <button class="btn text sm conv-only" id="convExpandAll"><span class="ms">unfold_more</span>Expandir todo</button>
+            <button class="btn text sm conv-only" id="convCollapseAll"><span class="ms">unfold_less</span>Contraer todo</button>
+            <label class="check table-only"><input type="checkbox" id="threaded" checked> Agrupar hilos</label>
+          </div>
+          <div class="conv" id="conv" aria-label="Conversación"></div>
+          <div class="table-wrap" id="tableWrap">
+            <table>
+              <thead><tr>
+                <th class="c-chk" style="width:44px"><input type="checkbox" id="chkPage" aria-label="Seleccionar los de esta página"></th>
+                <th data-sort="idx" class="c-idx">#</th>
+                <th data-sort="authorName">Autor</th>
+                <th data-sort="text">Comentario</th>
+                <th data-sort="createdAt">Fecha</th>
+                <th data-sort="reactions" class="num" title="Reacciones">Reacc.</th>
+                <th data-sort="repliesCount" class="num" title="Respuestas">Resp.</th>
+                <th data-sort="sentimentScore">Sentimiento</th>
+                <th style="width:120px"><span class="sr-only">Acciones</span></th>
+              </tr></thead>
+              <tbody id="tbody"></tbody>
+            </table>
+          </div>
+          <div class="pager">
+            <span class="muted small" id="countInfo" style="margin-right:auto"></span>
+            <label class="row" style="gap:8px">Filas por página
+              <select class="input" id="pageSize"><option>25</option><option selected>50</option><option>100</option><option>250</option><option value="100000">Todas</option></select>
+            </label>
+            <span id="pageInfo"></span>
+            <span>
+              <button class="icon-btn" id="prevPg" aria-label="Página anterior"><span class="ms">chevron_left</span></button>
+              <button class="icon-btn" id="nextPg" aria-label="Página siguiente"><span class="ms">chevron_right</span></button>
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= AYUDA ======================= -->
+    <section class="view" id="view-ayuda" aria-labelledby="h-help">
+      <div class="help-hero">
+        <div>
+          <h1 id="h-help">Centro de ayuda</h1>
+          <p style="margin:4px 0 0;opacity:.85">Guías, respuestas a preguntas frecuentes y consejos para sacar el máximo partido.</p>
+        </div>
+        <label class="help-search">
+          <span class="ms">search</span>
+          <input type="search" id="helpQ" placeholder="Buscar en la ayuda" aria-label="Buscar en la ayuda">
+        </label>
+      </div>
+      <div class="help-layout">
+        <nav class="toc" id="toc" aria-label="Contenido de la ayuda"></nav>
+        <div id="helpContent">
+          <article class="help-article" id="h-inicio" data-title="Primeros pasos">
+            <h2><span class="ms">rocket_launch</span>Primeros pasos</h2>
+            <p>Esta herramienta obtiene los comentarios de una publicación de Facebook, los analiza y te permite copiarlos o exportarlos. Todo ocurre en tu navegador.</p>
+            <ol>
+              <li><b>Elige un método</b> en la sección <a href="#obtener">Obtener</a>: conectar con Facebook, usar el extractor de navegador o importar un archivo.</li>
+              <li><b>Obtén los comentarios</b> siguiendo los pasos numerados de cada método.</li>
+              <li><b>Revisa el resumen</b>: autores más activos, actividad en el tiempo, sentimiento, palabras y emojis frecuentes.</li>
+              <li><b>Filtra y busca</b> en la pestaña <i>Comentarios</i>.</li>
+              <li><b>Copia o exporta</b> a Excel, CSV, JSON, texto o informe HTML.</li>
+            </ol>
+            <p><button class="btn tonal sm" data-action="tour"><span class="ms">school</span>Ver de nuevo el tutorial</button></p>
+          </article>
+
+          <article class="help-article" id="h-metodos" data-title="Elegir un método">
+            <h2><span class="ms">alt_route</span>Elegir un método</h2>
+            <div class="cmp-wrap"><table class="cmp">
+              <thead><tr><th></th><th>Conectar con Facebook</th><th>Extractor</th><th>Importar</th></tr></thead>
+              <tbody>
+                <tr><td><b>Publicaciones</b></td><td>Solo de páginas que administras</td><td>Cualquiera que puedas ver</td><td>Lo que contenga el archivo</td></tr>
+                <tr><td><b>Fechas</b></td><td>Exactas</td><td>Aproximadas (≈)</td><td>Según el archivo</td></tr>
+                <tr><td><b>Reacciones</b></td><td>Sí</td><td>Si están visibles</td><td>Si existen</td></tr>
+                <tr><td><b>Requisitos</b></td><td>App de Facebook + https/localhost</td><td>Navegador de escritorio</td><td>Ninguno</td></tr>
+              </tbody>
+            </table></div>
+            <p>Si administras la página, <b>Conectar con Facebook</b> da los datos más completos y fiables. Para cualquier otra publicación usa el <b>Extractor</b>.</p>
+          </article>
+
+          <article class="help-article" id="h-facebook" data-title="Conectar con Facebook">
+            <h2><span class="ms">verified_user</span>Conectar con Facebook</h2>
+            <h3>1. Crear la app (una sola vez)</h3>
+            <ol>
+              <li>Entra en <a href="https://developers.facebook.com/apps/" target="_blank" rel="noopener">developers.facebook.com/apps</a> y pulsa <b>Crear app</b>. Elige el caso de uso para administrar páginas (o el tipo <i>Empresa</i>).</li>
+              <li>Agrega el producto <b>Inicio de sesión con Facebook</b> (o <i>Facebook Login for Business</i>).</li>
+              <li>En su configuración activa <b>Inicio de sesión con el SDK de JavaScript</b> y agrega tu dominio en <b>Dominios permitidos para el SDK de JavaScript</b>. <code>localhost</code> está permitido en modo desarrollo.</li>
+              <li>En <b>Configuración → Básica</b> copia el <b>App ID</b> y pégalo en el paso 1.</li>
+              <li>Si usas <i>Login for Business</i>, crea una configuración con los permisos de abajo y pega su <b>Configuration ID</b>.</li>
+            </ol>
+            <h3>2. Permisos que se solicitan</h3>
+            <ul>
+              <li><code>pages_show_list</code>: ver la lista de páginas que administras.</li>
+              <li><code>pages_read_engagement</code>: leer publicaciones y métricas.</li>
+              <li><code>pages_read_user_content</code>: leer los comentarios de los usuarios.</li>
+            </ul>
+            <p>Mientras la app esté en <b>modo desarrollo</b>, solo pueden iniciar sesión sus administradores, desarrolladores y testers, sin necesidad de revisión. Para que la use cualquier persona, Meta exige la <i>App Review</i>.</p>
+            <h3>3. Dónde abrir la página</h3>
+            <p>Facebook solo permite iniciar sesión desde <b>https://</b> o <b>http://localhost</b>. Para probar en tu equipo:</p>
+            <p><code>python3 -m http.server 8000</code> → abre <code>http://localhost:8000</code></p>
+            <h3>Sobre el token</h3>
+            <p>Al elegir una página se genera su <i>token de acceso</i> automáticamente. Dura alrededor de 1–2 horas; después vuelve a iniciar sesión. El token nunca se guarda de forma permanente.</p>
+          </article>
+
+          <article class="help-article" id="h-extractor" data-title="Extractor de navegador">
+            <h2><span class="ms">travel_explore</span>Extractor de navegador</h2>
+            <p>Es un pequeño script que se ejecuta <b>dentro de la pestaña de Facebook</b>, donde ya tienes la sesión iniciada. Abre los comentarios ocultos, lee los que están en pantalla y genera un JSON.</p>
+            <h3>Con el marcador (recomendado)</h3>
+            <ol>
+              <li>Muestra la barra de marcadores (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd>).</li>
+              <li>Arrastra el botón azul <b>Comments-Analyzer</b> hasta la barra.</li>
+              <li>Abre la publicación, elige <b>Todos los comentarios</b> y pulsa el marcador.</li>
+              <li>Espera a que termine (puedes pulsar <i>Detener y extraer</i>) y pulsa <b>Copiar JSON</b>.</li>
+            </ol>
+            <h3>Con la consola</h3>
+            <p>Pulsa <kbd>F12</kbd> → <i>Console</i>, pega el código y pulsa <kbd>Enter</kbd>. Chrome puede pedirte escribir <code>allow pasting</code> la primera vez.</p>
+            <h3>Consejos</h3>
+            <ul>
+              <li>Abre la publicación en su propia página o ventana, no desde el feed.</li>
+              <li>Las publicaciones con miles de comentarios pueden tardar varios minutos.</li>
+              <li>Facebook muestra fechas relativas (“3 h”, “2 sem”). Se convierten en fechas aproximadas, marcadas con <span class="approx">≈</span>.</li>
+              <li>Si Facebook cambia su diseño, puede que algunos datos no se detecten.</li>
+            </ul>
+          </article>
+
+          <article class="help-article" id="h-importar" data-title="Importar archivos">
+            <h2><span class="ms">upload_file</span>Importar archivos</h2>
+            <p>Formatos admitidos:</p>
+            <ul>
+              <li><b>JSON del extractor</b> o un JSON exportado desde esta aplicación.</li>
+              <li><b>Respuesta de la Graph API</b> (<code>{"data":[…]}</code>).</li>
+              <li><b>Arreglo JSON genérico</b> de objetos.</li>
+              <li><b>CSV / TSV</b> con encabezados. Se detecta el separador (coma, punto y coma o tabulador).</li>
+            </ul>
+            <p>Columnas reconocidas automáticamente (en español o inglés): <code>autor</code>/<code>author</code>/<code>name</code>, <code>texto</code>/<code>text</code>/<code>message</code>/<code>comment</code>, <code>fecha</code>/<code>date</code>/<code>created_time</code>/<code>timestamp</code>, <code>reacciones</code>/<code>likes</code>, <code>respuestas</code>/<code>replies</code>, <code>id</code>, <code>parent_id</code>, <code>url</code>.</p>
+          </article>
+
+          <article class="help-article" id="h-analisis" data-title="Entender el análisis">
+            <h2><span class="ms">insights</span>Entender el análisis</h2>
+            <ul>
+              <li><b>Comentarios / Respuestas:</b> los comentarios principales y las respuestas a ellos.</li>
+              <li><b>Autores únicos:</b> personas distintas que comentaron.</li>
+              <li><b>Periodo:</b> tiempo entre el primer y el último comentario.</li>
+              <li><b>Sentimiento estimado:</b> se calcula con un diccionario de palabras y emojis positivos y negativos (español e inglés), teniendo en cuenta negaciones como “no”. Es orientativo: no detecta ironía ni sarcasmo.</li>
+              <li><b>Palabras frecuentes:</b> excluye palabras vacías (“de”, “que”, “the”…). Pulsa una para filtrar los comentarios que la contienen.</li>
+            </ul>
+          </article>
+
+          <article class="help-article" id="h-filtrar" data-title="Buscar y filtrar">
+            <h2><span class="ms">filter_list</span>Buscar y filtrar</h2>
+            <ul>
+              <li>Escribe en el buscador para filtrar por texto o autor. Usa <code>autor:"Nombre Apellido"</code> para un autor concreto.</li>
+              <li>Los <b>chips de filtro</b> se combinan entre grupos: por ejemplo <i>Respuestas</i> + <i>Negativos</i>.</li>
+              <li>La vista <b>Conversación</b> muestra los comentarios como en Facebook: burbujas con avatar, reacciones y respuestas anidadas. Los hilos se muestran desplegados; pulsa “Ocultar respuestas” para plegar uno, o usa <i>Expandir todo</i> / <i>Contraer todo</i>.</li>
+              <li>Con el extractor, la jerarquía se reconstruye a partir de la sangría con la que Facebook muestra las respuestas. Si importas un JSON de una versión anterior del extractor, se deduce del orden: cada respuesta pertenece al comentario que la precede.</li>
+              <li>La vista <b>Tabla</b> muestra todos los campos en columnas. <b>Agrupar hilos</b> coloca cada respuesta debajo de su comentario.</li>
+              <li>Pulsa los encabezados de la tabla para ordenar.</li>
+              <li>Marca filas para trabajar solo con esas: copiar y exportar usarán la selección.</li>
+              <li>Haz doble clic en una fila (o pulsa <span class="ms sm" style="vertical-align:-4px">info</span>) para ver todos sus datos.</li>
+            </ul>
+          </article>
+
+          <article class="help-article" id="h-exportar" data-title="Copiar y exportar">
+            <h2><span class="ms">ios_share</span>Copiar y exportar</h2>
+            <p>Se exportan los comentarios <b>seleccionados</b>, o si no hay selección, <b>todos los filtrados</b>.</p>
+            <ul>
+              <li><b>Copiar como tabla:</b> pégalo directamente en Excel o Google Sheets.</li>
+              <li><b>Excel (.xlsx):</b> incluye la hoja <i>Comentarios</i> con todos los campos y la hoja <i>Resumen</i>.</li>
+              <li><b>CSV:</b> en UTF-8, compatible con Excel (los acentos y emojis se mantienen).</li>
+              <li><b>JSON:</b> se puede volver a importar en esta aplicación.</li>
+              <li><b>Informe HTML:</b> un documento listo para compartir o imprimir.</li>
+            </ul>
+          </article>
+
+          <article class="help-article" id="h-privacidad" data-title="Privacidad y datos">
+            <h2><span class="ms">shield</span>Privacidad y datos</h2>
+            <ul>
+              <li>Esta aplicación no tiene servidor: los comentarios se procesan y guardan <b>solo en tu navegador</b>.</li>
+              <li>Se guardan en el navegador: los últimos comentarios analizados, el App ID, el tema y tus preferencias (como no volver a ver el tutorial).</li>
+              <li>El token de Facebook solo se conserva si lo pides, y únicamente mientras la pestaña esté abierta.</li>
+              <li>Puedes borrarlo todo desde <b>⋮ → Restablecer preferencias</b> y <b>Resultados → ⋮ → Borrar estos datos</b>.</li>
+              <li>Usa los datos de forma responsable y conforme a las condiciones de Facebook y a la normativa de protección de datos aplicable.</li>
+            </ul>
+          </article>
+
+          <article class="help-article faq" id="h-faq" data-title="Problemas frecuentes">
+            <h2><span class="ms">quiz</span>Problemas frecuentes</h2>
+            <details><summary>El botón “Continuar con Facebook” no hace nada</summary><div class="ans">Comprueba que abres la página desde <code>https://</code> o <code>http://localhost</code>, que el App ID es correcto y que el dominio está en “Dominios permitidos para el SDK de JavaScript”. Los bloqueadores de anuncios pueden impedir que se cargue el SDK de Facebook. Si el navegador bloqueó la ventana emergente, vuelve a pulsar el botón.</div></details>
+            <details><summary>“No se encontraron páginas”</summary><div class="ans">En el diálogo de Facebook, pulsa <i>Editar acceso</i> y marca las páginas que quieres usar. Debes tener un rol en la página que permita moderar o crear contenido.</div></details>
+            <details><summary>Los comentarios salen sin nombre de autor</summary><div class="ans">Facebook solo devuelve el autor si usas el token de la <b>página dueña de la publicación</b> con el permiso <code>pages_read_user_content</code>. Con el extractor, el autor se obtiene de lo que se ve en pantalla.</div></details>
+            <details><summary>El extractor encuentra menos comentarios de los esperados</summary><div class="ans">Elige “Todos los comentarios” en lugar de “Más relevantes” antes de ejecutarlo y deja que termine. Algunos comentarios pueden estar ocultos o eliminados, o no ser visibles para tu cuenta.</div></details>
+            <details><summary>“Error validating access token” o “Session has expired”</summary><div class="ans">El token caducó. Cierra sesión y vuelve a pulsar <i>Continuar con Facebook</i>.</div></details>
+            <details><summary>Las URLs con “pfbid” no se reconocen</summary><div class="ans">Con la sesión iniciada, usa <b>Ver publicaciones</b> y elige la publicación de la lista. Así no hace falta la URL.</div></details>
+            <details><summary>El Excel no se descarga</summary><div class="ans">La exportación a Excel carga una librería desde internet. Sin conexión se descargará un CSV, que Excel también abre.</div></details>
+          </article>
+
+          <article class="help-article" id="h-atajos" data-title="Atajos de teclado">
+            <h2><span class="ms">keyboard</span>Atajos de teclado</h2>
+            <table class="kbd-table">
+              <tr><td style="width:140px"><kbd>/</kbd></td><td>Buscar (comentarios o ayuda)</td></tr>
+              <tr><td><kbd>?</kbd></td><td>Abrir la ayuda</td></tr>
+              <tr><td><kbd>g</kbd> luego <kbd>o</kbd></td><td>Ir a Obtener</td></tr>
+              <tr><td><kbd>g</kbd> luego <kbd>r</kbd></td><td>Ir a Resultados</td></tr>
+              <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Página anterior / siguiente de comentarios</td></tr>
+              <tr><td><kbd>Esc</kbd></td><td>Cerrar diálogos y menús</td></tr>
+            </table>
+          </article>
+          <div class="no-rows hidden" id="helpEmpty">No hay resultados para tu búsqueda.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Onboarding -->
+<dialog id="onboarding" aria-labelledby="obTitle">
+  <div class="ob-art"><span class="ms" id="obIcon">waving_hand</span></div>
+  <div class="ob-body" id="obBody"></div>
+  <div class="dots" id="obDots" aria-hidden="true"></div>
+  <div class="ob-foot">
+    <label class="check"><input type="checkbox" id="obDontShow" checked> No volver a mostrar</label>
+    <button class="btn text" id="obSkip">Omitir</button>
+    <button class="btn text" id="obPrev">Atrás</button>
+    <button class="btn filled" id="obNext">Siguiente</button>
+  </div>
+</dialog>
+
+<!-- Detalle -->
+<dialog id="detailDlg" aria-labelledby="dTitle">
+  <div class="dlg-head">
+    <h2 id="dTitle" style="font-size:20px">Detalle del comentario</h2>
+    <button class="icon-btn" data-close aria-label="Cerrar"><span class="ms">close</span></button>
+  </div>
+  <div class="dlg-body" id="detailBody"></div>
+  <div class="dlg-actions">
+    <button class="btn text" id="dCopyJson"><span class="ms">data_object</span>Copiar JSON</button>
+    <button class="btn tonal" id="dCopyTxt"><span class="ms">content_copy</span>Copiar texto</button>
+  </div>
+</dialog>
+
+<div class="snackbar" id="snackbar" role="status" aria-live="polite"><span class="msg" id="snackMsg"></span><button class="btn text hidden" id="snackAct"></button></div>
+
+<script>
+/* =====================================================================
+   EXTRACTOR — se ejecuta dentro de facebook.com (marcador o consola).
+   Autocontenido: no depende de nada del resto de esta página.
+   ===================================================================== */
+function fbExtractor(){
+  if (window.__fbcx) { alert('El extractor ya se está ejecutando en esta pestaña.'); return; }
+  window.__fbcx = true;
+  var sleep = function(ms){ return new Promise(function(r){ setTimeout(r, ms); }); };
+  var stop = false;
+
+  function el(tag, css, text){ var e = document.createElement(tag); if (css) e.style.cssText = css; if (text != null) e.textContent = text; return e; }
+  var btnCss = 'background:#0b57d0;color:#fff;border:0;border-radius:18px;padding:8px 14px;font:500 13px Roboto,system-ui;cursor:pointer';
+  var ui = el('div','position:fixed;z-index:2147483647;right:16px;bottom:16px;width:340px;background:#fff;color:#1f1f1f;font:14px/1.45 Roboto,system-ui,sans-serif;border-radius:16px;box-shadow:0 4px 8px 3px rgba(0,0,0,.15),0 1px 3px rgba(0,0,0,.3);padding:16px');
+  var ttl = el('div','display:flex;align-items:center;gap:10px;font-weight:500;font-size:16px;margin-bottom:8px');
+  (function(){
+    var NS = 'http://www.w3.org/2000/svg';
+    var s = function(tag, a){ var e = document.createElementNS(NS, tag); for (var k in a) e.setAttribute(k, a[k]); return e; };
+    var ic = s('svg', { viewBox: '0 0 48 48', width: '28', height: '28' });
+    ic.appendChild(s('rect', { width: 48, height: 48, rx: 12, fill: '#1877f2' }));
+    ic.appendChild(s('path', { d: 'M11 8h26a5 5 0 0 1 5 5v16a5 5 0 0 1-5 5H23l-8.5 7v-7H11a5 5 0 0 1-5-5V13a5 5 0 0 1 5-5z', fill: '#fff' }));
+    [[13,21,8],[21.25,16.5,12.5],[29.5,12,17]].forEach(function(b){ ic.appendChild(s('rect', { x: b[0], y: b[1], width: 5.5, height: b[2], rx: 1.8, fill: '#1877f2' })); });
+    ttl.appendChild(ic);
+    ttl.appendChild(el('span', '', 'Comments-Analyzer'));
+  })();
+  var st = el('div','min-height:40px;color:#444746','Iniciando…');
+  var bar = el('div','display:flex;gap:8px;margin-top:12px;flex-wrap:wrap');
+  var bStop = el('button', btnCss, 'Detener y extraer');
+  var bCopy = el('button', btnCss + ';display:none', 'Copiar JSON');
+  var bDl = el('button', btnCss + ';display:none;background:#c2e7ff;color:#001d35', 'Descargar .json');
+  var bClose = el('button', btnCss + ';background:transparent;color:#0b57d0', 'Cerrar');
+  var out = el('textarea','display:none;width:100%;height:90px;margin-top:10px;background:#f0f4f9;color:#1f1f1f;border:0;border-radius:8px;padding:8px;font:11px monospace');
+  bar.append(bStop, bCopy, bDl, bClose); ui.append(ttl, st, bar, out); document.body.appendChild(ui);
+  function status(t){ st.textContent = t; }
+  bStop.onclick = function(){ stop = true; status('Deteniendo…'); };
+  bClose.onclick = function(){ stop = true; ui.remove(); window.__fbcx = false; };
+
+  var LABEL_RE = /^(comentario|comment|respuesta|reply|réponse|commentaire|comentário|resposta|kommentar|antwort|commento|risposta)/i;
+  var REPLY_RE = /^(respuesta|reply|réponse|resposta|antwort|risposta)/i;
+  var EXP = [
+    /^(ver|view|see|mostrar|show|voir|afficher|mostra|visualizar)\b.*\b(comentarios?|comments?|respuestas?|replies|reply|más|more|anteriores|previous|réponses?|commentaires?|respostas?|mais|plus)\b/i,
+    /\b\d+\s+(respuestas?|replies|reply|réponses?|respostas?)\b/i,
+    /(respondió|replied|a répondu|respondeu)/i
+  ];
+  var EXCL = /(ocultar|hide|menos|less|traduc|transl|masquer|esconder|calificar|rate this)/i;
+
+  function articles(){
+    var all = Array.prototype.slice.call(document.querySelectorAll('div[role="article"]'));
+    var lab = all.filter(function(a){ return LABEL_RE.test(a.getAttribute('aria-label') || ''); });
+    if (lab.length) return lab;
+    return all.filter(function(a){ return a.querySelector('a[href*="comment_id="]'); });
+  }
+  function root(){
+    var dlg = Array.prototype.slice.call(document.querySelectorAll('div[role="dialog"]')).filter(function(d){ return d.querySelector('div[role="article"]'); });
+    return dlg.length ? dlg[dlg.length - 1] : document;
+  }
+  function scrollAll(){
+    var arts = articles(); var seen = new Set();
+    arts.slice(-3).forEach(function(a){
+      var p = a.parentElement;
+      while (p && p !== document.body){
+        var s = getComputedStyle(p);
+        if (/(auto|scroll)/.test(s.overflowY) && p.scrollHeight > p.clientHeight + 10 && !seen.has(p)){ seen.add(p); p.scrollTop = p.scrollHeight; }
+        p = p.parentElement;
+      }
+    });
+    window.scrollTo(0, document.documentElement.scrollHeight);
+  }
+  function txt(node){
+    var c = node.cloneNode(true);
+    c.querySelectorAll('img[alt]').forEach(function(i){ i.replaceWith(document.createTextNode(i.getAttribute('alt'))); });
+    c.querySelectorAll('br').forEach(function(b){ b.replaceWith(document.createTextNode('\n')); });
+    c.querySelectorAll('div[dir="auto"]').forEach(function(d){ d.append(document.createTextNode('\n')); });
+    return (c.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+  }
+  function decodeId(v){
+    if (!v) return '';
+    if (/^\d+$/.test(v)) return v;
+    try { var d = atob(v); var m = d.match(/comment:[\d]+_(\d+)/); if (m) return m[1]; } catch(e){}
+    return v;
+  }
+  function cleanProfile(href){
+    try {
+      var u = new URL(href, location.href);
+      if (/profile\.php/.test(u.pathname)) return { url: u.origin + u.pathname + '?id=' + (u.searchParams.get('id') || ''), id: u.searchParams.get('id') || '' };
+      var m = u.pathname.match(/\/groups\/[^/]+\/user\/(\d+)/);
+      if (m) return { url: 'https://www.facebook.com/profile.php?id=' + m[1], id: m[1] };
+      return { url: u.origin + u.pathname.replace(/\/$/, ''), id: '' };
+    } catch(e){ return { url: href, id: '' }; }
+  }
+  function parseCount(s){
+    if (!s) return 0;
+    var m = String(s).replace(/\s/g,' ').match(/(\d+(?:[.,]\d+)?)\s*(k|mil|m|mill|mln)?/i);
+    if (!m) return 0;
+    var n = parseFloat(m[1].replace(',', '.')); var u = (m[2] || '').toLowerCase();
+    if (u === 'k' || u === 'mil') n *= 1e3; else if (u) n *= 1e6;
+    return Math.round(n);
+  }
+  var UI_WORDS = /^(me gusta|responder|like|reply|editado|edited|autor|author|fan destacado|top fan|seguir|follow|compartir|share|ver traducción|see translation|·|enviar|send)$/i;
+  // Texto típico del enlace de fecha de un comentario: "2 h", "1 d", "3 sem", "hace 5 min", "Ahora", "12 de marzo", "March 12"…
+  var TIME_RE = /^(\d+\s*(s|seg|segundos?|min|minutos?|m|h|hr|hrs|horas?|hours?|d|días?|dias?|days?|sem|semanas?|w|wk|weeks?|mes|meses|mo|months?|a|años?|y|yr|years?)\.?$|hace\s|il y a\s|há\s|ahora|just now|now$|ayer|yesterday|\d{1,2}\s+de\s+[a-zé]+|(ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic|jan|apr|aug|dec)[a-z]*\.?\s+\d{1,2}\b)/i;
+  function nrm(s){ return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim().toLowerCase(); }
+  // "Respuesta de Ana Pérez al comentario de Luis hace 2 días" -> "Ana Pérez"
+  function labelAuthor(label){
+    if (!label) return '';
+    var s = label.replace(/^(comentario|respuesta|comment|reply|réponse|commentaire|comentário|resposta|kommentar|antwort|commento|risposta)\s+(de|by|par|von|di|do|da)\s+/i, '');
+    if (s === label) return '';
+    s = s.replace(/\s+(hace|il y a|há|vor)\s+.*$/i, '').replace(/\s+\d+\s+\S+\s+ago$/i, '').replace(/\s+(just now|ahora|now)$/i, '');
+    s = s.replace(/\s+(al comentario de|a la respuesta de|a una respuesta de|a un comentario de|en respuesta a|to|au commentaire de|à|ao comentário de|à resposta de|auf|al commento di)\s+.*$/i, '');
+    return s.trim();
+  }
+
+  function extractOne(art){
+    var own = function(sel){ return Array.prototype.slice.call(art.querySelectorAll(sel)).filter(function(n){ return n.closest('div[role="article"]') === art; }); };
+    var label = art.getAttribute('aria-label') || '';
+    var labelName = labelAuthor(label);
+    var links = own('a[href]');
+    var href = function(a){ return a.getAttribute('href') || ''; };
+    // Cuerpo del comentario: los enlaces dentro de él son menciones, nunca el autor.
+    var bodies = own('div[dir="auto"][style*="text-align"]');
+    bodies = bodies.filter(function(n){ return !bodies.some(function(o){ return o !== n && o.contains(n); }); });
+    var inBody = function(n){ return bodies.some(function(b){ return b.contains(n); }); };
+    var outLinks = links.filter(function(a){ return !inBody(a) && !/hashtag|l\.facebook\.com/.test(href(a)); });
+    // Enlace de fecha: lleva comment_id y su texto parece una fecha. (Facebook también añade comment_id al enlace del autor.)
+    var withCid = outLinks.filter(function(a){ return /comment_id=/.test(href(a)); });
+    var dLink = withCid.filter(function(a){ return TIME_RE.test(txt(a)); })[0]
+      || withCid.filter(function(a){ var t = nrm(txt(a)); return t && t !== nrm(labelName); }).pop() || null;
+    // Autor: el enlace con texto igual al nombre de la etiqueta; si no, el primer enlace con texto fuera del cuerpo.
+    var named = outLinks.filter(function(a){ return a !== dLink && txt(a) && !TIME_RE.test(txt(a)); });
+    var aLink = (labelName && named.filter(function(a){ return nrm(txt(a)) === nrm(labelName); })[0]) || named[0] || null;
+    var linkName = aLink ? txt(aLink) : '';
+    var authorName = linkName && (!labelName || nrm(labelName).indexOf(nrm(linkName)) === 0) ? linkName : (labelName || linkName);
+    if (labelName && aLink && nrm(linkName) !== nrm(labelName) && nrm(labelName).indexOf(nrm(linkName)) !== 0) aLink = null; // el enlace no es del autor
+    var prof = aLink ? cleanProfile(aLink.href) : { url: '', id: '' };
+
+    var id = '', parentId = '', permalink = '', dateText = '';
+    var idLink = dLink || withCid[0] || null;
+    if (idLink){
+      try {
+        var u = new URL(idLink.href, location.href);
+        var cid = decodeId(u.searchParams.get('comment_id')), rid = decodeId(u.searchParams.get('reply_comment_id'));
+        id = rid || cid; parentId = rid ? cid : ''; permalink = idLink.href;
+      } catch(e){}
+    }
+    if (dLink) dateText = txt(dLink);
+    var avImg = art.querySelector('svg image');
+    var avatar = avImg ? (avImg.getAttribute('xlink:href') || avImg.getAttribute('href') || '') : '';
+    if (!avatar){ var im = own('img').filter(function(i){ return (i.width || 0) >= 24 && (i.width || 0) <= 60 && !inBody(i); })[0]; if (im) avatar = im.src; }
+    var cLink = dLink;
+    var text = '';
+    if (bodies.length){
+      text = bodies.filter(function(n){ return !bodies.some(function(o){ return o !== n && o.contains(n); }); }).map(txt).join('\n').trim();
+    } else {
+      var cands = own('div[dir="auto"],span[dir="auto"]').filter(function(n){ return !(aLink && aLink.contains(n)) && !(cLink && cLink.contains(n)); });
+      var leaves = cands.filter(function(n){ return !cands.some(function(o){ return o !== n && n.contains(o); }); });
+      var seen = {}; text = leaves.map(txt).filter(function(t){ if (!t || t === authorName || UI_WORDS.test(t) || seen[t]) return false; seen[t] = 1; return true; }).join('\n').trim();
+    }
+    var reactions = 0;
+    own('[aria-label]').forEach(function(n){
+      var al = n.getAttribute('aria-label') || '';
+      if (/(reacci|reaction|réaction|reaç|people reacted|personas reaccionaron)/i.test(al) && /\d/.test(al)) reactions = Math.max(reactions, parseCount(al));
+    });
+    var badges = [], edited = false;
+    own('span,div').forEach(function(n){
+      if (n.children.length) return;
+      var t = (n.textContent || '').trim();
+      if (/^(autor|author|auteur)$/i.test(t)) badges.push('Autor de la publicación');
+      else if (/^(fan destacado|top fan|super fan|superfan)$/i.test(t)) badges.push(t);
+      else if (/^(editado|edited|modifié)$/i.test(t)) edited = true;
+    });
+    var attachments = [];
+    own('img').forEach(function(i){
+      var w = i.width || 0;
+      if (w >= 64 && !(aLink && aLink.contains(i)) && i.src && i.src !== avatar) attachments.push({ type: /\.gif|giphy/i.test(i.src) ? 'gif' : 'imagen', url: i.src, alt: i.getAttribute('alt') || '' });
+    });
+    if (own('video').length) attachments.push({ type: 'video', url: permalink });
+    links.forEach(function(a){
+      var h = a.getAttribute('href') || '';
+      if (/l\.facebook\.com\/l\.php/.test(h)){ try { attachments.push({ type: 'enlace', url: new URL(a.href).searchParams.get('u') }); } catch(e){} }
+    });
+    var mentions = links.filter(function(a){ return inBody(a) && !/hashtag/.test(a.href); }).map(function(a){ return txt(a); }).filter(Boolean);
+    var replyTo = '';
+    var mr = label.match(/(?:al comentario de|a la respuesta de|en respuesta a|to)\s+(.+?)(?:'s comment|’s comment|'s reply|’s reply)?(?:\s+hace|\s+\d|$)/i);
+    if (REPLY_RE.test(label) && mr) replyTo = mr[1];
+    if (REPLY_RE.test(label) && !replyTo && mentions.length) replyTo = mentions[0];
+    var labelDate = (label.match(/(hace\s+.+|il y a\s+.+|há\s+.+|\d+\s+\S+\s+ago)$/i) || [])[0] || '';
+    return {
+      id: id, parentId: parentId, isReply: REPLY_RE.test(label) || !!parentId,
+      authorName: authorName, authorId: prof.id, authorUrl: prof.url, authorAvatar: avatar, badges: badges,
+      text: text, dateText: dateText || labelDate, labelDate: labelDate, reactions: reactions,
+      attachments: attachments, mentions: mentions, replyTo: replyTo, edited: edited, permalink: permalink, ariaLabel: label,
+      indent: Math.round(art.getBoundingClientRect().left)
+    };
+  }
+  function extractAll(){
+    var arts = articles(); var res = [], seen = {};
+    arts.forEach(function(a, i){
+      try {
+        var c = extractOne(a);
+        var key = c.id || (c.authorName + '|' + c.text);
+        if (seen[key]) return; seen[key] = 1;
+        c.order = i; res.push(c);
+      } catch(e){ console.warn('Comentario omitido', e); }
+    });
+    return res;
+  }
+  function finish(){
+    status('Extrayendo datos…');
+    var comments = extractAll();
+    var postAuthor = '';
+    var h = root().querySelector('h2 a, h3 a, strong a'); if (h) postAuthor = txt(h);
+    var data = { source: 'fb-dom-extractor', version: 2, url: location.href, title: document.title, postAuthor: postAuthor, extractedAt: new Date().toISOString(), userAgentLang: navigator.language, count: comments.length, comments: comments };
+    var json = JSON.stringify(data, null, 2);
+    out.value = json; out.style.display = 'block';
+    bStop.style.display = 'none'; bCopy.style.display = ''; bDl.style.display = '';
+    status('✓ ' + comments.length + ' comentarios extraídos. Copia el JSON y pégalo en el analizador.');
+    bCopy.onclick = function(){
+      var ok = function(){ bCopy.textContent = '¡Copiado!'; setTimeout(function(){ bCopy.textContent = 'Copiar JSON'; }, 1500); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(json).then(ok, function(){ out.select(); document.execCommand('copy'); ok(); });
+      else { out.select(); document.execCommand('copy'); ok(); }
+    };
+    bDl.onclick = function(){
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+      a.download = 'comentarios-facebook-' + Date.now() + '.json';
+      document.body.appendChild(a); a.click(); a.remove();
+    };
+    window.__fbcx = false;
+  }
+  (async function(){
+    var clicks = new Map(); var idle = 0, round = 0;
+    while (!stop && round < 600){
+      round++;
+      var r = root();
+      var btns = Array.prototype.slice.call(r.querySelectorAll('div[role="button"],span[role="button"]')).filter(function(b){
+        if ((clicks.get(b) || 0) >= 4) return false;
+        if (!b.offsetParent) return false;
+        var t = (b.innerText || '').trim();
+        if (!t || t.length > 80 || EXCL.test(t)) return false;
+        return EXP.some(function(re){ return re.test(t); });
+      });
+      if (btns.length){
+        idle = 0;
+        for (var i = 0; i < btns.length && !stop; i++){
+          var b = btns[i]; clicks.set(b, (clicks.get(b) || 0) + 1);
+          try { b.scrollIntoView({ block: 'center' }); b.click(); } catch(e){}
+          await sleep(450 + Math.random() * 450);
+        }
+      } else {
+        idle++; scrollAll(); await sleep(1300);
+        if (idle >= 4) break;
+      }
+      status('Desplegando comentarios… ronda ' + round + ' · visibles: ' + articles().length);
+    }
+    finish();
+  })();
+}
+
+/* =====================================================================
+   APLICACIÓN
+   ===================================================================== */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const PREF = {
+  get(k, d=null){ try{ const v=localStorage.getItem('fbca:'+k); return v===null?d:v; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem('fbca:'+k, v); }catch(e){} },
+  del(k){ try{ localStorage.removeItem('fbca:'+k); }catch(e){} }
+};
+const S = { meta:{}, comments:[], filtered:[], rows:[], selected:new Set(), sort:{key:'idx',dir:'asc'}, page:1, pageSize:50, threaded:true,
+  f:{ type:new Set(), sent:new Set(), extra:new Set() },
+  listView:'conv', tops:[], kids:{}, expanded:new Set(), collapsed:new Set() };
+const STORE_KEY = 'data:v1';
+
+/* ---------- utilidades ---------- */
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtN = n => (n ?? 0).toLocaleString('es');
+let snackTimer;
+function toast(msg, action){
+  const sb=$('#snackbar'), act=$('#snackAct');
+  $('#snackMsg').textContent=msg;
+  if(action){ act.textContent=action.label; act.classList.remove('hidden'); act.onclick=()=>{ action.run(); sb.classList.remove('show'); }; }
+  else act.classList.add('hidden');
+  sb.classList.add('show'); clearTimeout(snackTimer);
+  snackTimer=setTimeout(()=>sb.classList.remove('show'), action?6000:3000);
+}
+function fmtDate(iso, withTime=true){
+  if(!iso) return '';
+  const d=new Date(iso); if(isNaN(d)) return '';
+  return d.toLocaleString('es',{year:'numeric',month:'short',day:'numeric',...(withTime?{hour:'2-digit',minute:'2-digit'}:{})});
+}
+async function copyText(text, msg='Copiado al portapapeles'){
+  try{ await navigator.clipboard.writeText(text); }
+  catch(e){ const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); }
+  toast(msg);
+}
+function download(name, content, type){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(content instanceof Blob?content:new Blob([content],{type}));
+  a.download=name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  toast('Descargando '+name);
+}
+function setStatus(sel,msg,err){ const e=$(sel); e.textContent=msg||''; e.classList.toggle('err',!!err); }
+function fileStamp(){ return new Date().toISOString().slice(0,16).replace(/[:T]/g,'-'); }
+
+/* ---------- fechas relativas ---------- */
+const MONTHS={ene:0,enero:0,jan:0,january:0,feb:1,febrero:1,february:1,mar:2,marzo:2,march:2,abr:3,abril:3,apr:3,april:3,may:4,mayo:4,jun:5,junio:5,june:5,jul:6,julio:6,july:6,ago:7,agosto:7,aug:7,august:7,sep:8,sept:8,septiembre:8,setiembre:8,september:8,oct:9,octubre:9,october:9,nov:10,noviembre:10,november:10,dic:11,diciembre:11,dec:11,december:11};
+function parseFbDate(str, baseIso){
+  if(!str) return null;
+  const base = baseIso ? new Date(baseIso) : new Date();
+  const s = str.toLowerCase().replace(/\s+/g,' ').trim();
+  if(/^(ahora|justo ahora|just now|now|à l.instant|agora)/.test(s)) return base.toISOString();
+  if(/(^|\s)(ayer|yesterday|hier|ontem)(\s|$)/.test(s)){ const d=new Date(base); d.setDate(d.getDate()-1); return d.toISOString(); }
+  const m = s.match(/(\d+)\s*(segundos?|seg|sec(?:onds?)?|s|minutos?|mins?|minutes?|m|horas?|hrs?|hours?|h|d[ií]as?|days?|jours?|d|semanas?|sem|weeks?|wks?|w|meses?|months?|mois|mes|mo|años?|anos?|years?|yrs?|ans?|a|y)\b/);
+  if(m){
+    const n=+m[1], u=m[2]; const d=new Date(base);
+    if(/^(mes|mo|month|mois)/.test(u)) d.setMonth(d.getMonth()-n);
+    else if(/^(seg|sec|s$)/.test(u)) d.setSeconds(d.getSeconds()-n);
+    else if(/^(min|m$)/.test(u)) d.setMinutes(d.getMinutes()-n);
+    else if(/^(h|hora|hr|hour)/.test(u)) d.setHours(d.getHours()-n);
+    else if(/^(sem|w|week|wk)/.test(u)) d.setDate(d.getDate()-7*n);
+    else if(/^(d|dí|di|day|jour)/.test(u)) d.setDate(d.getDate()-n);
+    else if(/^(a|añ|an|y|yr|year)/.test(u)) d.setFullYear(d.getFullYear()-n);
+    return d.toISOString();
+  }
+  let mm = s.match(/(\d{1,2}) de ([a-zé]+)(?: de (\d{4}))?(?:.*?(\d{1,2}):(\d{2}))?/);
+  if(mm && MONTHS[mm[2]]!=null){ return new Date(mm[3]?+mm[3]:base.getFullYear(), MONTHS[mm[2]], +mm[1], mm[4]?+mm[4]:12, mm[5]?+mm[5]:0).toISOString(); }
+  mm = s.match(/([a-z]+) (\d{1,2})(?:, (\d{4}))?(?:.*?(\d{1,2}):(\d{2})\s*(am|pm)?)?/);
+  if(mm && MONTHS[mm[1]]!=null){ let h=mm[4]?+mm[4]:12; if(mm[6]==='pm'&&h<12)h+=12; if(mm[6]==='am'&&h===12)h=0; return new Date(mm[3]?+mm[3]:base.getFullYear(), MONTHS[mm[1]], +mm[2], h, mm[5]?+mm[5]:0).toISOString(); }
+  const t = Date.parse(str); if(!isNaN(t)) return new Date(t).toISOString();
+  return null;
+}
+
+/* ---------- análisis de texto ---------- */
+const STOP = new Set(('a al algo algunas algunos ante antes como con contra cual cuando de del desde donde durante e el ella ellas ellos en entre era eran es esa esas ese eso esos esta estaba estado estan estar estas este esto estos fue fueron ha hace hacia han hasta hay la las le les lo los mas me mi mis mucho muy nada ni no nos nosotros o os otra otro para pero poco por porque que quien se sea ser si sin sobre son su sus tambien te tiene tienen todo todos tu tus un una uno unos usted ustedes y ya yo vos q k pq xq x d tb tmb jaja jajaja jajajaja jeje ok asi aqui ahi solo cada mismo misma hoy van va voy será sí también así aquí ahí más qué cómo cuál dónde él tú mí ' +
+  'the a an and or but if of to in on at by for with about as is are was were be been being have has had do does did not no yes it its this that these those i you he she we they me my your our their them his her so just than then there here what which who whom will would can could should from up out into over all any some more most very too also').split(/\s+/));
+const POS = ['bueno','buena','buenos','buenas','excelente','genial','gracias','increíble','increible','hermoso','hermosa','bonito','bonita','lindo','linda','perfecto','perfecta','encanta','encantó','amo','amor','felicidades','felicitaciones','bien','mejor','maravilloso','maravillosa','fantástico','fantastico','feliz','super','súper','recomendado','recomiendo','espectacular','bendiciones','éxito','exito','apoyo','top','crack','bravo','precioso','preciosa','divino','fascinante','orgullo','calidad','rápido','rapido','agradecido','agradecida','great','good','love','awesome','amazing','excellent','thanks','thank','nice','beautiful','perfect','best','happy','wonderful','cool','congrats','congratulations','recommend'];
+const NEG = ['malo','mala','malos','malas','pésimo','pesimo','pésima','pesima','horrible','terrible','odio','asco','fraude','estafa','estafadores','mentira','mentiras','mentirosos','peor','basura','triste','decepción','decepcion','decepcionado','decepcionada','problema','problemas','queja','nunca','lamentable','vergüenza','verguenza','robo','ladrones','caro','lento','error','falla','fallas','mal','tarde','molesto','molesta','indignante','abuso','denuncia','cancelar','bad','worst','hate','awful','scam','fraud','poor','sad','angry','disappointed','problem','slow','broken','fake','never'];
+const POS_E = ['❤','😍','🥰','😊','😁','😀','😃','👍','👏','🙌','💯','🔥','🎉','💪','😂','🤣','💙','💚','💛','💜','♥','😘','🤩','✨','🙏'];
+const NEG_E = ['😡','😠','🤬','👎','😢','😭','😞','😒','🙄','💩','😤','😔','😩','😫','🤮','😑'];
+const POSS = new Set(POS), NEGS = new Set(NEG);
+const NEGATORS = new Set(['no','nunca','ni','jamás','jamas','not','never','sin']);
+const norm = w => w.normalize('NFD').replace(/[̀-ͯ]/g,'');
+const EMOJI_RE = /\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*/gu;
+function tokenize(text){ return (text||'').toLowerCase().replace(/https?:\/\/\S+/g,' ').match(/[\p{L}\p{N}][\p{L}\p{N}'’_-]*/gu) || []; }
+function sentiment(text){
+  const toks = tokenize(text); let score=0;
+  toks.forEach((w,i)=>{
+    const neg = i>0 && NEGATORS.has(toks[i-1]);
+    if(POSS.has(w)||POSS.has(norm(w))) score += neg?-1:1;
+    else if(NEGS.has(w)||NEGS.has(norm(w))) score += neg?1:-1;
+  });
+  POS_E.forEach(e=>{ if(text.includes(e)) score+=1; });
+  NEG_E.forEach(e=>{ if(text.includes(e)) score-=1; });
+  return { score, label: score>0?'positivo':score<0?'negativo':'neutral' };
+}
+
+/* ---------- normalización ---------- */
+function finalize(list, meta){
+  const byId = new Map();
+  list.forEach((c,i)=>{
+    c.idx = i+1;
+    c.id = String(c.id || ('local-'+(i+1)));
+    c.parentId = c.parentId ? String(c.parentId) : '';
+    if(meta.postId && c.parentId===meta.postId) c.parentId='';
+    c.text = c.text || ''; c.authorName = c.authorName || '';
+    c.reactions = +c.reactions || 0;
+    c.attachments = c.attachments || []; c.mentions = c.mentions || []; c.badges = c.badges || [];
+    byId.set(c.id, c);
+  });
+  const kids = {};
+  list.forEach(c=>{ if(c.parentId) kids[c.parentId]=(kids[c.parentId]||0)+1; });
+  list.forEach(c=>{
+    c.type = c.parentId ? 'reply' : 'comment';
+    c.depth = 0; let p=c, guard=0;
+    while(p.parentId && byId.has(p.parentId) && guard++<10){ c.depth++; p=byId.get(p.parentId); }
+    if(c.parentId && !byId.has(c.parentId)) c.depth = 1;
+    if(c.parentId && !c.replyTo && byId.has(c.parentId)) c.replyTo = byId.get(c.parentId).authorName;
+    c.repliesCount = Math.max(+c.repliesCount||0, kids[c.id]||0);
+    c.length = [...c.text].length;
+    c.words = tokenize(c.text).length;
+    c.hashtags = (c.text.match(/#[\p{L}\p{N}_]+/gu)||[]);
+    c.mentions = Array.from(new Set([...c.mentions, ...(c.text.match(/@[\p{L}\p{N}_.]+/gu)||[])]));
+    c.emojis = c.text.match(EMOJI_RE) || [];
+    c.isQuestion = /[?¿]/.test(c.text);
+    c.urls = c.text.match(/https?:\/\/\S+/g) || [];
+    const s = sentiment(c.text); c.sentiment=s.label; c.sentimentScore=s.score;
+    c.createdTs = c.createdAt ? Date.parse(c.createdAt) : NaN;
+  });
+  return list;
+}
+/* Reconstruye la jerarquía de los datos del extractor:
+   1) usa el parentId del enlace si apunta a un comentario existente;
+   2) si no, usa la sangría visual (las respuestas están desplazadas a la derecha);
+   3) si tampoco hay sangría, usa el orden + la marca isReply (la respuesta pertenece al comentario anterior). */
+function inferHierarchy(list){
+  const ids = new Set(list.map(c=>String(c.id)));
+  const ind = list.map(c=>c.indent).filter(v=>typeof v==='number' && isFinite(v));
+  let levels = null;
+  if(ind.length===list.length && new Set(ind).size>1){
+    levels = [];
+    [...new Set(ind)].sort((a,b)=>a-b).forEach(v=>{ if(!levels.length || v-levels[levels.length-1] > 8) levels.push(v); });
+  }
+  const levelOf = c => {
+    if(levels){ let l=0; levels.forEach((v,i)=>{ if(c.indent >= v-8) l=i; }); return l; }
+    return (c.isReply || c.parentId) ? 1 : 0;
+  };
+  const stack = [];
+  list.forEach(c=>{
+    let lvl = Math.min(levelOf(c), stack.length);
+    const explicit = c.parentId && ids.has(String(c.parentId)) && String(c.parentId)!==String(c.id);
+    if(explicit){ const pi = stack.findIndex(s=>String(s.id)===String(c.parentId)); if(pi>=0) lvl = pi+1; }
+    else c.parentId = lvl>0 ? stack[lvl-1].id : '';
+    stack.length = lvl; stack[lvl] = c;
+  });
+  return list;
+}
+/* Nombre del autor según la etiqueta accesible de Facebook:
+   "Respuesta de Ana Pérez al comentario de Luis hace 2 días" -> "Ana Pérez" */
+function labelAuthor(label){
+  if(!label) return '';
+  let s = label.replace(/^(comentario|respuesta|comment|reply|réponse|commentaire|comentário|resposta|kommentar|antwort|commento|risposta)\s+(de|by|par|von|di|do|da)\s+/i, '');
+  if(s===label) return '';
+  s = s.replace(/\s+(hace|il y a|há|vor)\s+.*$/i,'').replace(/\s+\d+\s+\S+\s+ago$/i,'').replace(/\s+(just now|ahora|now)$/i,'');
+  s = s.replace(/\s+(al comentario de|a la respuesta de|a una respuesta de|a un comentario de|en respuesta a|to|au commentaire de|à|ao comentário de|à resposta de|auf|al commento di)\s+.*$/i,'');
+  return s.trim();
+}
+const normL = s => norm(String(s||'').replace(/\s+/g,' ').trim().toLowerCase());
+function profileFromUrl(href){
+  try{
+    const u = new URL(href);
+    if(/profile\.php/.test(u.pathname)) return u.origin+u.pathname+'?id='+(u.searchParams.get('id')||'');
+    if(/\/(posts|permalink|photo|videos|reel|watch|story\.php|groups\/[^/]+\/posts)/.test(u.pathname)) return '';
+    return u.origin+u.pathname.replace(/\/$/,'');
+  }catch(e){ return ''; }
+}
+/* Repara JSON generados por versiones anteriores del extractor, que en las respuestas
+   tomaban como autor la mención del inicio del texto (y el nombre real quedaba como "fecha"). */
+function repairExtractorAuthor(c){
+  const la = labelAuthor(c.ariaLabel);
+  if(!la) return;
+  const cur = normL(c.authorName), want = normL(la);
+  if(cur && (cur===want || want.startsWith(cur+' ') )) return;
+  const wrong = c.authorName;
+  if(c.dateText && normL(c.dateText)===want){ c.authorUrl = profileFromUrl(c.permalink); c.authorId = (c.authorUrl.match(/id=(\d+)/)||[])[1]||''; c.dateText = c.labelDate || ''; }
+  else { c.authorUrl=''; c.authorId=''; }
+  c.authorName = la;
+  if(wrong){ c.mentions = Array.from(new Set([...(c.mentions||[]), wrong])); if(c.isReply && !c.replyTo) c.replyTo = wrong; }
+}
+function fromExtractor(obj){
+  const base = obj.extractedAt;
+  const raw = (obj.comments||[]).map((c,i)=>({...c, order: c.order ?? i})).sort((a,b)=>a.order-b.order);
+  raw.forEach((c,i)=>{ if(!c.id) c.id = 'x-'+(i+1); repairExtractorAuthor(c); });
+  inferHierarchy(raw);
+  return { meta:{ url:obj.url, title:obj.title, postAuthor:obj.postAuthor, extractedAt:obj.extractedAt, source:'Extractor de navegador' },
+    comments:raw.map(c=>({
+      id:c.id, parentId:c.parentId, authorName:c.authorName, authorId:c.authorId, authorUrl:c.authorUrl, authorAvatar:c.authorAvatar,
+      badges:c.badges, text:c.text, createdAt: parseFbDate(c.dateText, base) || parseFbDate(c.labelDate, base), dateText:c.dateText, dateApprox:true,
+      reactions:c.reactions, likes:null, attachments:c.attachments, mentions:c.mentions, replyTo:c.replyTo,
+      edited:c.edited, permalink:c.permalink, source:'extractor'
+    })) };
+}
+function fromGraph(items, meta){
+  return { meta: Object.assign({ source:'Graph API' }, meta||{}),
+    comments: items.map(c=>({
+      id:c.id, parentId:c.parent?.id||'', authorName:c.from?.name||'', authorId:c.from?.id||'',
+      authorUrl:c.from?.id?('https://www.facebook.com/'+c.from.id):'', authorAvatar:c.from?.picture?.data?.url||'',
+      text:c.message||'', createdAt:c.created_time?new Date(c.created_time).toISOString():null, dateText:c.created_time||'', dateApprox:false,
+      reactions:c.reactions?.summary?.total_count ?? c.like_count ?? 0, likes:c.like_count ?? null, repliesCount:c.comment_count||0,
+      attachments:c.attachment?[{type:c.attachment.type||'adjunto', url:c.attachment.media?.image?.src||c.attachment.url||'', title:c.attachment.title||''}]:[],
+      mentions:(c.message_tags||[]).map(t=>t.name), hidden:!!c.is_hidden, permalink:c.permalink_url||'', source:'graph'
+    })) };
+}
+const KEYMAP = {
+  id:['id','comment_id','commentid','id_comentario'],
+  parentId:['parentid','parent_id','parent','reply_to_id','id_padre'],
+  authorName:['authorname','author','autor','name','nombre','user','usuario','username','from','profilename','profile_name'],
+  authorUrl:['authorurl','author_url','profileurl','profile_url','url_autor','perfilautor','profilelink'],
+  authorId:['authorid','author_id','userid','user_id','profileid','idautor'],
+  text:['text','texto','message','mensaje','comment','comentario','content','body','commenttext'],
+  createdAt:['createdat','created_at','created_time','fechaiso','fecha_iso','date','fecha','timestamp','time','datetime'],
+  reactions:['reactions','reacciones','likes','like_count','likescount','reactioncount','reactionscount','me_gusta'],
+  repliesCount:['repliescount','replies','comment_count','respuestas','replycount'],
+  permalink:['permalink','link','url','enlace','commenturl','comment_url']
+};
+function fromGeneric(arr){
+  const pick=(o,keys)=>{ const lk=Object.keys(o).reduce((m,k)=>(m[k.toLowerCase().replace(/[\s_-]/g,'')]=o[k],m),{}); for(const k of keys){ const v=lk[k.replace(/[\s_-]/g,'')]; if(v!=null&&v!=='') return v; } return ''; };
+  return { meta:{ source:'Archivo importado' }, comments: arr.map(o=>{
+    let author = pick(o,KEYMAP.authorName); if(typeof author==='object') author=author?.name||'';
+    let parent = pick(o,KEYMAP.parentId); if(typeof parent==='object') parent=parent?.id||'';
+    const date = pick(o,KEYMAP.createdAt); let iso=null;
+    if(date!==''){ iso = typeof date==='number' ? new Date(date<1e12?date*1000:date).toISOString() : parseFbDate(String(date)); }
+    return { id:pick(o,KEYMAP.id), parentId:parent, authorName:String(author), authorUrl:pick(o,KEYMAP.authorUrl), authorId:pick(o,KEYMAP.authorId),
+      text:String(pick(o,KEYMAP.text)), createdAt:iso, dateText:String(date), dateApprox:false, reactions:+pick(o,KEYMAP.reactions)||0,
+      repliesCount:+pick(o,KEYMAP.repliesCount)||0, permalink:pick(o,KEYMAP.permalink), source:'importado' };
+  })};
+}
+function parseCSV(text){
+  const first = text.split('\n')[0];
+  const d = first.includes('\t') ? '\t' : ((first.match(/;/g)||[]).length > (first.match(/,/g)||[]).length ? ';' : ',');
+  const rows=[]; let row=[], f='', q=false;
+  for(let i=0;i<text.length;i++){
+    const ch=text[i];
+    if(q){ if(ch==='"'){ if(text[i+1]==='"'){f+='"';i++;} else q=false; } else f+=ch; }
+    else if(ch==='"') q=true;
+    else if(ch===d){ row.push(f); f=''; }
+    else if(ch==='\n'){ row.push(f); rows.push(row); row=[]; f=''; }
+    else if(ch!=='\r') f+=ch;
+  }
+  if(f||row.length){ row.push(f); rows.push(row); }
+  const head = rows.shift().map(h=>h.replace(/^﻿/,'').trim());
+  return rows.filter(r=>r.some(x=>x.trim())).map(r=>Object.fromEntries(head.map((h,i)=>[h,r[i]??''])));
+}
+function parseAny(raw){
+  raw = (raw||'').trim(); if(!raw) throw new Error('No hay datos para analizar. Pega el contenido o elige un archivo.');
+  if(raw[0]==='{' || raw[0]==='['){
+    let obj; try{ obj=JSON.parse(raw); }catch(e){ throw new Error('El JSON no es válido: '+e.message); }
+    if(obj && obj.source==='fb-dom-extractor') return fromExtractor(obj);
+    if(obj && obj.app==='fb-comments-analyzer') return { meta:obj.meta||{}, comments:obj.comments.map(c=>({...c})) };
+    if(obj && Array.isArray(obj.data) && obj.data.length && ('created_time' in obj.data[0] || 'message' in obj.data[0])) return fromGraph(obj.data);
+    const arr = Array.isArray(obj) ? obj : (obj.comments || obj.data || obj.items || obj.results);
+    if(!Array.isArray(arr)) throw new Error('No se encontró una lista de comentarios en el JSON.');
+    if(arr.length && ('created_time' in arr[0])) return fromGraph(arr);
+    return fromGeneric(arr);
+  }
+  return fromGeneric(parseCSV(raw));
+}
+function loadData(parsed, {silent=false}={}){
+  if(!parsed.comments.length) throw new Error('No se encontraron comentarios. Asegúrate de que la sección de comentarios esté abierta antes de ejecutar el extractor.');
+  S.meta = parsed.meta || {};
+  S.comments = finalize(parsed.comments, S.meta);
+  S.selected.clear(); S.page=1; S.sort={key:'idx',dir:'asc'}; S.expanded.clear(); S.collapsed.clear();
+  Object.values(S.f).forEach(s=>s.clear()); $('#q').value='';
+  try{ localStorage.setItem('fbca:'+STORE_KEY, JSON.stringify({meta:S.meta, comments:S.comments})); }catch(e){}
+  setStatus('#globalStatus','');
+  renderAll();
+  if(!silent){ go('resultados'); selectTab('summary'); toast(fmtN(S.comments.length)+' comentarios cargados'); }
+}
+
+/* ---------- Graph API ---------- */
+let gAbort=null;
+async function gReq(url){
+  const r = await fetch(url, {signal:gAbort?.signal});
+  const j = await r.json().catch(()=>({error:{message:'Respuesta no válida ('+r.status+')'}}));
+  if(j.error){ const e=new Error(j.error.message + (j.error.code?` (código ${j.error.code})`:'')); e.code=j.error.code; throw e; }
+  return j;
+}
+function gUrl(path, params, token, ver){
+  const u = new URL(`https://graph.facebook.com/${ver}/${path.replace(/^\//,'')}`);
+  Object.entries(params||{}).forEach(([k,v])=>u.searchParams.set(k,v));
+  u.searchParams.set('access_token', token);
+  return u.toString();
+}
+const apiVer = () => ($('#gVer').value.trim() || 'v23.0');
+async function resolveObjectId(input, token, ver, log){
+  input = input.trim();
+  if(/^\d+(_\d+)?$/.test(input)) return input;
+  let u; try{ u=new URL(input.startsWith('http')?input:'https://'+input); }catch(e){ throw new Error('La URL no es válida.'); }
+  const p = u.pathname.replace(/\/+$/,''), qs=u.searchParams;
+  const resolvePage = async slug => { if(/^\d+$/.test(slug)) return slug; log('Buscando la página “'+slug+'”…'); return (await gReq(gUrl(slug,{fields:'id,name'},token,ver))).id; };
+  if(qs.get('story_fbid') && qs.get('id')){
+    const sf=qs.get('story_fbid');
+    if(/^\d+$/.test(sf)) return qs.get('id')+'_'+sf;
+    if(sf.startsWith('pfbid')) return await findPfbid(qs.get('id'), sf, token, ver, log);
+  }
+  if(qs.get('fbid')) return qs.get('fbid');
+  if(qs.get('v')) return qs.get('v');
+  let m;
+  if((m=p.match(/\/(?:reel|reels|videos|watch\/live)\/(\d+)/))) return m[1];
+  if((m=p.match(/\/videos\/[^/]+\/(\d+)/))) return m[1];
+  if((m=p.match(/\/photos\/[^/]+\/(\d+)/))) return m[1];
+  if((m=p.match(/\/groups\/([^/]+)\/(?:posts|permalink)\/(\d+)/))) return (await resolvePage(m[1]))+'_'+m[2];
+  if((m=p.match(/^\/([^/]+)\/posts\/(\d+)/))) return (await resolvePage(m[1]))+'_'+m[2];
+  if((m=p.match(/^\/([^/]+)\/posts\/(pfbid\w+)/))) return await findPfbid(await resolvePage(m[1]), m[2], token, ver, log);
+  if(/\/share\//.test(p)) throw new Error('Los enlaces /share/ no se pueden usar directamente. Ábrelo en el navegador y copia la URL final de la publicación.');
+  throw new Error('No se reconoce la publicación en esa URL. Usa “Ver publicaciones” o pega el ID con formato IDpágina_IDpublicación.');
+}
+async function findPfbid(pageId, pfbid, token, ver, log){
+  let url = gUrl(pageId+'/posts',{fields:'id,permalink_url',limit:100},token,ver);
+  for(let i=0;i<15 && url;i++){
+    log(`Buscando la publicación entre las de la página (lote ${i+1})…`);
+    const j = await gReq(url);
+    const hit = (j.data||[]).find(x=>(x.permalink_url||'').includes(pfbid));
+    if(hit) return hit.id;
+    url = j.paging?.next;
+  }
+  throw new Error('No se encontró la publicación entre las 1500 más recientes de la página.');
+}
+async function graphFetch(){
+  const input=$('#gUrl').value, token=$('#gToken').value.trim(), ver=apiVer();
+  if(!input.trim()){ setStatus('#gStatus','Indica la URL o el ID de la publicación, o elige una de la lista.',true); $('#gUrl').focus(); return; }
+  if(!token){ setStatus('#gStatus','Primero inicia sesión con Facebook (o pega un token en Opciones avanzadas).',true); return; }
+  try{ $('#gRemember').checked ? sessionStorage.setItem('fbca:token',token) : sessionStorage.removeItem('fbca:token'); }catch(e){}
+  gAbort = new AbortController();
+  const log = m => setStatus('#gStatus', m);
+  $('#gFetch').disabled=true; $('#gStop').classList.remove('hidden'); $('#gProg').classList.remove('hidden');
+  try{
+    const objId = await resolveObjectId(input, token, ver, log);
+    log('Obteniendo datos de la publicación…');
+    let post={};
+    for(const f of ['message,created_time,permalink_url,from','description,created_time,permalink_url,from,title','created_time']){
+      try{ post = await gReq(gUrl(objId,{fields:f},token,ver)); break; }catch(e){ if(e.name==='AbortError') throw e; }
+    }
+    const FIELDSETS=[
+      'id,message,created_time,from{id,name,picture.type(large)},like_count,comment_count,parent{id},permalink_url,attachment,message_tags,is_hidden,reactions.limit(0).summary(total_count)',
+      'id,message,created_time,from,like_count,comment_count,parent{id},permalink_url,attachment,message_tags',
+      'id,message,created_time,parent{id},like_count,comment_count'
+    ];
+    let all=[], url=null, total=null;
+    for(const fs of FIELDSETS){
+      try{
+        const first = await gReq(gUrl(objId+'/comments',{fields:fs,filter:'stream',order:'chronological',limit:100,summary:'true'},token,ver));
+        all=first.data||[]; total=first.summary?.total_count; url=first.paging?.next; break;
+      }catch(e){ if(e.name==='AbortError'||fs===FIELDSETS[FIELDSETS.length-1]) throw e; }
+    }
+    while(url){
+      log(`Descargando comentarios… ${fmtN(all.length)}${total?' de ~'+fmtN(total):''}`);
+      const j = await gReq(url); all = all.concat(j.data||[]); url = j.paging?.next;
+    }
+    log(`✓ ${fmtN(all.length)} comentarios descargados.`);
+    loadData(fromGraph(all, {
+      postId: objId, url: post.permalink_url || input, title: (post.message||post.description||post.title||'').slice(0,160) || 'Publicación '+objId,
+      postAuthor: post.from?.name||FBA.page?.name||'', postDate: post.created_time||'', extractedAt:new Date().toISOString(), totalReported: total
+    }));
+  }catch(e){
+    if(e.name==='AbortError') log('Descarga detenida.');
+    else setStatus('#gStatus', e.message + (e.code===10||e.code===200?' — Comprueba que el token sea de la página y tenga el permiso pages_read_user_content.':'') + (e.code===190?' — El token caducó: vuelve a iniciar sesión.':''), true);
+  }finally{
+    $('#gFetch').disabled=false; $('#gStop').classList.add('hidden'); $('#gProg').classList.add('hidden'); gAbort=null;
+  }
+}
+
+/* ---------- Login con Facebook (JS SDK) ---------- */
+const FB_SCOPES = 'pages_show_list,pages_read_engagement,pages_read_user_content';
+const FBA = { appId:null, sdkPromise:null, user:null, userToken:null, expiresAt:null, pages:[], page:null, postsNext:null };
+function fbStatus(msg, err){ setStatus('#fbStatus', msg, err); }
+function loadFbSdk(appId){
+  if(FBA.sdkPromise && FBA.appId===appId) return FBA.sdkPromise;
+  FBA.appId = appId;
+  FBA.sdkPromise = new Promise((res, rej)=>{
+    const init = () => { try{ FB.init({ appId, cookie:true, xfbml:false, version:apiVer() }); res(window.FB); }catch(e){ rej(e); } };
+    if(window.FB) return init();
+    window.fbAsyncInit = init;
+    const s = document.createElement('script');
+    s.src = 'https://connect.facebook.net/es_LA/sdk.js'; s.async = true; s.crossOrigin = 'anonymous';
+    s.onerror = () => { FBA.sdkPromise = null; rej(new Error('No se pudo cargar el SDK de Facebook. Revisa tu conexión o desactiva el bloqueador de anuncios para esta página.')); };
+    document.head.appendChild(s);
+    setTimeout(()=>rej(new Error('El SDK de Facebook tardó demasiado en cargar.')), 20000);
+  });
+  return FBA.sdkPromise;
+}
+function validAppId(){ const v=$('#fbAppId').value.trim(); return /^\d{6,20}$/.test(v) ? v : null; }
+function updateSteps(){
+  $('#stepApp').classList.toggle('done', !!validAppId());
+  $('#stepLogin').classList.toggle('done', !!FBA.userToken);
+  $('#stepPage').classList.toggle('done', !!FBA.page);
+}
+function preloadSdk(){
+  updateSteps();
+  const id = validAppId(); if(!id) return;
+  PREF.set('appId', id); PREF.set('configId', $('#fbConfigId').value.trim());
+  if(location.protocol==='file:') return;
+  loadFbSdk(id).then(FB=>{
+    FB.getLoginStatus(r=>{ if(r.status==='connected' && !FBA.userToken) onFbAuth(r.authResponse); }, true);
+  }).catch(e=>fbStatus(e.message, true));
+}
+function fbLogin(){
+  const id = validAppId();
+  if(!id){ fbStatus('Escribe un App ID válido (solo números) en el paso 1.', true); $('#fbAppId').focus(); return; }
+  if(location.protocol==='file:'){ fbStatus('El inicio de sesión no funciona abriendo el archivo directamente. Usa http://localhost o https://.', true); return; }
+  const configId = $('#fbConfigId').value.trim();
+  const opts = configId ? { config_id: configId } : { scope: FB_SCOPES, return_scopes: true, auth_type: 'rerequest' };
+  const doLogin = () => FB.login(r=>{
+    if(r.authResponse) onFbAuth(r.authResponse);
+    else fbStatus('Se canceló el inicio de sesión.', true);
+  }, opts);
+  // FB.login debe llamarse dentro del clic para que el navegador no bloquee la ventana emergente.
+  if(window.FB && FBA.appId===id) return doLogin();
+  fbStatus('Cargando el SDK de Facebook…');
+  loadFbSdk(id).then(()=>{ fbStatus('Listo. Si no se abrió la ventana de Facebook, pulsa el botón otra vez.'); doLogin(); })
+    .catch(e=>fbStatus(e.message, true));
+}
+async function onFbAuth(auth){
+  FBA.userToken = auth.accessToken;
+  FBA.expiresAt = auth.expiresIn ? Date.now() + auth.expiresIn*1000 : null;
+  const ver = apiVer();
+  $('#fbLogin').classList.add('hidden'); $('#fbLogout').classList.remove('hidden');
+  $('#fbState').classList.add('ok'); $('#fbStateTxt').textContent='Conectado';
+  updateSteps();
+  try{
+    fbStatus('Obteniendo tu perfil…');
+    FBA.user = await gReq(gUrl('me',{fields:'id,name'},FBA.userToken,ver));
+    $('#fbStateTxt').textContent = FBA.user.name;
+    const perms = await gReq(gUrl('me/permissions',{},FBA.userToken,ver)).catch(()=>({data:[]}));
+    const granted = new Set((perms.data||[]).filter(p=>p.status==='granted').map(p=>p.permission));
+    const missing = FB_SCOPES.split(',').filter(p=>!granted.has(p));
+    fbStatus('Obteniendo tus páginas…');
+    let url = gUrl('me/accounts',{fields:'id,name,category,access_token,tasks',limit:100},FBA.userToken,ver), pages=[];
+    while(url){ const j = await gReq(url); pages = pages.concat(j.data||[]); url = j.paging?.next; }
+    FBA.pages = pages;
+    if(!pages.length){
+      $('#pageDesc').textContent='No hay páginas disponibles.';
+      fbStatus('No se encontraron páginas. En la ventana de Facebook pulsa “Editar acceso” y marca al menos una página que administres' + (missing.length?`. Permisos sin conceder: ${missing.join(', ')}.`:'.'), true);
+      return;
+    }
+    $('#fbPage').innerHTML = pages.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}${p.category?' · '+esc(p.category):''}</option>`).join('');
+    $('#fbPagesBox').classList.remove('hidden');
+    $('#pageDesc').textContent='El token de la página se genera automáticamente.';
+    selectFbPage(pages[0].id);
+    fbStatus(missing.length ? `Faltan permisos: ${missing.join(', ')}. Puede que no se lean los comentarios o sus autores.` : '', !!missing.length);
+    loadFbPosts(false);
+  }catch(e){ fbStatus(e.message, true); }
+}
+function selectFbPage(id){
+  const p = FBA.pages.find(x=>x.id===id); if(!p) return;
+  FBA.page = p; $('#fbPage').value = id;
+  $('#gToken').value = p.access_token;
+  const exp = FBA.expiresAt ? ' · caduca aprox. a las ' + new Date(FBA.expiresAt).toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'}) : '';
+  setStatus('#fbTokInfo', `Token de acceso generado para “${p.name}”${exp}.`);
+  $('#fbPostsBox').classList.add('hidden'); $('#fbPosts').innerHTML=''; FBA.postsNext=null;
+  updateSteps();
+}
+async function loadFbPosts(more){
+  const p = FBA.page; if(!p) return;
+  const btn = more ? $('#fbMorePosts') : $('#fbLoadPosts'); btn.disabled = true;
+  try{
+    fbStatus('Cargando publicaciones…');
+    const url = more && FBA.postsNext ? FBA.postsNext :
+      gUrl(p.id+'/posts',{fields:'id,message,story,created_time,permalink_url,full_picture,comments.limit(0).summary(true)',limit:20},p.access_token,apiVer());
+    const j = await gReq(url);
+    FBA.postsNext = j.paging?.next || null;
+    const html = (j.data||[]).map(po=>`
+      <button class="post" role="listitem" data-post="${esc(po.id)}">
+        ${po.full_picture?`<img src="${esc(po.full_picture)}" alt="" loading="lazy" referrerpolicy="no-referrer">`:''}
+        <span style="min-width:0;display:block"><span class="pt">${esc((po.message||po.story||'(sin texto)').slice(0,220))}</span>
+        <span class="pm" style="display:block">${fmtDate(po.created_time)} · ${fmtN(po.comments?.summary?.total_count ?? 0)} comentarios</span></span>
+      </button>`).join('');
+    if(more) $('#fbPosts').insertAdjacentHTML('beforeend', html); else $('#fbPosts').innerHTML = html || '<div class="muted small">Esta página no tiene publicaciones.</div>';
+    $('#fbPostsBox').classList.remove('hidden');
+    $('#fbMorePosts').classList.toggle('hidden', !FBA.postsNext);
+    fbStatus('');
+  }catch(e){ fbStatus('No se pudieron cargar las publicaciones: '+e.message, true); }
+  finally{ btn.disabled = false; }
+}
+function fbLogout(){
+  const reset = () => {
+    if(!FBA.userToken && !FBA.user) return;
+    Object.assign(FBA,{ user:null, userToken:null, expiresAt:null, pages:[], page:null, postsNext:null });
+    $('#gToken').value=''; setStatus('#fbTokInfo','');
+    $('#fbLogin').classList.remove('hidden'); $('#fbLogout').classList.add('hidden');
+    $('#fbPagesBox').classList.add('hidden'); $('#pageDesc').textContent='Disponible al iniciar sesión.';
+    $('#fbState').classList.remove('ok'); $('#fbStateTxt').textContent='Sin conectar';
+    try{ sessionStorage.removeItem('fbca:token'); }catch(e){}
+    updateSteps(); toast('Sesión de Facebook cerrada');
+  };
+  try{ if(window.FB) FB.logout(reset); else reset(); }catch(e){ reset(); }
+  setTimeout(reset, 1500);
+}
+
+/* ---------- filtrado / orden ---------- */
+function applyFilters(){
+  let q = $('#q').value.trim().toLowerCase(), authorQ = null;
+  const am = q.match(/autor:("([^"]+)"|(\S+))/);
+  if(am){ authorQ = (am[2]||am[3]).toLowerCase(); q = q.replace(am[0],'').trim(); }
+  const F=S.f;
+  S.filtered = S.comments.filter(c=>{
+    if(F.type.size && !F.type.has(c.type)) return false;
+    if(F.sent.size && !F.sent.has(c.sentiment)) return false;
+    if(F.extra.has('att') && !c.attachments.length) return false;
+    if(F.extra.has('q') && !c.isQuestion) return false;
+    if(F.extra.has('react') && !c.reactions) return false;
+    if(F.extra.has('noreply') && (c.type!=='comment' || c.repliesCount)) return false;
+    if(authorQ && !c.authorName.toLowerCase().includes(authorQ)) return false;
+    if(q && !(c.text.toLowerCase().includes(q) || c.authorName.toLowerCase().includes(q))) return false;
+    return true;
+  });
+  const {key,dir} = S.sort, mul = dir==='asc'?1:-1;
+  const val = c => key==='createdAt' ? (isNaN(c.createdTs)?-Infinity:c.createdTs) : c[key];
+  const cmp = (a,b)=>{ const x=val(a), y=val(b); if(typeof x==='string') return x.localeCompare(y,'es')*mul || a.idx-b.idx; return ((x??0)-(y??0))*mul || a.idx-b.idx; };
+  // Árbol de hilos (se usa en la vista Conversación y en la tabla agrupada)
+  const ids = new Set(S.filtered.map(c=>c.id));
+  const kids = {}; S.filtered.forEach(c=>{ if(c.parentId && ids.has(c.parentId)) (kids[c.parentId] ||= []).push(c); });
+  Object.values(kids).forEach(a=>a.sort((x,y)=>(x.createdTs||0)-(y.createdTs||0)||x.idx-y.idx));
+  S.kids = kids;
+  S.tops = S.filtered.filter(c=>!c.parentId || !ids.has(c.parentId)).sort(cmp);
+  if(S.threaded || S.listView==='conv'){
+    const out=[]; const walk=c=>{ out.push(c); (kids[c.id]||[]).forEach(walk); };
+    S.tops.forEach(walk); S.rows=out;
+  } else S.rows = S.filtered.slice().sort(cmp);
+}
+function scopeList(){ return S.selected.size ? S.comments.filter(c=>S.selected.has(c.id)) : S.rows; }
+function filtersActive(){ return Object.values(S.f).some(s=>s.size) || $('#q').value.trim(); }
+
+/* ---------- render ---------- */
+function renderAll(){
+  const has = S.comments.length>0;
+  $('#resEmpty').classList.toggle('hidden', has);
+  $('#resContent').classList.toggle('hidden', !has);
+  const b=$('#navBadge'); b.classList.toggle('hidden',!has); b.textContent = S.comments.length>999 ? '999+' : S.comments.length;
+  if(!has) return;
+  renderMeta(); renderStats(); renderCharts(); renderTable();
+}
+function renderMeta(){
+  const m=S.meta;
+  $('#pTitle').textContent = m.title || 'Publicación';
+  const parts=[];
+  if(m.postAuthor) parts.push(['person',esc(m.postAuthor)]);
+  if(m.postDate) parts.push(['calendar_today','Publicado el '+fmtDate(m.postDate)]);
+  if(m.source) parts.push(['input',esc(m.source)]);
+  if(m.extractedAt) parts.push(['schedule','Obtenido el '+fmtDate(m.extractedAt)]);
+  if(m.totalReported!=null) parts.push(['tag','Facebook informa '+fmtN(m.totalReported)]);
+  if(m.url) parts.push(['link',`<a href="${esc(m.url)}" target="_blank" rel="noopener">Ver publicación</a>`]);
+  $('#pMeta').innerHTML = parts.map(([i,t])=>`<span><span class="ms">${i}</span>${t}</span>`).join('');
+}
+function computeStats(list){
+  const authors = {}; let reacts=0, chars=0, att=0, q=0, pos=0, neg=0, neu=0, replies=0;
+  const words={}, emojis={}, tags={};
+  list.forEach(c=>{
+    const k=c.authorName||'(desconocido)';
+    authors[k] ||= {name:k, count:0, reactions:0}; authors[k].count++; authors[k].reactions+=c.reactions;
+    reacts+=c.reactions; chars+=c.length; if(c.attachments.length) att++; if(c.isQuestion) q++;
+    if(c.type==='reply') replies++;
+    c.sentiment==='positivo'?pos++:c.sentiment==='negativo'?neg++:neu++;
+    tokenize(c.text).forEach(w=>{ if(w.length<3||STOP.has(w)||STOP.has(norm(w))||/^\d+$/.test(w)) return; words[w]=(words[w]||0)+1; });
+    c.emojis.forEach(e=>emojis[e]=(emojis[e]||0)+1);
+    [...c.hashtags, ...c.mentions].forEach(t=>tags[t]=(tags[t]||0)+1);
+  });
+  const top = (o,n)=>Object.entries(o).sort((a,b)=>b[1]-a[1]).slice(0,n);
+  return { total:list.length, comments:list.length-replies, replies, uniqueAuthors:Object.keys(authors).length, reacts, avgLen: list.length?Math.round(chars/list.length):0,
+    att, q, pos, neg, neu, authors:Object.values(authors).sort((a,b)=>b.count-a.count||b.reactions-a.reactions), words:top(words,30), emojis:top(emojis,16), tags:top(tags,16) };
+}
+function renderStats(){
+  const st = computeStats(S.comments); S.stats=st;
+  const dates = S.comments.map(c=>c.createdTs).filter(t=>!isNaN(t));
+  const span = dates.length ? (Math.max(...dates)-Math.min(...dates)) : 0;
+  const spanTxt = !dates.length ? '—' : span<36e5 ? Math.round(span/6e4)+' min' : span<864e5*2 ? Math.round(span/36e5)+' h' : Math.round(span/864e5)+' días';
+  const cards = [
+    ['forum','Total',fmtN(st.total)], ['chat_bubble','Comentarios',fmtN(st.comments)], ['reply','Respuestas',fmtN(st.replies)],
+    ['group','Autores únicos',fmtN(st.uniqueAuthors)], ['favorite','Reacciones',fmtN(st.reacts)], ['help','Preguntas',fmtN(st.q)],
+    ['text_fields','Longitud media',fmtN(st.avgLen)+' car.'], ['date_range','Periodo',spanTxt]
+  ];
+  $('#stats').innerHTML = cards.map(([i,k,v])=>`<div class="stat"><div class="k"><span class="ms">${i}</span>${k}</div><div class="v">${v}</div></div>`).join('');
+  $('#tabCount').textContent = fmtN(st.total);
+}
+function svgBars(data, {h=200, labelEvery=1, label='Gráfico'}={}){
+  if(!data.length) return '<div class="no-rows">Sin fechas disponibles</div>';
+  const W=600, pad={l:32,r:8,t:12,b:28}, iw=W-pad.l-pad.r, ih=h-pad.t-pad.b;
+  const max=Math.max(1,...data.map(d=>d.v)), bw=iw/data.length;
+  const ticks=[...new Set([0,Math.round(max/2),max])];
+  let s=`<svg viewBox="0 0 ${W} ${h}" role="img" aria-label="${esc(label)}">`;
+  ticks.forEach(t=>{ const y=pad.t+ih-(t/max)*ih; s+=`<line x1="${pad.l}" x2="${W-pad.r}" y1="${y}" y2="${y}" stroke="var(--outline-variant)" stroke-dasharray="${t?'2 3':''}"/><text class="axis" x="${pad.l-6}" y="${y+4}" text-anchor="end">${t}</text>`; });
+  data.forEach((d,i)=>{
+    const bh=Math.max(d.v?2:0,(d.v/max)*ih), x=pad.l+i*bw, y=pad.t+ih-bh, w=Math.max(1,bw*0.7);
+    s+=`<rect class="bar" x="${x+(bw-w)/2}" y="${y}" width="${w}" height="${bh}" rx="${Math.min(4,w/2)}"><title>${esc(d.title||d.l)}: ${d.v}</title></rect>`;
+    if(i%labelEvery===0) s+=`<text class="axis" x="${x+bw/2}" y="${h-pad.b+16}" text-anchor="middle">${esc(d.l)}</text>`;
+  });
+  return s+'</svg>';
+}
+function hbars(items, attr){
+  if(!items.length) return '<div class="muted small">Sin datos</div>';
+  const max = Math.max(...items.map(i=>i.v));
+  return items.map(i=>`<div class="hbar"><button class="lbl" data-${attr}="${esc(i.key??i.l)}" title="${esc(i.l)}">${esc(i.l)}</button><div class="track"><div class="fill" style="width:${(i.v/max*100).toFixed(1)}%"></div></div><span class="num">${esc(i.label??i.v)}</span></div>`).join('');
+}
+function renderCharts(){
+  const list=S.comments, st=S.stats;
+  const ts = list.map(c=>c.createdTs).filter(t=>!isNaN(t)).sort((a,b)=>a-b);
+  const approx = list.some(c=>c.dateApprox);
+  $('#tlApprox').innerHTML = approx ? '<span class="approx small" title="Facebook muestra tiempos relativos; las fechas son aproximadas">≈ aproximado</span>' : '';
+  if(ts.length){
+    const span = ts[ts.length-1]-ts[0];
+    const unit = span < 2*864e5 ? 'hour' : 'day';
+    const keyOf = t => { const d=new Date(t); return unit==='hour' ? new Date(d.getFullYear(),d.getMonth(),d.getDate(),d.getHours()).getTime() : new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime(); };
+    const counts = {}; ts.forEach(t=>{ const k=keyOf(t); counts[k]=(counts[k]||0)+1; });
+    const data=[]; const start=keyOf(ts[0]), end=keyOf(ts[ts.length-1]);
+    const nBuckets = unit==='hour' ? (end-start)/36e5 : (end-start)/864e5;
+    if(nBuckets > 120){
+      const wk={}; ts.forEach(t=>{ const d=new Date(t); d.setHours(0,0,0,0); d.setDate(d.getDate()-((d.getDay()+6)%7)); wk[d.getTime()]=(wk[d.getTime()]||0)+1; });
+      Object.keys(wk).sort((a,b)=>a-b).forEach(k=>data.push({l:new Date(+k).toLocaleDateString('es',{day:'numeric',month:'short'}), v:wk[k], title:'Semana del '+new Date(+k).toLocaleDateString('es')}));
+      $('#tlTitle').textContent='Comentarios por semana';
+    } else {
+      const d=new Date(start);
+      while(d.getTime()<=end){
+        const k=d.getTime();
+        data.push({ l: unit==='hour' ? d.getHours()+'h' : d.toLocaleDateString('es',{day:'numeric',month:'short'}), v:counts[k]||0, title:d.toLocaleString('es') });
+        unit==='hour' ? d.setHours(d.getHours()+1) : d.setDate(d.getDate()+1);
+      }
+      $('#tlTitle').textContent = unit==='hour' ? 'Comentarios por hora' : 'Comentarios por día';
+    }
+    $('#chartTimeline').innerHTML = svgBars(data,{labelEvery:Math.ceil(data.length/10), label:$('#tlTitle').textContent});
+    const precise = !approx || list.some(c=>/\d+\s*(min|h\b|hora|hr)/i.test(c.dateText||''));
+    const hours=Array(24).fill(0); ts.forEach(t=>hours[new Date(t).getHours()]++);
+    $('#chartHours').innerHTML = precise ? svgBars(hours.map((v,i)=>({l:i+'', v, title:i+':00 – '+i+':59'})),{labelEvery:3,label:'Actividad por hora'}) : '<div class="no-rows">Las fechas obtenidas no tienen precisión horaria.</div>';
+  } else {
+    $('#chartTimeline').innerHTML = $('#chartHours').innerHTML = '<div class="no-rows">Sin fechas disponibles</div>';
+  }
+  $('#topAuthors').innerHTML = hbars(st.authors.slice(0,8).map(a=>({l:a.name, v:a.count, label:a.count})), 'author');
+  const tot = Math.max(1,st.total);
+  const seg = [['Positivos',st.pos,'var(--success)'],['Neutrales',st.neu,'var(--outline)'],['Negativos',st.neg,'var(--error)']];
+  $('#sentBar').innerHTML = seg.filter(s=>s[1]).map(([,v,c])=>`<div style="width:${v/tot*100}%;background:${c}"></div>`).join('');
+  $('#sentBar').setAttribute('aria-label', seg.map(([l,v])=>`${l} ${Math.round(v/tot*100)}%`).join(', '));
+  $('#sentLegend').innerHTML = seg.map(([l,v,c])=>`<span><i style="background:${c}"></i>${l} <b>${Math.round(v/tot*100)}%</b> (${v})</span>`).join('');
+  const liked = list.filter(c=>c.reactions>0).sort((a,b)=>b.reactions-a.reactions).slice(0,5);
+  $('#topLiked').innerHTML = liked.length ? hbars(liked.map(c=>({l:`${c.authorName}: ${c.text.replace(/\s+/g,' ').slice(0,80)}`, v:c.reactions, key:c.id})),'open') : '<div class="muted small">Ningún comentario tiene reacciones registradas.</div>';
+  const chips = arr => arr.length ? arr.map(([w,n])=>`<button class="tchip" data-q="${esc(w)}">${esc(w)} <b>${n}</b></button>`).join('') : '<span class="muted small">Sin datos</span>';
+  $('#topWords').innerHTML = chips(st.words);
+  $('#topEmojis').innerHTML = chips(st.emojis);
+  $('#topTags').innerHTML = chips(st.tags);
+}
+function highlight(text, q){
+  const e = esc(text); if(!q) return e;
+  const qe = esc(q).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  return e.replace(new RegExp(qe,'gi'), m=>`<mark>${m}</mark>`);
+}
+function initials(n){ return (n||'?').split(/\s+/).filter(Boolean).slice(0,2).map(w=>[...w][0]).join('').toUpperCase(); }
+function relTime(c){
+  if(c.dateApprox && c.dateText && !/^\d{4}-\d{2}-/.test(c.dateText)) return c.dateText;
+  if(!c.createdAt || isNaN(c.createdTs)) return c.dateText||'';
+  const s=(Date.now()-c.createdTs)/1000;
+  if(s<60) return 'Ahora';
+  if(s<3600) return Math.floor(s/60)+' min';
+  if(s<86400) return Math.floor(s/3600)+' h';
+  if(s<604800) return Math.floor(s/86400)+' d';
+  if(s<3024000) return Math.floor(s/604800)+' sem';
+  const d=new Date(c.createdTs);
+  return d.toLocaleDateString('es',{day:'numeric',month:'short',...(d.getFullYear()!==new Date().getFullYear()?{year:'numeric'}:{})});
+}
+const cap = s => s ? s[0].toUpperCase()+s.slice(1) : '';
+function noRowsHtml(){ return `<div class="no-rows"><span class="ms" style="font-size:40px">search_off</span><p>No hay comentarios que coincidan.</p>${filtersActive()?'<button class="btn text" data-action="reset-filters">Quitar filtros</button>':''}</div>`; }
+function avatarHtml(c){ return `<span class="avatar" aria-hidden="true">${esc(initials(c.authorName))}${c.authorAvatar?`<img src="${esc(c.authorAvatar)}" alt="" referrerpolicy="no-referrer" loading="lazy" onerror="this.remove()">`:''}</span>`; }
+// Resalta la mención con la que empieza una respuesta ("Ana Pérez gracias…"), como hace Facebook.
+function markMention(html, c){
+  const names = [...(c.mentions||[]), c.replyTo].filter(Boolean).map(esc).sort((a,b)=>b.length-a.length);
+  const hit = names.find(n=>html.startsWith(n));
+  return hit ? `<span class="cmention">${hit}</span>${html.slice(hit.length)}` : html;
+}
+function isOpen(id){ return !S.collapsed.has(id); } // los hilos se muestran desplegados por defecto
+function renderConv(slice, q){
+  const node = (c, lvl) => {
+    const kids = S.kids[c.id] || [];
+    const open = kids.length>0 && isOpen(c.id);
+    const sel = S.selected.has(c.id);
+    const name = c.authorName || '(desconocido)';
+    const long = c.text.length > 360 || (c.text.match(/\n/g)||[]).length > 5;
+    const img = c.attachments.find(a=>/imagen|gif|photo|sticker/.test(a.type) && a.url);
+    const other = c.attachments.filter(a=>a!==img);
+    const sc = c.sentiment==='positivo'?'var(--success)':c.sentiment==='negativo'?'var(--error)':'var(--outline)';
+    const nameHtml = c.authorUrl ? `<a class="cname" href="${esc(c.authorUrl)}" target="_blank" rel="noopener">${highlight(name,q)}</a>` : `<span class="cname">${highlight(name,q)}</span>`;
+    const toggleLbl = `${esc(kids[0]?.authorName||'Alguien')} respondió · ${kids.length===1?'1 respuesta':kids.length+' respuestas'}`;
+    return `<div class="cnode${lvl===0?' cthread':''}${kids.length?' has-kids':''}${sel?' selected':''}" data-id="${esc(c.id)}">
+      ${lvl===0 && c.parentId ? `<div class="cctx"><span class="ms">subdirectory_arrow_right</span>En respuesta a ${esc(c.replyTo||'otro comentario')}</div>` : ''}
+      <div class="crow">
+        <div class="cav">${avatarHtml(c)}</div>
+        <div class="cmain">
+          <div class="bubble-wrap${c.reactions?' has-react':''}">
+            <div class="bubble" tabindex="0" role="button" aria-label="Comentario de ${esc(name)}. Pulsa para ver los detalles">
+              ${c.badges.length?`<div class="cbadge"><span class="ms fill">verified</span>${esc(c.badges.join(' · '))}</div>`:''}
+              ${nameHtml}
+              <div class="ctext${long?' clamp':''}">${markMention(highlight(c.text,q), c)||'<span class="muted">(sin texto)</span>'}</div>
+              ${long?'<button class="cmore-txt" data-more>Ver más</button>':''}
+            </div>
+            ${c.reactions?`<span class="creact" title="${fmtN(c.reactions)} reacciones"><span class="rx"><span class="ms fill">thumb_up</span></span>${fmtN(c.reactions)}</span>`:''}
+          </div>
+          ${img?`<img class="cimg" src="${esc(img.url)}" alt="${esc(img.alt||'Imagen adjunta')}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">`:''}
+          ${other.length?`<div class="att" style="padding-left:12px"><span class="ms">attach_file</span>${other.map(a=>esc(a.type)).join(', ')}</div>`:''}
+          <div class="cmeta">
+            <span title="${esc(fmtDate(c.createdAt)||c.dateText||'')}">${c.dateApprox&&!c.dateText?'≈ ':''}${esc(relTime(c))}</span>
+            <span class="sdot" title="Sentimiento estimado"><i style="background:${sc}"></i>${cap(c.sentiment)}</span>
+            ${c.edited?'<span>Editado</span>':''}
+            ${open?`<button data-toggle="${esc(c.id)}">Ocultar respuestas</button>`:''}
+            <button data-act="copy">Copiar</button>
+            <button data-act="info">Detalles</button>
+            ${c.permalink?`<a href="${esc(c.permalink)}" target="_blank" rel="noopener">Ver en Facebook</a>`:''}
+          </div>
+        </div>
+        <label class="csel" style="--lvl:${lvl}" title="Seleccionar"><input type="checkbox" class="rowchk" ${sel?'checked':''} aria-label="Seleccionar comentario de ${esc(name)}"></label>
+      </div>
+      ${kids.length ? `<div class="creplies">${open ? kids.map(k=>node(k,lvl+1)).join('') :
+        `<div class="cnode ctoggle"><button data-toggle="${esc(c.id)}" aria-expanded="false">${avatarHtml(kids[0])}${toggleLbl}</button></div>`}</div>` : ''}
+    </div>`;
+  };
+  // casilla de cabecera: selecciona todos los comentarios (incluidas respuestas) de los hilos de esta página
+  const pageIds = []; const walk = c => { pageIds.push(c.id); (S.kids[c.id]||[]).forEach(walk); }; slice.forEach(walk);
+  S.convPageIds = pageIds;
+  const all = pageIds.length && pageIds.every(id=>S.selected.has(id)), some = pageIds.some(id=>S.selected.has(id));
+  $('#conv').innerHTML = slice.length
+    ? `<div class="conv-head"><label class="csel-head"><input type="checkbox" id="convChkPage" ${all?'checked':''} aria-label="Seleccionar todos los comentarios de esta página"></label><span>Seleccionar los ${fmtN(pageIds.length)} comentarios de esta página</span></div>` + slice.map(c=>node(c,0)).join('')
+    : noRowsHtml();
+  const hc = $('#convChkPage'); if(hc) hc.indeterminate = !all && some;
+}
+function setListView(v){
+  S.listView = v; PREF.set('listView', v);
+  $$('.seg [data-lv]').forEach(b=>{ b.setAttribute('aria-checked', b.dataset.lv===v); b.tabIndex = b.dataset.lv===v?0:-1; });
+  S.page=1; renderTable();
+}
+function renderTable(){
+  applyFilters();
+  const conv = S.listView==='conv';
+  const units = conv ? S.tops : S.rows;
+  const total=units.length, pages=Math.max(1,Math.ceil(total/S.pageSize));
+  if(S.page>pages) S.page=pages;
+  const start=(S.page-1)*S.pageSize, slice=units.slice(start,start+S.pageSize);
+  const q = $('#q').value.trim().replace(/autor:("([^"]+)"|\S+)/,'').trim();
+  $('#tableWrap').classList.toggle('hidden', conv);
+  $('#conv').classList.toggle('hidden', !conv);
+  $$('.conv-only').forEach(e=>e.classList.toggle('hidden', !conv));
+  $$('.table-only').forEach(e=>e.classList.toggle('hidden', conv));
+  const sv = S.sort.key+':'+S.sort.dir; if([...$('#convSort').options].some(o=>o.value===sv)) $('#convSort').value = sv;
+  if(conv){ renderConv(slice, q); $('#tbody').innerHTML=''; }
+  else $('#tbody').innerHTML = slice.length ? slice.map(c=>{
+    const sel=S.selected.has(c.id);
+    return `<tr class="${c.type==='reply'&&S.threaded?'reply':''} ${sel?'selected':''}" data-id="${esc(c.id)}">
+      <td class="c-chk"><input type="checkbox" class="rowchk" ${sel?'checked':''} aria-label="Seleccionar comentario de ${esc(c.authorName)}"></td>
+      <td class="c-idx muted small">${c.idx}</td>
+      <td class="c-author"><div class="author">
+        <span class="avatar" aria-hidden="true">${esc(initials(c.authorName))}${c.authorAvatar?`<img src="${esc(c.authorAvatar)}" alt="" referrerpolicy="no-referrer" loading="lazy" onerror="this.remove()">`:''}</span>
+        <span style="min-width:0">${c.authorUrl?`<a class="nm" href="${esc(c.authorUrl)}" target="_blank" rel="noopener">${esc(c.authorName||'(desconocido)')}</a>`:`<span class="nm">${esc(c.authorName||'(desconocido)')}</span>`}
+        <span style="display:flex;gap:4px;flex-wrap:wrap">${c.type==='reply'?`<span class="pill-s reply" title="${c.replyTo?'Responde a '+esc(c.replyTo):''}">Respuesta</span>`:''}${c.badges.length?`<span class="pill-s">${esc(c.badges[0])}</span>`:''}</span></span>
+      </div></td>
+      <td class="c-text"><div class="txt">${highlight(c.text,q)||'<span class="muted">(sin texto)</span>'}</div>
+        ${c.attachments.length?`<div class="att"><span class="ms">attach_file</span>${c.attachments.map(a=>esc(a.type)).join(', ')}</div>`:''}
+        ${c.edited?'<div class="att"><span class="ms">edit</span>Editado</div>':''}</td>
+      <td class="c-date">${c.createdAt?`${c.dateApprox?`<span class="approx" title="Aproximada a partir de “${esc(c.dateText)}”">≈ </span>`:''}${fmtDate(c.createdAt)}`:esc(c.dateText||'—')}</td>
+      <td class="num c-meta c-r">${c.reactions||'—'}</td>
+      <td class="num c-meta c-rp">${c.repliesCount||'—'}</td>
+      <td class="c-meta"><span class="pill-s ${c.sentiment==='positivo'?'pos':c.sentiment==='negativo'?'neg':''}">${c.sentiment[0].toUpperCase()+c.sentiment.slice(1)}</span></td>
+      <td class="c-acts"><div class="rowacts">
+        <button class="icon-btn sm" data-act="copy" aria-label="Copiar comentario" title="Copiar"><span class="ms">content_copy</span></button>
+        <button class="icon-btn sm" data-act="info" aria-label="Ver detalles" title="Detalles"><span class="ms">info</span></button>
+        ${c.permalink?`<a class="icon-btn sm" href="${esc(c.permalink)}" target="_blank" rel="noopener" aria-label="Abrir en Facebook" title="Abrir en Facebook"><span class="ms">open_in_new</span></a>`:''}
+      </div></td>
+    </tr>`; }).join('') : `<tr><td colspan="9">${noRowsHtml()}</td></tr>`;
+  $('#pageInfo').textContent = (total ? `${fmtN(start+1)}–${fmtN(Math.min(start+S.pageSize,total))} de ${fmtN(total)}` : '0 de 0') + (conv ? ' hilos' : '');
+  $('#prevPg').disabled = S.page<=1; $('#nextPg').disabled = S.page>=pages;
+  $('#countInfo').textContent = filtersActive() ? `${fmtN(S.filtered.length)} de ${fmtN(S.comments.length)} coinciden con los filtros` : '';
+  $('#selbar').classList.toggle('hidden', !S.selected.size);
+  $('#selCount').textContent = `${fmtN(S.selected.size)} seleccionado${S.selected.size===1?'':'s'}`;
+  $$('[data-scope]').forEach(e=>e.textContent = S.selected.size ? `Se usarán los ${fmtN(S.selected.size)} seleccionados` : filtersActive() ? `Se usarán los ${fmtN(S.rows.length)} filtrados` : `Se usarán los ${fmtN(S.rows.length)} comentarios`);
+  $$('th[data-sort]').forEach(th=>{
+    th.querySelector('.ms')?.remove();
+    const on = th.dataset.sort===S.sort.key;
+    th.setAttribute('aria-sort', on ? (S.sort.dir==='asc'?'ascending':'descending') : 'none');
+    if(on) th.insertAdjacentHTML('beforeend',`<span class="ms">${S.sort.dir==='asc'?'arrow_upward':'arrow_downward'}</span>`);
+  });
+  $('#chkPage').checked = slice.length>0 && slice.every(c=>S.selected.has(c.id));
+  $('#chkPage').indeterminate = !$('#chkPage').checked && slice.some(c=>S.selected.has(c.id));
+  $$('.fchip').forEach(ch=>ch.setAttribute('aria-pressed', S.f[ch.dataset.fg].has(ch.dataset.fv)));
+  $('#fReset').classList.toggle('hidden', !Object.values(S.f).some(s=>s.size));
+  $('#qClear').classList.toggle('hidden', !$('#q').value);
+}
+let detailCurrent=null;
+function showDetail(c){
+  if(!c) return; detailCurrent=c;
+  const rows = [
+    ['Autor', c.authorName], ['Perfil', c.authorUrl], ['ID del autor', c.authorId], ['Insignias', c.badges.join(', ')],
+    ['Tipo', c.type==='reply'?`Respuesta (nivel ${c.depth})`:'Comentario principal'], ['Responde a', c.replyTo],
+    ['Fecha', c.createdAt ? fmtDate(c.createdAt)+(c.dateApprox?' (aproximada)':'') : ''], ['Fecha original', c.dateText],
+    ['Reacciones', c.reactions], ['Me gusta', c.likes], ['Respuestas', c.repliesCount],
+    ['Sentimiento', `${c.sentiment} (puntuación ${c.sentimentScore})`], ['Caracteres / palabras', `${c.length} / ${c.words}`],
+    ['Hashtags', c.hashtags.join(' ')], ['Menciones', c.mentions.join(', ')], ['Emojis', c.emojis.join(' ')], ['Enlaces', c.urls.join('\n')],
+    ['Adjuntos', c.attachments.map(a=>`${a.type}${a.url?': '+a.url:''}`).join('\n')], ['Editado', c.edited?'Sí':''], ['Oculto', c.hidden?'Sí':''],
+    ['ID', c.id], ['ID del comentario padre', c.parentId], ['Enlace', c.permalink], ['Fuente', c.source]
+  ].filter(([,v])=>v!==''&&v!=null);
+  $('#detailBody').innerHTML = `
+    <div class="author"><span class="avatar">${esc(initials(c.authorName))}${c.authorAvatar?`<img src="${esc(c.authorAvatar)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">`:''}</span>
+    <div><div class="nm">${esc(c.authorName||'(desconocido)')}</div><div class="small muted">${c.createdAt?fmtDate(c.createdAt):esc(c.dateText||'')}</div></div></div>
+    <div class="quote">${esc(c.text)||'<span class="muted">(sin texto)</span>'}</div>
+    ${c.attachments.filter(a=>/imagen|gif|photo|sticker/.test(a.type)&&a.url).map(a=>`<img src="${esc(a.url)}" referrerpolicy="no-referrer" style="max-width:100%;border-radius:12px;margin-bottom:16px" alt="${esc(a.alt||'Imagen adjunta')}">`).join('')}
+    <dl class="kv">${rows.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${/^https?:/.test(String(v))&&!String(v).includes('\n')?`<a href="${esc(v)}" target="_blank" rel="noopener">${esc(v)}</a>`:esc(v)}</dd>`).join('')}</dl>`;
+  $('#dTitle').textContent = `Comentario #${c.idx}`;
+  $('#detailDlg').showModal();
+}
+
+/* ---------- exportación ---------- */
+const COLS = [
+  ['n','#',c=>c.idx], ['id','ID',c=>c.id], ['parent_id','ID padre',c=>c.parentId], ['tipo','Tipo',c=>c.type==='reply'?'respuesta':'comentario'],
+  ['nivel','Nivel',c=>c.depth], ['responde_a','Responde a',c=>c.replyTo||''], ['autor','Autor',c=>c.authorName], ['autor_id','ID autor',c=>c.authorId||''],
+  ['autor_url','Perfil autor',c=>c.authorUrl||''], ['insignias','Insignias',c=>c.badges.join(', ')], ['fecha','Fecha',c=>c.createdAt?fmtDate(c.createdAt):''],
+  ['fecha_iso','Fecha ISO',c=>c.createdAt||''], ['fecha_original','Fecha original',c=>c.dateText||''], ['fecha_aproximada','Fecha aproximada',c=>c.dateApprox?'sí':'no'],
+  ['texto','Comentario',c=>c.text], ['reacciones','Reacciones',c=>c.reactions], ['respuestas','Respuestas',c=>c.repliesCount],
+  ['sentimiento','Sentimiento',c=>c.sentiment], ['puntaje_sentimiento','Puntuación sentimiento',c=>c.sentimentScore], ['caracteres','Caracteres',c=>c.length],
+  ['palabras','Palabras',c=>c.words], ['pregunta','Es pregunta',c=>c.isQuestion?'sí':'no'], ['hashtags','Hashtags',c=>c.hashtags.join(' ')],
+  ['menciones','Menciones',c=>c.mentions.join(', ')], ['emojis','Emojis',c=>c.emojis.join(' ')], ['urls','URLs',c=>c.urls.join(' ')],
+  ['adjuntos','Adjuntos',c=>c.attachments.map(a=>a.type+(a.url?': '+a.url:'')).join(' | ')], ['editado','Editado',c=>c.edited?'sí':''],
+  ['enlace','Enlace',c=>c.permalink||''], ['fuente','Fuente',c=>c.source||'']
+];
+function exportRow(c){ return Object.fromEntries(COLS.map(([k,,f])=>[k,f(c)])); }
+const csvCell = v => { v = String(v??''); return /[",\n\r;]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; };
+function toCSV(list){ return '﻿' + [COLS.map(c=>csvCell(c[1])).join(','), ...list.map(r=>COLS.map(([,,f])=>csvCell(f(r))).join(','))].join('\r\n'); }
+function toTSV(list){
+  const cols = COLS.filter(c=>['n','tipo','autor','autor_url','fecha','texto','reacciones','respuestas','sentimiento','enlace'].includes(c[0]));
+  const cell = v => { v=String(v??''); return /[\t\n"]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; };
+  return [cols.map(c=>c[1]).join('\t'), ...list.map(r=>cols.map(([,,f])=>cell(f(r))).join('\t'))].join('\n');
+}
+function toText(list){
+  return list.map(c=>{ const ind = '    '.repeat(Math.min(c.depth||0,4));
+    return `${ind}${c.type==='reply'?'↳ ':''}${c.authorName||'(desconocido)'} — ${c.createdAt?fmtDate(c.createdAt)+(c.dateApprox?' (aprox.)':''):c.dateText||''}${c.reactions?` — ${c.reactions} reacciones`:''}\n${ind}${c.text.replace(/\n/g,'\n'+ind)}`; }).join('\n\n');
+}
+function toMD(list){
+  const cell = v => String(v??'').replace(/\|/g,'\\|').replace(/\n/g,'<br>');
+  return ['| # | Tipo | Autor | Fecha | Comentario | Reacc. | Sentimiento |','|---|---|---|---|---|---|---|',
+    ...list.map(c=>`| ${c.idx} | ${c.type==='reply'?'respuesta':'comentario'} | ${cell(c.authorName)} | ${cell(c.createdAt?fmtDate(c.createdAt):c.dateText)} | ${cell(c.text)} | ${c.reactions} | ${c.sentiment} |`)].join('\n');
+}
+function summaryText(list){
+  const st = computeStats(list), m=S.meta;
+  return [
+    'RESUMEN DE COMENTARIOS', m.title?`Publicación: ${m.title}`:'', m.url?`URL: ${m.url}`:'', m.extractedAt?`Obtenido: ${fmtDate(m.extractedAt)}`:'', '',
+    `Total: ${st.total} (comentarios: ${st.comments}, respuestas: ${st.replies})`,
+    `Autores únicos: ${st.uniqueAuthors}`, `Reacciones totales: ${st.reacts}`, `Longitud media: ${st.avgLen} caracteres`,
+    `Preguntas: ${st.q} · Con adjuntos: ${st.att}`,
+    `Sentimiento: ${st.pos} positivos, ${st.neu} neutrales, ${st.neg} negativos`, '',
+    'Autores más activos:', ...st.authors.slice(0,10).map((a,i)=>`  ${i+1}. ${a.name} — ${a.count} comentario(s)`), '',
+    `Palabras frecuentes: ${st.words.slice(0,20).map(([w,n])=>`${w} (${n})`).join(', ')}`,
+    st.emojis.length?`Emojis: ${st.emojis.slice(0,10).map(([w,n])=>`${w}×${n}`).join(' ')}`:''
+  ].filter((l,i,a)=>l!==''||a[i-1]!=='').join('\n');
+}
+function toHTMLReport(list){
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Informe de comentarios</title>
+<style>body{font:14px/1.5 Roboto,system-ui,sans-serif;max-width:1000px;margin:32px auto;padding:0 16px;color:#1f1f1f}h1{font-weight:400}table{border-collapse:collapse;width:100%;font-size:13px}td,th{border-bottom:1px solid #c4c7c5;padding:8px;text-align:left;vertical-align:top}th{color:#444746;font-weight:500}.r td:nth-child(3){padding-left:24px}pre{white-space:pre-wrap;background:#f0f4f9;padding:16px;border-radius:12px;font:13px/1.5 Roboto,system-ui}</style></head><body>
+<h1>Informe de comentarios</h1><pre>${esc(summaryText(list))}</pre>
+<table><thead><tr><th>#</th><th>Tipo</th><th>Autor</th><th>Fecha</th><th>Comentario</th><th>Reacc.</th><th>Sentimiento</th></tr></thead><tbody>
+${list.map(c=>`<tr class="${c.type==='reply'?'r':''}"><td>${c.idx}</td><td>${c.type==='reply'?'respuesta':'comentario'}</td><td>${c.authorUrl?`<a href="${esc(c.authorUrl)}">${esc(c.authorName)}</a>`:esc(c.authorName)}</td><td>${esc(c.createdAt?fmtDate(c.createdAt)+(c.dateApprox?' ≈':''):c.dateText)}</td><td style="white-space:pre-wrap">${esc(c.text)}</td><td>${c.reactions}</td><td>${c.sentiment}</td></tr>`).join('')}
+</tbody></table><p style="color:#444746;font-size:12px">Generado el ${esc(new Date().toLocaleString('es'))}</p></body></html>`;
+}
+function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=()=>rej(new Error('No se pudo cargar '+src)); document.head.appendChild(s); }); }
+async function exportXLSX(list){
+  toast('Generando Excel…');
+  try{
+    if(!window.XLSX) await loadScript('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js');
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(list.map(c=>Object.fromEntries(COLS.map(([,h,f])=>[h,f(c)]))));
+    ws['!cols'] = COLS.map(([k])=>({wch: k==='texto'?80 : /url|enlace|adjuntos/.test(k)?40 : 16}));
+    XLSX.utils.book_append_sheet(wb, ws, 'Comentarios');
+    const st=computeStats(list);
+    const ws2 = XLSX.utils.aoa_to_sheet([
+      ['Resumen'],['Publicación',S.meta.title||''],['URL',S.meta.url||''],['Obtenido',S.meta.extractedAt?fmtDate(S.meta.extractedAt):''],[],
+      ['Total',st.total],['Comentarios',st.comments],['Respuestas',st.replies],['Autores únicos',st.uniqueAuthors],['Reacciones',st.reacts],
+      ['Longitud media',st.avgLen],['Positivos',st.pos],['Neutrales',st.neu],['Negativos',st.neg],[],
+      ['Autor','Comentarios','Reacciones'], ...st.authors.map(a=>[a.name,a.count,a.reactions]),[],
+      ['Palabra','Frecuencia'], ...st.words
+    ]);
+    ws2['!cols']=[{wch:30},{wch:60},{wch:12}];
+    XLSX.utils.book_append_sheet(wb, ws2, 'Resumen');
+    XLSX.writeFile(wb, `comentarios-${fileStamp()}.xlsx`);
+    toast('Excel descargado');
+  }catch(e){
+    download(`comentarios-${fileStamp()}.csv`, toCSV(list), 'text/csv;charset=utf-8');
+    toast('Sin conexión para generar Excel: se descargó un CSV');
+  }
+}
+function doExport(kind){
+  const list = scopeList(); if(!list.length){ toast('No hay comentarios para exportar'); return; }
+  const st=fileStamp();
+  if(kind==='csv') download(`comentarios-${st}.csv`, toCSV(list), 'text/csv;charset=utf-8');
+  if(kind==='json') download(`comentarios-${st}.json`, JSON.stringify({app:'fb-comments-analyzer', version:1, meta:S.meta, exportedAt:new Date().toISOString(), count:list.length,
+    comments:list.map(c=>({ id:c.id, parentId:c.parentId, authorName:c.authorName, authorId:c.authorId, authorUrl:c.authorUrl, authorAvatar:c.authorAvatar, badges:c.badges,
+      text:c.text, createdAt:c.createdAt, dateText:c.dateText, dateApprox:c.dateApprox, reactions:c.reactions, likes:c.likes, repliesCount:c.repliesCount, replyTo:c.replyTo,
+      attachments:c.attachments, mentions:c.mentions, hashtags:c.hashtags, emojis:c.emojis, sentiment:c.sentiment, sentimentScore:c.sentimentScore,
+      edited:c.edited, hidden:c.hidden, permalink:c.permalink, source:c.source }))},null,2), 'application/json');
+  if(kind==='txt') download(`comentarios-${st}.txt`, summaryText(list)+'\n\n'+'─'.repeat(60)+'\n\n'+toText(list), 'text/plain;charset=utf-8');
+  if(kind==='html') download(`informe-comentarios-${st}.html`, toHTMLReport(list), 'text/html;charset=utf-8');
+  if(kind==='xlsx') exportXLSX(list);
+}
+function doCopy(kind){
+  const list = scopeList(); if(!list.length){ toast('No hay comentarios para copiar'); return; }
+  const map = { tsv:toTSV, text:toText, md:toMD, textonly:l=>l.map(c=>c.text).join('\n\n'), json:l=>JSON.stringify(l.map(exportRow),null,2), summary:summaryText };
+  copyText(map[kind](list), kind==='summary' ? 'Resumen copiado' : `${fmtN(list.length)} comentarios copiados`);
+}
+
+/* ---------- demo ---------- */
+function demoData(){
+  const names=['María González','Carlos Pérez','Lucía Fernández','Andrés Romero','Sofía Martínez','Diego Herrera','Valentina Ruiz','Javier Castro','Camila Torres','Mateo Silva','Ana López','Pedro Ramírez','Laura Díaz'];
+  const texts=['¡Excelente producto! Lo recomiendo 100% 👏','¿Hacen envíos a Monterrey? ¿Cuánto cuesta?','Pésimo servicio, llevo 2 semanas esperando mi pedido 😡','Me encanta ❤️❤️ ya quiero el mío','Precio por favor','Muy buena calidad, gracias por la atención 🙏','@LauraDíaz mira esto, te va a gustar','No me llegó completo, quiero una solución','Felicidades por el lanzamiento 🎉🎉','¿Tienen en color negro?','Es una estafa, no compren','Súper rápido el envío, todo perfecto 👍','Interesante, ¿dónde están ubicados?','Me gustaría más información sobre las garantías','Hermoso diseño 😍 #nuevacoleccion','El mejor de todos, ya es mi tercera compra','Malo, se rompió al primer uso 👎','Info por inbox por favor','Jajaja justo lo que necesitaba 😂','¿Aceptan tarjeta de crédito?'];
+  const replies=['Hola, gracias por escribirnos. Te enviamos un mensaje privado 😊','Sí, hacemos envíos a todo el país.','Lamentamos el inconveniente, ya revisamos tu caso.','¡Gracias por tu apoyo! ❤️','Yo también lo compré y me llegó rápido','Totalmente de acuerdo','Disponible en negro, blanco y azul.'];
+  const rnd = a => a[Math.floor(Math.random()*a.length)];
+  const now=Date.now(), out=[]; let id=1000;
+  for(let i=0;i<60;i++){
+    const t = now - Math.random()*5*864e5;
+    const c={ id:String(++id), authorName:rnd(names), text:rnd(texts), createdAt:new Date(t).toISOString(), dateText:'', reactions:Math.random()<.5?Math.floor(Math.random()*40):0, source:'demo' };
+    if(Math.random()<.1) c.attachments=[{type:'imagen',url:''}];
+    out.push(c);
+    const nr = Math.random()<.35 ? 1+Math.floor(Math.random()*3) : 0;
+    for(let r=0;r<nr;r++){
+      const page = r===0 && Math.random()<.6;
+      out.push({ id:String(++id), parentId:c.id, authorName:page?'Tienda Oficial':rnd(names), badges:page?['Autor de la publicación']:[],
+        text:rnd(replies), createdAt:new Date(Math.min(t+Math.random()*864e5*.5,now)).toISOString(), dateText:'', reactions:Math.random()<.3?Math.floor(Math.random()*8):0, source:'demo' });
+      if(Math.random()<.3){ const p=out[out.length-1];
+        out.push({ id:String(++id), parentId:p.id, authorName:rnd(names), badges:[], text:rnd(['¡Muchas gracias por la respuesta! 🙏','Perfecto, ya les escribí por privado','Gracias, quedo atenta','Excelente atención 👍']),
+          createdAt:new Date(Math.min(Date.parse(p.createdAt)+Math.random()*36e5*6,now)).toISOString(), dateText:'', reactions:Math.random()<.3?1+Math.floor(Math.random()*3):0, source:'demo' }); }
+    }
+  }
+  out.sort((a,b)=>Date.parse(a.createdAt)-Date.parse(b.createdAt));
+  return { meta:{ title:'Lanzamiento de la nueva colección (ejemplo)', postAuthor:'Tienda Oficial', source:'Datos de ejemplo', extractedAt:new Date().toISOString() }, comments:out };
+}
+
+/* =====================================================================
+   NAVEGACIÓN, ONBOARDING, AYUDA Y EVENTOS
+   ===================================================================== */
+const VIEWS=['obtener','resultados','ayuda'];
+function go(view, section){ const h = '#'+view+(section?'/'+section:''); if(location.hash!==h) location.hash=h; else route(); }
+function route(){
+  const [v, sec] = location.hash.replace(/^#/,'').split('/');
+  const view = VIEWS.includes(v) ? v : (S.comments.length ? 'resultados' : 'obtener');
+  $$('.view').forEach(x=>x.classList.toggle('active', x.id==='view-'+view));
+  $$('.nav-item').forEach(a=>a.toggleAttribute('aria-current', a.dataset.view===view) || a.dataset.view===view && a.setAttribute('aria-current','page'));
+  $$('.nav-item').forEach(a=>{ if(a.dataset.view===view) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
+  document.title = {obtener:'Obtener comentarios', resultados:'Resultados', ayuda:'Ayuda'}[view] + ' · Analizador de Comentarios';
+  closeMenus();
+  if(view==='ayuda' && sec){ const t=$('#h-'+sec); if(t){ setTimeout(()=>t.scrollIntoView({behavior:'smooth',block:'start'}),30); } }
+  else window.scrollTo({top:0});
+}
+function selectTab(name){
+  ['summary','list'].forEach(n=>{
+    const on = n===name;
+    $('#tab-'+n).setAttribute('aria-selected', on); $('#tab-'+n).tabIndex = on?0:-1;
+    $('#tp-'+n).classList.toggle('active', on);
+  });
+  PREF.set('tab', name);
+}
+function setMethod(m){
+  $$('.method').forEach(b=>{ b.setAttribute('aria-checked', b.dataset.method===m); b.tabIndex = b.dataset.method===m?0:-1; });
+  $$('.method-panel').forEach(p=>p.classList.toggle('hidden', p.id!=='mp-'+m));
+  PREF.set('method', m);
+}
+function closeMenus(except){ $$('.menu.open').forEach(m=>{ if(m!==except){ m.classList.remove('open'); document.querySelector(`[data-menu="${m.id}"]`)?.setAttribute('aria-expanded','false'); } }); }
+
+/* ----- tema ----- */
+function applyTheme(t){
+  if(t==='light'||t==='dark') document.documentElement.dataset.theme=t; else delete document.documentElement.dataset.theme;
+  $('#themeIcon').textContent = t==='light'?'light_mode':t==='dark'?'dark_mode':'brightness_auto';
+  $('#themeBtn').title = 'Tema: ' + (t==='light'?'claro':t==='dark'?'oscuro':'del sistema');
+}
+function setTheme(t){ applyTheme(t); t==='system'?PREF.del('theme'):PREF.set('theme',t); }
+
+/* ----- onboarding ----- */
+const OB_STEPS = [
+  { icon:'waving_hand', title:'Te damos la bienvenida', html:`<p>Con esta herramienta puedes <b>obtener los comentarios</b> de una publicación de Facebook, <b>analizarlos</b> y <b>copiarlos o exportarlos</b> a Excel, CSV o JSON.</p>
+    <div class="ob-list"><div class="ob-item"><span class="ms">lock</span><div><b>Privado</b><span>Todo se procesa en tu navegador. No hay ningún servidor intermedio.</span></div></div>
+    <div class="ob-item"><span class="ms">bolt</span><div><b>Rápido</b><span>Unos pocos pasos, de la publicación al informe.</span></div></div></div>` },
+  { icon:'alt_route', title:'Elige cómo obtenerlos', html:`<p>Hay tres métodos. Puedes cambiar de uno a otro cuando quieras:</p>
+    <div class="ob-list">
+      <div class="ob-item"><span class="ms">verified_user</span><div><b>Conectar con Facebook</b><span>Para páginas que administras. Datos exactos (fechas, reacciones).</span></div></div>
+      <div class="ob-item"><span class="ms">travel_explore</span><div><b>Extractor de navegador</b><span>Para cualquier publicación que puedas ver con tu sesión.</span></div></div>
+      <div class="ob-item"><span class="ms">upload_file</span><div><b>Importar archivo</b><span>JSON o CSV que ya tengas.</span></div></div></div>` },
+  { icon:'verified_user', title:'Si administras la página', html:`<p>Para conectar con Facebook necesitas, una sola vez:</p>
+    <ul><li>Crear una <b>app gratuita</b> en developers.facebook.com y copiar su <b>App ID</b>.</li>
+    <li>Abrir esta página desde <b>https://</b> o <b>http://localhost</b>.</li></ul>
+    <p>Después inicias sesión, eliges tu página y tu publicación de una lista. El token de acceso se genera solo.</p>
+    <p class="small">La guía completa está en <b>Ayuda → Conectar con Facebook</b>.</p>` },
+  { icon:'travel_explore', title:'Para cualquier otra publicación', html:`<ol style="padding-left:20px">
+    <li>Arrastra el botón <b>Comments-Analyzer</b> a tu barra de marcadores.</li>
+    <li>Abre la publicación en Facebook y elige <b>“Todos los comentarios”</b>.</li>
+    <li>Pulsa el marcador: se abrirán las respuestas y los comentarios ocultos.</li>
+    <li>Pulsa <b>Copiar JSON</b> y pégalo aquí.</li></ol>` },
+  { icon:'insights', title:'Analiza y exporta', html:`<p>En <b>Resultados</b> verás un resumen con gráficos y los comentarios <b>como en Facebook</b>, con sus respuestas anidadas, o en una tabla con autor, fecha, texto, reacciones y más.</p>
+    <ul><li>Busca, filtra por tipo o sentimiento y selecciona filas.</li>
+    <li>Copia como tabla para Excel o Sheets, o exporta a .xlsx, .csv, .json o un informe.</li>
+    <li>La <b>Ayuda</b> <span class="ms sm" style="vertical-align:-4px">help</span> siempre está arriba a la derecha.</li></ul>` }
+];
+let obStep=0;
+function renderOb(){
+  const s=OB_STEPS[obStep];
+  $('#obIcon').textContent=s.icon;
+  $('#obBody').innerHTML=`<h2 id="obTitle">${s.title}</h2>${s.html}`;
+  $('#obDots').innerHTML=OB_STEPS.map((_,i)=>`<i class="${i===obStep?'on':''}"></i>`).join('');
+  $('#obPrev').classList.toggle('hidden', obStep===0);
+  $('#obSkip').classList.toggle('hidden', obStep===OB_STEPS.length-1);
+  $('#obNext').textContent = obStep===OB_STEPS.length-1 ? 'Comenzar' : 'Siguiente';
+}
+function openOnboarding(){ obStep=0; $('#obDontShow').checked = true; renderOb(); $('#onboarding').showModal(); $('#obNext').focus(); }
+function closeOnboarding(){
+  if($('#obDontShow').checked) PREF.set('onboarding','done'); else PREF.del('onboarding');
+  if($('#onboarding').open) $('#onboarding').close();
+}
+
+/* ----- ayuda ----- */
+function buildToc(){
+  $('#toc').innerHTML = $$('.help-article').map(a=>`<a href="#ayuda/${a.id.slice(2)}" data-toc="${a.id}">${esc(a.dataset.title)}</a>`).join('');
+  const io = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ $$('#toc a').forEach(x=>x.classList.toggle('active', x.dataset.toc===e.target.id)); } });
+  },{ rootMargin:'-80px 0px -70% 0px' });
+  $$('.help-article').forEach(a=>io.observe(a));
+}
+function filterHelp(q){
+  q = norm(q.trim().toLowerCase()); let any=false;
+  $$('.help-article').forEach(a=>{
+    const hit = !q || norm(a.textContent.toLowerCase()).includes(q);
+    a.classList.toggle('hidden', !hit); any = any || hit;
+    $(`#toc a[data-toc="${a.id}"]`)?.classList.toggle('hidden', !hit);
+    if(q && hit) a.querySelectorAll('details').forEach(d=>{ if(norm(d.textContent.toLowerCase()).includes(q)) d.open=true; });
+  });
+  $('#helpEmpty').classList.toggle('hidden', any);
+}
+
+/* ----- init ----- */
+(function init(){
+  applyTheme(PREF.get('theme','system'));
+  $('#themeBtn').onclick = ()=>{ const cur=PREF.get('theme','system'); const nx = cur==='system'?'light':cur==='light'?'dark':'system'; setTheme(nx); toast('Tema: '+(nx==='light'?'claro':nx==='dark'?'oscuro':'del sistema')); };
+  $('#helpBtn').onclick = ()=>go('ayuda');
+
+  // menús
+  document.addEventListener('click', e=>{
+    const trig = e.target.closest('[data-menu]');
+    if(trig){ const m=$('#'+trig.dataset.menu); const open=!m.classList.contains('open'); closeMenus(m); m.classList.toggle('open',open); trig.setAttribute('aria-expanded',open); if(open) m.querySelector('button,a')?.focus(); return; }
+    if(!e.target.closest('.menu')) closeMenus();
+    const actEl = e.target.closest('[data-action]');
+    if(actEl){
+      const a = actEl.dataset.action; closeMenus();
+      if(a==='tour') openOnboarding();
+      if(a==='docs') go('ayuda');
+      if(a==='shortcuts') go('ayuda','atajos');
+      if(a==='theme-light') setTheme('light');
+      if(a==='theme-dark') setTheme('dark');
+      if(a==='theme-system') setTheme('system');
+      if(a==='reset-prefs'){ ['onboarding','theme','method','tab','appId','configId'].forEach(k=>PREF.del(k)); applyTheme('system'); toast('Preferencias restablecidas. El tutorial se mostrará al recargar.'); }
+      if(a==='reset-filters'){ Object.values(S.f).forEach(s=>s.clear()); $('#q').value=''; S.page=1; renderTable(); }
+    }
+    const cp = e.target.closest('[data-copy]'); if(cp){ closeMenus(); doCopy(cp.dataset.copy); }
+    const ex = e.target.closest('[data-exp]'); if(ex){ closeMenus(); doExport(ex.dataset.exp); }
+    const tq = e.target.closest('[data-q]'); if(tq){ $('#q').value=tq.dataset.q; S.page=1; selectTab('list'); renderTable(); }
+    const au = e.target.closest('[data-author]'); if(au){ $('#q').value=`autor:"${au.dataset.author}"`; S.page=1; selectTab('list'); renderTable(); }
+    const op = e.target.closest('[data-open]'); if(op) showDetail(S.comments.find(x=>x.id===op.dataset.open));
+  });
+  // navegación de menús con teclado
+  document.addEventListener('keydown', e=>{
+    const m = e.target.closest?.('.menu.open'); if(!m) return;
+    const items = [...m.querySelectorAll('button,a')]; const i = items.indexOf(document.activeElement);
+    if(e.key==='ArrowDown'){ e.preventDefault(); items[(i+1)%items.length].focus(); }
+    if(e.key==='ArrowUp'){ e.preventDefault(); items[(i-1+items.length)%items.length].focus(); }
+  });
+
+  // router
+  window.addEventListener('hashchange', route);
+
+  // métodos
+  $$('.method').forEach(b=>b.onclick=()=>setMethod(b.dataset.method));
+  $('.methods').addEventListener('keydown', e=>{
+    if(!['ArrowRight','ArrowLeft','ArrowDown','ArrowUp'].includes(e.key)) return;
+    const bs=$$('.method'); const i=bs.findIndex(b=>b.getAttribute('aria-checked')==='true');
+    const n = bs[(i + (e.key==='ArrowRight'||e.key==='ArrowDown'?1:-1) + bs.length) % bs.length];
+    e.preventDefault(); setMethod(n.dataset.method); n.focus();
+  });
+  setMethod(PREF.get('method','fb'));
+
+  // extractor
+  const code = '(' + fbExtractor.toString() + ')();';
+  $('#bookmarklet').href = 'javascript:' + encodeURIComponent(code);
+  $('#bookmarklet').onclick = e => { e.preventDefault(); toast('Arrastra el botón a la barra de marcadores y úsalo en la pestaña de Facebook'); };
+  $('#copyScript').onclick = ()=>copyText(code, 'Código copiado. Pégalo en la consola de la pestaña de Facebook');
+  $('#exOpen').onclick = ()=>{
+    let u=$('#exUrl').value.trim(); if(!u){ toast('Pega primero la URL de la publicación'); $('#exUrl').focus(); return; }
+    if(!/^https?:/.test(u)) u='https://'+u;
+    if(!/facebook\.com|fb\.com|fb\.watch/.test(u)){ toast('La URL no parece de Facebook'); return; }
+    window.open(u,'_blank','noopener');
+  };
+  const tryLoad = raw => { try{ loadData(parseAny(raw)); }catch(e){ setStatus('#globalStatus',e.message,true); toast(e.message); } };
+  $('#exAnalyze').onclick = ()=>tryLoad($('#exPaste').value);
+
+  // importar + arrastrar y soltar
+  const readFile = async f => { $('#impPaste').value = await f.text(); toast('Archivo cargado: '+f.name); tryLoad($('#impPaste').value); };
+  $('#fileIn').onchange = e=>{ const f=e.target.files[0]; if(f) readFile(f); e.target.value=''; };
+  const dz=$('#dropzone');
+  ['dragenter','dragover'].forEach(ev=>dz.addEventListener(ev,e=>{ e.preventDefault(); dz.classList.add('over'); }));
+  ['dragleave','drop'].forEach(ev=>dz.addEventListener(ev,e=>{ e.preventDefault(); dz.classList.remove('over'); }));
+  dz.addEventListener('drop', e=>{ const f=e.dataTransfer.files[0]; if(f) readFile(f); });
+  $('#impAnalyze').onclick = ()=>tryLoad($('#impPaste').value);
+  $('#demoBtn').onclick = ()=>loadData(demoData());
+
+  // Graph / login
+  const isLocal = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+  if(location.protocol==='file:' || (location.protocol==='http:' && !isLocal)) $('#protoWarn').classList.remove('hidden');
+  try{ const tk=sessionStorage.getItem('fbca:token'); if(tk){ $('#gToken').value=tk; $('#gRemember').checked=true; } }catch(e){}
+  $('#fbAppId').value = PREF.get('appId',''); $('#fbConfigId').value = PREF.get('configId','');
+  let at; ['#fbAppId','#fbConfigId'].forEach(s=>$(s).addEventListener('input', ()=>{ clearTimeout(at); at=setTimeout(preloadSdk, 600); }));
+  preloadSdk();
+  $('#gFetch').onclick = graphFetch;
+  $('#gUrl').addEventListener('keydown', e=>{ if(e.key==='Enter') graphFetch(); });
+  $('#gStop').onclick = ()=>gAbort?.abort();
+  $('#fbLogin').onclick = fbLogin;
+  $('#fbLogout').onclick = fbLogout;
+  $('#fbPage').onchange = e=>selectFbPage(e.target.value);
+  $('#fbLoadPosts').onclick = ()=>loadFbPosts(false);
+  $('#fbMorePosts').onclick = ()=>loadFbPosts(true);
+  $('#fbPosts').addEventListener('click', e=>{
+    const b = e.target.closest('[data-post]'); if(!b) return;
+    $('#gUrl').value = b.dataset.post;
+    $$('#fbPosts .post').forEach(x=>x.classList.toggle('sel', x===b));
+    graphFetch();
+  });
+
+  // resultados
+  $('#tab-summary').onclick = ()=>selectTab('summary');
+  $('#tab-list').onclick = ()=>selectTab('list');
+  $('.tabs').addEventListener('keydown', e=>{ if(e.key==='ArrowRight'||e.key==='ArrowLeft'){ const n = $('#tab-summary').getAttribute('aria-selected')==='true'?'list':'summary'; selectTab(n); $('#tab-'+n).focus(); } });
+  selectTab(PREF.get('tab','summary'));
+  $('#clearBtn').onclick = ()=>{
+    const backup = { meta:S.meta, comments:S.comments.map(c=>({...c})) };
+    S.comments=[]; S.selected.clear(); PREF.del(STORE_KEY); renderAll(); closeMenus();
+    toast('Datos borrados', { label:'Deshacer', run:()=>loadData(backup,{silent:true}) });
+  };
+  let qt; $('#q').oninput = ()=>{ clearTimeout(qt); qt=setTimeout(()=>{ S.page=1; renderTable(); },150); };
+  $('#qClear').onclick = ()=>{ $('#q').value=''; S.page=1; renderTable(); $('#q').focus(); };
+  $$('.fchip').forEach(ch=>ch.onclick=()=>{ const set=S.f[ch.dataset.fg]; set.has(ch.dataset.fv)?set.delete(ch.dataset.fv):set.add(ch.dataset.fv); S.page=1; renderTable(); });
+  $('#fReset').onclick = ()=>{ Object.values(S.f).forEach(s=>s.clear()); S.page=1; renderTable(); };
+  $('#threaded').onchange = e=>{ S.threaded=e.target.checked; renderTable(); };
+  $('#pageSize').onchange = e=>{ S.pageSize=+e.target.value; S.page=1; renderTable(); };
+  $('#prevPg').onclick = ()=>{ S.page--; renderTable(); };
+  $('#nextPg').onclick = ()=>{ S.page++; renderTable(); };
+  $$('th[data-sort]').forEach(th=>{ th.tabIndex=0; const h=()=>{ const k=th.dataset.sort; S.sort = S.sort.key===k ? {key:k, dir:S.sort.dir==='asc'?'desc':'asc'} : {key:k, dir:['reactions','repliesCount','sentimentScore','createdAt'].includes(k)?'desc':'asc'}; renderTable(); }; th.onclick=h; th.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); h(); } }; });
+  $('#selNone').onclick = ()=>{ S.selected.clear(); renderTable(); };
+  $('#chkPage').onchange = e=>{ const start=(S.page-1)*S.pageSize; S.rows.slice(start,start+S.pageSize).forEach(c=>e.target.checked?S.selected.add(c.id):S.selected.delete(c.id)); renderTable(); };
+  $('#tbody').addEventListener('click', e=>{
+    const tr = e.target.closest('tr[data-id]'); if(!tr) return;
+    const c = S.comments.find(x=>x.id===tr.dataset.id); if(!c) return;
+    if(e.target.classList.contains('rowchk')){ e.target.checked?S.selected.add(c.id):S.selected.delete(c.id); renderTable(); return; }
+    const act = e.target.closest('[data-act]')?.dataset.act;
+    if(act==='copy') copyText(`${c.authorName} (${c.createdAt?fmtDate(c.createdAt):c.dateText}):\n${c.text}`, 'Comentario copiado');
+    if(act==='info') showDetail(c);
+  });
+  // vista conversación
+  $$('.seg [data-lv]').forEach(b=>b.onclick=()=>setListView(b.dataset.lv));
+  $('.seg').addEventListener('keydown', e=>{ if(e.key==='ArrowRight'||e.key==='ArrowLeft'){ e.preventDefault(); const n=S.listView==='conv'?'table':'conv'; setListView(n); $(`.seg [data-lv="${n}"]`).focus(); } });
+  $('#convSort').onchange = e=>{ const [key,dir]=e.target.value.split(':'); S.sort={key,dir}; S.page=1; renderTable(); };
+  $('#convExpandAll').onclick = ()=>{ S.collapsed.clear(); renderTable(); };
+  $('#convCollapseAll').onclick = ()=>{ S.collapsed = new Set(Object.keys(S.kids)); renderTable(); };
+  const convToggle = id => {
+    S.collapsed.has(id) ? S.collapsed.delete(id) : S.collapsed.add(id);
+    renderTable();
+    const n = $(`#conv .cnode[data-id="${CSS.escape(id)}"]`); if(n && n.getBoundingClientRect().top<64) n.scrollIntoView({block:'start',behavior:'smooth'});
+  };
+  $('#conv').addEventListener('change', e=>{
+    if(e.target.id!=='convChkPage') return;
+    (S.convPageIds||[]).forEach(id=>e.target.checked?S.selected.add(id):S.selected.delete(id)); renderTable();
+  });
+  $('#conv').addEventListener('click', e=>{
+    if(e.target.id==='convChkPage') return;
+    const tg = e.target.closest('[data-toggle]'); if(tg){ convToggle(tg.dataset.toggle); return; }
+    const more = e.target.closest('[data-more]');
+    if(more){ const t=more.previousElementSibling; const open=t.classList.toggle('clamp'); more.textContent = open?'Ver más':'Ver menos'; return; }
+    const nodeEl = e.target.closest('.cnode[data-id]'); if(!nodeEl) return;
+    const c = S.comments.find(x=>x.id===nodeEl.dataset.id); if(!c) return;
+    if(e.target.classList.contains('rowchk')){ e.target.checked?S.selected.add(c.id):S.selected.delete(c.id); renderTable(); return; }
+    const act = e.target.closest('[data-act]')?.dataset.act;
+    if(act==='copy'){ copyText(`${c.authorName} (${c.createdAt?fmtDate(c.createdAt):c.dateText}):\n${c.text}`, 'Comentario copiado'); return; }
+    if(act==='info'){ showDetail(c); return; }
+    if(e.target.closest('.bubble') && !e.target.closest('a,button')) showDetail(c);
+  });
+  $('#conv').addEventListener('keydown', e=>{
+    if((e.key==='Enter'||e.key===' ') && e.target.classList.contains('bubble')){ e.preventDefault(); showDetail(S.comments.find(x=>x.id===e.target.closest('.cnode').dataset.id)); }
+  });
+  S.listView = PREF.get('listView','conv')==='table' ? 'table' : 'conv';
+  $$('.seg [data-lv]').forEach(b=>{ b.setAttribute('aria-checked', b.dataset.lv===S.listView); b.tabIndex = b.dataset.lv===S.listView?0:-1; });
+
+  $('#tbody').addEventListener('dblclick', e=>{ const tr=e.target.closest('tr[data-id]'); if(tr && !e.target.closest('a,button,input')) showDetail(S.comments.find(x=>x.id===tr.dataset.id)); });
+
+  // diálogos
+  $$('dialog [data-close]').forEach(b=>b.onclick=()=>b.closest('dialog').close());
+  $$('dialog').forEach(d=>d.addEventListener('click', e=>{ if(e.target===d && d.id!=='onboarding') d.close(); }));
+  $('#dCopyJson').onclick = ()=>detailCurrent && copyText(JSON.stringify(exportRow(detailCurrent),null,2),'JSON copiado');
+  $('#dCopyTxt').onclick = ()=>detailCurrent && copyText(detailCurrent.text,'Texto copiado');
+  $('#obNext').onclick = ()=>{ if(obStep<OB_STEPS.length-1){ obStep++; renderOb(); } else { closeOnboarding(); go('obtener'); } };
+  $('#obPrev').onclick = ()=>{ if(obStep>0){ obStep--; renderOb(); } };
+  $('#obSkip').onclick = closeOnboarding;
+  $('#onboarding').addEventListener('cancel', ()=>{ if($('#obDontShow').checked) PREF.set('onboarding','done'); });
+
+  // ayuda
+  buildToc();
+  $('#helpQ').addEventListener('input', e=>filterHelp(e.target.value));
+
+  // atajos de teclado
+  let gPressed=0;
+  document.addEventListener('keydown', e=>{
+    if(e.key==='Escape') closeMenus();
+    const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName) || document.activeElement?.isContentEditable;
+    if(typing || e.ctrlKey || e.metaKey || e.altKey || document.querySelector('dialog[open]')) return;
+    if(e.key==='/'){ e.preventDefault(); const v=location.hash.split('/')[0]; if(v==='#ayuda') $('#helpQ').focus(); else if(S.comments.length){ go('resultados'); selectTab('list'); setTimeout(()=>$('#q').focus(),50); } }
+    else if(e.key==='?'){ e.preventDefault(); go('ayuda'); }
+    else if(e.key==='g'){ gPressed=Date.now(); }
+    else if(Date.now()-gPressed<1000 && e.key==='o'){ go('obtener'); gPressed=0; }
+    else if(Date.now()-gPressed<1000 && e.key==='r'){ go('resultados'); gPressed=0; }
+    else if(e.key==='ArrowRight' && $('#tp-list').classList.contains('active') && $('#view-resultados').classList.contains('active') && !$('#nextPg').disabled){ S.page++; renderTable(); }
+    else if(e.key==='ArrowLeft' && $('#tp-list').classList.contains('active') && $('#view-resultados').classList.contains('active') && !$('#prevPg').disabled){ S.page--; renderTable(); }
+  });
+
+  // restaurar sesión anterior
+  try{
+    const saved = JSON.parse(localStorage.getItem('fbca:'+STORE_KEY)||'null');
+    if(saved && saved.comments?.length){ S.meta=saved.meta||{}; S.comments=finalize(saved.comments, S.meta); }
+  }catch(e){}
+  renderAll();
+  route();
+
+  // iconos de respaldo si la fuente de iconos no carga (sin conexión)
+  const ICON_FB = { more_vert:'⋮', help:'?', close:'✕', chevron_left:'‹', chevron_right:'›', content_copy:'⧉', info:'i', open_in_new:'↗', dark_mode:'☾', light_mode:'☀', brightness_auto:'◐', logout:'⎋' };
+  let iconsChecked = false;
+  const iconFallback = () => {
+    if(iconsChecked) return;
+    if(document.fonts && document.fonts.check('24px "Material Symbols Rounded"', 'home')) { iconsChecked = true; return; }
+    iconsChecked = true;
+    document.documentElement.classList.add('no-icons');
+    $$('.ms').forEach(i=>{ const t=i.textContent.trim(); if(ICON_FB[t]){ i.textContent=ICON_FB[t]; i.classList.add('ms-fb'); } else if(!i.closest('.icon-btn')) i.style.display='none'; });
+  };
+  if(document.fonts){ document.fonts.load('24px "Material Symbols Rounded"', 'home').then(f=>{ if(f.length) iconsChecked=true; else iconFallback(); }).catch(iconFallback); setTimeout(iconFallback, 4000); }
+
+  // primera visita
+  if(PREF.get('onboarding')!=='done') setTimeout(openOnboarding, 300);
+})();
+</script>
+</body>
+</html>
