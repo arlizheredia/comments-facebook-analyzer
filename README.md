@@ -17,9 +17,11 @@ Aplicación web en un único archivo HTML para obtener, analizar, copiar y expor
 
 ## Uso
 
-Abre `index.html` en el navegador. La primera vez se muestra un tutorial con los pasos para empezar.
+**En línea (HTTPS):** <https://arlizheredia.github.io/comments-facebook-analyzer/>
 
-Para **Conectar con Facebook**, la página debe servirse por `https://` o `http://localhost`:
+También puedes abrir `index.html` directamente en el navegador. La primera vez se muestra un tutorial con los pasos para empezar.
+
+Para **Conectar con Facebook**, la página debe servirse por `https://` (la versión publicada ya lo cumple; agrega `arlizheredia.github.io` a los dominios permitidos de tu app de Facebook) o por `http://localhost`:
 
 ```bash
 python3 -m http.server 8000
