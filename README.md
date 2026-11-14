@@ -18,7 +18,7 @@ Aplicación web en un único archivo HTML para obtener, analizar, copiar y expor
 
 ## Uso
 
-**En línea (HTTPS):** <https://arlizheredia.github.io/comments-facebook-analyzer/>
+**En línea (HTTPS):** <https://arlizheredia.github.io/social-comments-analyzer/>
 
 También puedes abrir `index.html` directamente en el navegador. La primera vez se muestra un tutorial con los pasos para empezar.
 
