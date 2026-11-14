@@ -1,13 +1,13 @@
 # Social Comments Analyzer
 
-Aplicación web en un único archivo HTML para obtener, analizar, copiar y exportar los comentarios de publicaciones de **Facebook** e **Instagram**.
+Aplicación web en un único archivo HTML para obtener, analizar, copiar y exportar los comentarios de publicaciones de **Facebook**, **Instagram** y **TikTok**.
 
 ## Características
 
-- **Facebook e Instagram**: la red social se detecta automáticamente al pegar un enlace.
+- **Facebook, Instagram y TikTok**: la red social se detecta automáticamente al pegar un enlace.
 - **Tres formas de obtener comentarios**
   - **Conectar con la API** (inicio de sesión de Facebook): páginas de Facebook que administras y sus cuentas profesionales de Instagram vinculadas; fechas exactas, reacciones o me gusta y respuestas.
-  - **Extractor de navegador** (marcador *Social Comments Analyzer*): para cualquier publicación visible con tu sesión. El mismo marcador funciona en Facebook e Instagram.
+  - **Extractor de navegador** (marcador *Social Comments Analyzer*): para cualquier publicación visible con tu sesión. El mismo marcador funciona en Facebook, Instagram y TikTok.
   - **Importar** JSON o CSV.
 - **Vista de conversación** con el estilo de cada red y respuestas anidadas, o **vista de tabla** con todos los campos.
 - **Análisis**: actividad en el tiempo y por hora, autores más activos, sentimiento estimado, palabras, emojis, hashtags y menciones.
@@ -39,7 +39,8 @@ La guía completa está en la sección **Ayuda** de la aplicación.
 ## Limitaciones
 
 - La API solo da acceso a publicaciones de páginas y cuentas que administras; para las demás se usa el extractor.
-- El extractor de navegador requiere un ordenador; las versiones móviles de Facebook e Instagram no lo admiten.
-- En Facebook, las fechas del extractor son aproximadas, porque la página muestra tiempos relativos (“2 h”, “3 sem”). En Instagram son exactas.
-- Las condiciones de uso de Facebook e Instagram limitan la recogida automatizada de datos: usa el extractor de forma responsable.
+- TikTok no ofrece una API pública de comentarios: para TikTok se usa el extractor o la importación.
+- El extractor de navegador requiere un ordenador; las versiones móviles de Facebook, Instagram y TikTok no lo admiten.
+- En Facebook y TikTok, las fechas del extractor son aproximadas, porque la página muestra tiempos relativos o solo el día (“2 h”, “3 sem”, “11-5”). En Instagram son exactas.
+- Las condiciones de uso de Facebook, Instagram y TikTok limitan la recogida automatizada de datos: usa el extractor de forma responsable.
 - El sentimiento se estima con un diccionario de palabras y emojis; es orientativo.

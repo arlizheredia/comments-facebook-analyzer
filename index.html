@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Social Comments Analyzer: obtén, analiza, filtra, copia y exporta los comentarios de publicaciones de Facebook e Instagram.">
+<meta name="description" content="Social Comments Analyzer: obtén, analiza, filtra, copia y exporta los comentarios de publicaciones de Facebook, Instagram y TikTok.">
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#f8fafd" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#131314" media="(prefers-color-scheme: dark)">
@@ -421,9 +421,21 @@ a.cname:hover{text-decoration:underline}
 .pdot{display:inline-block;width:12px;height:12px;border-radius:50%;flex:none}
 .pdot.fb{background:#1877f2}
 .pdot.ig{background:radial-gradient(circle at 30% 107%,#fdf497 0%,#fd5949 45%,#d6249f 60%,#285aeb 90%)}
+.pdot.tt{background:linear-gradient(135deg,#25f4ee 0 32%,#111 32% 68%,#fe2c55 68%)}
 .plat-chip{display:inline-flex;align-items:center;gap:6px;font-weight:500;color:var(--on-surface)}
 /* Conversación con estilo Instagram: sin burbuja, usuario en negrita antes del texto, corazón a la derecha */
 .cnode.ig .bubble{background:none;padding:2px 0;border-radius:8px}
+/* Estilo TikTok: nombre arriba en gris, texto debajo, corazón con contador a la derecha */
+.cnode.tt .bubble{background:none;padding:2px 0;border-radius:8px}
+.cnode.tt .bubble:hover{background:none}
+.cnode.tt .cname-line{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.cnode.tt .cname{font-size:13px;font-weight:500;color:var(--on-surface-variant)}
+.cnode.tt .bubble:hover .cname{text-decoration:underline}
+.cnode.tt .ctext{font-size:15px;margin-top:2px}
+.cnode.tt .cmeta{padding-left:0}
+.cnode.tt.selected>.crow .bubble{box-shadow:none;background:color-mix(in srgb,var(--primary) 14%,transparent);padding:2px 8px;margin-left:-8px}
+.ttbadge{font-size:11px;font-weight:500;padding:0 6px;border-radius:4px;background:#fe2c5522;color:#e0244a}
+.cheart b{display:block;font-size:12px;font-weight:400;text-align:center;margin-top:2px;color:var(--on-surface-variant)}
 .cnode.ig .bubble:hover{background:none}
 .cnode.ig .bubble:hover .cname{text-decoration:underline}
 .cnode.ig .cname{display:inline;margin-right:2px;font-size:14px}
@@ -669,6 +681,7 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
         <div class="seg plat-seg" role="radiogroup" aria-label="Red social" id="platSeg">
           <button role="radio" data-plat="facebook" aria-checked="true"><i class="pdot fb" aria-hidden="true"></i>Facebook</button>
           <button role="radio" data-plat="instagram" aria-checked="false"><i class="pdot ig" aria-hidden="true"></i>Instagram</button>
+          <button role="radio" data-plat="tiktok" aria-checked="false"><i class="pdot tt" aria-hidden="true"></i>TikTok</button>
         </div>
         <span class="small muted"><span class="ms sm" style="vertical-align:-4px">auto_awesome</span> Se detecta automáticamente al pegar un enlace</span>
       </div>
@@ -775,7 +788,7 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
       <div class="card method-panel hidden" id="mp-extractor">
         <div class="panel-head"><h2>Extractor de navegador</h2><a class="hlp" id="mpExHelp" href="#ayuda/extractor"><span class="ms">help</span>Guía del extractor</a></div>
         <div class="banner warn touch-only" style="margin-top:0"><span class="ms">computer</span>
-          <div>El extractor necesita un <b>ordenador</b> (Chrome, Edge, Firefox o Safari de escritorio): las versiones móviles de Facebook e Instagram no lo admiten. Desde este dispositivo puedes <b>importar</b> el JSON generado en el ordenador o usar <b>Conectar</b> con la API.</div></div>
+          <div>El extractor necesita un <b>ordenador</b> (Chrome, Edge, Firefox o Safari de escritorio): las versiones móviles de Facebook, Instagram y TikTok no lo admiten. Desde este dispositivo puedes <b>importar</b> el JSON generado en el ordenador o usar <b>Conectar</b> con la API.</div></div>
         <ol class="steps">
           <li class="step">
             <h3 id="exStep1Title">Abre la publicación en Facebook</h3>
@@ -790,7 +803,7 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
           </li>
           <li class="step">
             <h3>Ejecuta el extractor</h3>
-            <div class="desc">Arrastra este botón a tu barra de marcadores y púlsalo estando en la publicación. <b>Sirve para Facebook e Instagram</b>: detecta solo en qué red estás. Abre las respuestas y los comentarios ocultos por ti.</div>
+            <div class="desc">Arrastra este botón a tu barra de marcadores y púlsalo estando en la publicación. <b>Sirve para Facebook, Instagram y TikTok</b>: detecta solo en qué red estás. Abre las respuestas y los comentarios ocultos por ti.</div>
             <div class="row">
               <a class="bookmarklet" id="bookmarklet" href="#" title="Arrástrame a la barra de marcadores">Social Comments Analyzer</a>
               <button class="btn text" id="copyScript"><span class="ms">content_copy</span>Copiar código para la consola</button>
@@ -1016,7 +1029,7 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
         <div id="helpContent">
           <article class="help-article" id="h-inicio" data-title="Primeros pasos">
             <h2><span class="ms">rocket_launch</span>Primeros pasos</h2>
-            <p>Esta herramienta obtiene los comentarios de una publicación de <b>Facebook o Instagram</b>, los analiza y te permite copiarlos o exportarlos. Todo ocurre en tu navegador.</p>
+            <p>Esta herramienta obtiene los comentarios de una publicación de <b>Facebook, Instagram o TikTok</b>, los analiza y te permite copiarlos o exportarlos. Todo ocurre en tu navegador.</p>
             <ol>
               <li><b>Elige la red social y un método</b> en la sección <a href="#obtener">Obtener</a>: conectar con la API, usar el extractor de navegador o importar un archivo. Si pegas un enlace, la red social se detecta sola.</li>
               <li><b>Obtén los comentarios</b> siguiendo los pasos numerados de cada método.</li>
@@ -1032,8 +1045,8 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
             <div class="cmp-wrap"><table class="cmp">
               <thead><tr><th></th><th>Conectar (API)</th><th>Extractor</th><th>Importar</th></tr></thead>
               <tbody>
-                <tr><td><b>Publicaciones</b></td><td>Páginas de Facebook que administras y sus cuentas profesionales de Instagram</td><td>Cualquiera que puedas ver con tu sesión</td><td>Lo que contenga el archivo</td></tr>
-                <tr><td><b>Fechas</b></td><td>Exactas</td><td>Aproximadas (≈) en Facebook, exactas en Instagram</td><td>Según el archivo</td></tr>
+                <tr><td><b>Publicaciones</b></td><td>Páginas de Facebook que administras y sus cuentas profesionales de Instagram (no disponible para TikTok)</td><td>Cualquiera que puedas ver con tu sesión</td><td>Lo que contenga el archivo</td></tr>
+                <tr><td><b>Fechas</b></td><td>Exactas</td><td>Aproximadas (≈) en Facebook y TikTok, exactas en Instagram</td><td>Según el archivo</td></tr>
                 <tr><td><b>Reacciones / Me gusta</b></td><td>Sí</td><td>Si están visibles</td><td>Si existen</td></tr>
                 <tr><td><b>Requisitos</b></td><td>App de Meta + https/localhost</td><td>Navegador de escritorio</td><td>Ninguno</td></tr>
               </tbody>
@@ -1093,6 +1106,24 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
               <li>La API solo da acceso a publicaciones de <b>tus</b> cuentas profesionales; para las demás usa el extractor.</li>
               <li>Las condiciones de uso de Instagram limitan la recogida automatizada de datos. Usa el extractor para publicaciones concretas que puedas ver, sin automatizarlo de forma masiva, y trata los datos según la normativa de protección de datos.</li>
               <li>Si Instagram cambia el diseño de su web, puede que algunos datos dejen de detectarse con el extractor.</li>
+            </ul>
+          </article>
+
+          <article class="help-article" id="h-tiktok" data-title="TikTok">
+            <h2><span class="ms">music_video</span>TikTok</h2>
+            <p>Para TikTok se usa el <b>extractor de navegador</b> (o la importación de un archivo). TikTok no ofrece una API pública de comentarios: su API de investigación está reservada a investigadores aprobados, por eso la opción “Conectar” no aparece cuando eliges TikTok.</p>
+            <h3 id="h-tt-extractor">Usar el extractor</h3>
+            <ol>
+              <li>Abre el vídeo en <b>tiktok.com</b>, en su propia página (<code>tiktok.com/@usuario/video/…</code>). Si no ves los comentarios, pulsa el icono de comentarios.</li>
+              <li>Pulsa el marcador <b>Social Comments Analyzer</b>: es el mismo de Facebook e Instagram y detecta solo en qué red estás.</li>
+              <li>El extractor pulsa por ti “Ver N respuestas” y “Ver N más”, y desplaza la lista para cargar más comentarios. Al terminar, copia el JSON y pégalo en la app.</li>
+            </ol>
+            <p>Se obtienen el nombre visible y el usuario (<code>@usuario</code>) de cada persona, el texto, los me gusta, las respuestas y las etiquetas “Creador” o “Fijado”. TikTok muestra fechas como “11-5” (5 de noviembre) o “Hace 1 semana(s)”: se convierten en fechas aproximadas (≈).</p>
+            <h3 id="h-tt-limites">Límites y uso responsable</h3>
+            <ul>
+              <li>TikTok puede pedir que inicies sesión o que superes una verificación para ver todos los comentarios.</li>
+              <li>Las condiciones de uso de TikTok limitan la recogida automatizada de datos: usa el extractor para vídeos concretos, sin automatizarlo de forma masiva.</li>
+              <li>Si TikTok cambia el diseño de su web, puede que algunos datos dejen de detectarse.</li>
             </ul>
           </article>
 
@@ -1190,6 +1221,7 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
             <details id="h-faq-pfbid"><summary>Las URLs con “pfbid” no se reconocen</summary><div class="ans">Con la sesión iniciada, usa <b>Ver publicaciones</b> y elige la publicación de la lista. Así no hace falta la URL.</div></details>
             <details id="h-faq-ig-cuenta"><summary>No aparece mi cuenta de Instagram</summary><div class="ans">La cuenta debe ser <b>profesional</b> (Empresa o Creador) y estar <b>vinculada a una página de Facebook</b> que administres. Al iniciar sesión, en la ventana de Facebook pulsa <i>Editar acceso</i> y marca tanto la página como la cuenta de Instagram. Si lo cambiaste después, cierra sesión y vuelve a entrar.</div></details>
             <details id="h-faq-ig-permisos"><summary>Error de permisos al leer comentarios de Instagram</summary><div class="ans">Pulsa <b>Conceder acceso a Instagram</b> y acepta <code>instagram_basic</code> e <code>instagram_manage_comments</code>. Comprueba que tu app de Meta tiene añadido el caso de uso de Instagram y que tu usuario tiene un rol en la app mientras esté en modo desarrollo.</div></details>
+            <details id="h-faq-tt"><summary>El extractor no encuentra comentarios en TikTok</summary><div class="ans">Abre el vídeo en su propia página (no desde el feed “Para ti”) y asegúrate de que la lista de comentarios está visible; si no, pulsa el icono de comentarios. Si TikTok te pide iniciar sesión o una verificación, complétala y vuelve a pulsar el marcador.</div></details>
             <details id="h-faq-excel"><summary>El Excel no se descarga</summary><div class="ans">La exportación a Excel carga una librería desde internet. Sin conexión se descargará un CSV, que Excel también abre.</div></details>
           </article>
 
@@ -1250,11 +1282,14 @@ function fbExtractor(){
   window.__fbcx = true;
   var sleep = function(ms){ return new Promise(function(r){ setTimeout(r, ms); }); };
   var stop = false;
-  var IG = /(^|\.)instagram\.com$/.test(location.hostname); // mismo marcador para Facebook e Instagram
+  var pressed = [];
+  var collected = [], byKey = {}, meta = {}, startKey = '', useCollectedOnly = false;
+  var IG = /(^|\.)instagram\.com$/.test(location.hostname); // mismo marcador para Facebook, Instagram y TikTok
+  var TT = /(^|\.)tiktok\.com$/.test(location.hostname);
 
   function el(tag, css, text){ var e = document.createElement(tag); if (css) e.style.cssText = css; if (text != null) e.textContent = text; return e; }
   var btnCss = 'background:#0b57d0;color:#fff;border:0;border-radius:18px;padding:8px 14px;font:500 13px Roboto,system-ui;cursor:pointer';
-  var ui = el('div','position:fixed;z-index:2147483647;right:16px;bottom:16px;width:340px;background:#fff;color:#1f1f1f;font:14px/1.45 Roboto,system-ui,sans-serif;border-radius:16px;box-shadow:0 4px 8px 3px rgba(0,0,0,.15),0 1px 3px rgba(0,0,0,.3);padding:16px');
+  var ui = el('div','position:fixed;z-index:2147483647;right:16px;bottom:16px;width:380px;max-width:calc(100vw - 32px);box-sizing:border-box;background:#fff;color:#1f1f1f;font:14px/1.45 Roboto,system-ui,sans-serif;border-radius:16px;box-shadow:0 4px 8px 3px rgba(0,0,0,.15),0 1px 3px rgba(0,0,0,.3);padding:16px');
   var ttl = el('div','display:flex;align-items:center;gap:10px;font-weight:500;font-size:16px;margin-bottom:8px');
   (function(){
     var NS = 'http://www.w3.org/2000/svg';
@@ -1266,17 +1301,22 @@ function fbExtractor(){
     ttl.appendChild(ic);
     ttl.appendChild(el('span', '', 'Social Comments Analyzer'));
   })();
-  var st = el('div','min-height:40px;color:#444746','Iniciando…');
+  var st = el('div','min-height:20px;color:#444746','Iniciando…');
   var bar = el('div','display:flex;gap:8px;margin-top:12px;flex-wrap:wrap');
   var bStop = el('button', btnCss, 'Detener y extraer');
   var bCopy = el('button', btnCss + ';display:none', 'Copiar JSON');
   var bDl = el('button', btnCss + ';display:none;background:#c2e7ff;color:#001d35', 'Descargar .json');
   var bClose = el('button', btnCss + ';background:transparent;color:#0b57d0', 'Cerrar');
+  var bResume = el('button', btnCss + ';display:none', 'Reanudar');
+  var bUse = el('button', btnCss + ';display:none', 'Usar lo recogido');
+  var bRestart = el('button', btnCss + ';display:none;background:#c2e7ff;color:#001d35', 'Empezar con esta publicación');
   var out = el('textarea','display:none;width:100%;height:90px;margin-top:10px;background:#f0f4f9;color:#1f1f1f;border:0;border-radius:8px;padding:8px;font:11px monospace');
-  bar.append(bStop, bCopy, bDl, bClose); ui.append(ttl, st, bar, out); document.body.appendChild(ui);
-  function status(t){ st.textContent = t; }
+  bar.append(bStop, bResume, bUse, bRestart, bCopy, bDl, bClose); ui.append(ttl, st, bar, out); document.body.appendChild(ui);
+  // oneLine: el progreso nunca se parte en dos líneas (si no cabe, se recorta con …)
+  function status(t, oneLine){ st.textContent = t; st.title = oneLine ? t : ''; st.style.whiteSpace = oneLine ? 'nowrap' : 'normal'; st.style.overflow = 'hidden'; st.style.textOverflow = 'ellipsis'; }
   bStop.onclick = function(){ stop = true; status('Deteniendo…'); };
-  bClose.onclick = function(){ stop = true; ui.remove(); window.__fbcx = false; };
+  var closed = false;
+  bClose.onclick = function(){ stop = true; closed = true; ui.remove(); window.__fbcx = false; };
 
   var LABEL_RE = /^(comentario|comment|respuesta|reply|réponse|commentaire|comentário|resposta|kommentar|antwort|commento|risposta)/i;
   var REPLY_RE = /^(respuesta|reply|réponse|resposta|antwort|risposta)/i;
@@ -1298,7 +1338,8 @@ function fbExtractor(){
     return dlg.length ? dlg[dlg.length - 1] : document;
   }
   function scrollAll(){
-    var arts = IG ? igTimes() : articles(); var seen = new Set();
+    var arts = TT ? ttNodes() : IG ? igTimes() : articles(); var seen = new Set();
+    var lastA = arts[arts.length - 1]; if (lastA){ try { lastA.scrollIntoView({ block: 'end' }); } catch(e){} }
     arts.slice(-3).forEach(function(a){
       var p = a.parentElement;
       while (p && p !== document.body){
@@ -1454,6 +1495,7 @@ function fbExtractor(){
   var IG_LOAD_RE = /(cargar|load|ver|view|see|mostrar|show)\s+(m[aá]s|more)\s+(comentarios|comments)|more comments|m[aá]s comentarios/i;
   var IG_USER_RE = /^\/([A-Za-z0-9._]{1,30})\/?$/;
   var IG_RESERVED = /^(p|reel|reels|explore|stories|accounts|direct|tv|about|legal|developer)$/i;
+  var IG_TOGGLE_RE = /^(—\s*)?(ocultar|ver|mostrar|hide|view|show|see)\b.*\b(respuestas?|replies|reply)\b/i;
   var IG_UI = /^(responder|reply|ver traducci[oó]n|see translation|ocultar respuestas|hide replies|editado|edited|verificado|verified|autor|author|creador|creator|fijado|pinned|seguir|follow|•|·|\d[\d.,]*\s*(k|mil|m)?\s*(me gusta|likes?|curtidas?)|(—\s*)?(ver|view)\s.*(respuestas|replies).*)$/i;
   // Código de la publicación abierta (instagram.com/p/CODIGO/ o /reel/CODIGO/)
   function igCode(){ var m = location.pathname.match(/\/(?:p|reel|reels|tv)\/([A-Za-z0-9_-]+)/); return m ? m[1] : ''; }
@@ -1497,8 +1539,21 @@ function fbExtractor(){
     var all = igAllTimes(), rel = all.filter(igRelevant);
     var firstC = rel.filter(function(t){ var a = t.closest('a'); return a && /\/c\/\d+/.test(a.getAttribute('href') || ''); })[0] || rel[0] || all[0];
     var anc = firstC; for (var k = 0; k < 7 && anc && anc.parentElement && anc !== igRoot(); k++) anc = anc.parentElement;
+    // IDs de comentario presentes en la página (por su enlace /c/ID/ o /c/ID/r/ID/) frente a los extraídos
+    var pageIds = {};
+    rel.forEach(function(t){ var a = t.closest('a'); var m = a && (a.getAttribute('href') || '').match(/\/c\/(\d+)(?:\/r\/(\d+))?/); if (m) pageIds[m[2] || m[1]] = 1; });
+    var ids = Object.keys(pageIds);
+    // Botones de despliegue que siguen visibles al terminar (texto con los números normalizados)
+    var pend = [];
+    Array.prototype.slice.call(igRoot().querySelectorAll('button,div[role="button"],span[role="button"]')).forEach(function(b){
+      if (!b.offsetParent) return;
+      var t = (b.innerText || '').trim().replace(/^[\s—–\-·•]+/, '');
+      if (t && t.length <= 80 && !EXCL.test(t) && !IG_BTN_EXCL.test(t) && EXP.some(function(re){ return re.test(t); })) pend.push(t.replace(/\d+/g, 'N'));
+    });
+    Array.prototype.slice.call(igRoot().querySelectorAll('svg[aria-label]')).forEach(function(s){ if (IG_LOAD_RE.test(s.getAttribute('aria-label') || '')) pend.push('[icono] ' + s.getAttribute('aria-label')); });
     return { code: igCode(), dialogs: document.querySelectorAll('div[role="dialog"]').length, articles: document.querySelectorAll('article').length,
       timesAll: all.length, timesThisPost: rel.length, commentLinks: document.querySelectorAll('a[href*="/c/"]').length, extracted: extracted,
+      idsEnPagina: ids.length, faltan: ids.filter(function(id){ return !byKey[id]; }), botonesPendientes: pend,
       structure: anc ? igSkel(anc, 0, { n: 260 }).slice(0, 6000) : '' };
   }
   // Bloque de un comentario: el ancestro más grande que contiene solo su propia fecha
@@ -1520,7 +1575,7 @@ function fbExtractor(){
     var username = aLink ? aLink.getAttribute('href').match(IG_USER_RE)[1] : '';
     // Texto del comentario. Los textos de la interfaz ("Responder", "2 Me gusta", "Ver traducción"…) se descartan por su
     // contenido, no por estar dentro de un botón: Instagram puede envolver toda la fila del comentario en un role="button".
-    var isUi = function(v){ v = (v || '').replace(/^[\s—–\-·•]+/, '').trim(); return !v || IG_UI.test(v) || v === username || v === '@' + username; };
+    var isUi = function(v){ v = (v || '').replace(/^[\s—–\-·•]+/, '').trim(); return !v || IG_UI.test(v) || (IG_TOGGLE_RE.test(v) && v.length <= 60) || v === username || v === '@' + username; };
     var cands = Array.prototype.slice.call(block.querySelectorAll('span[dir="auto"],div[dir="auto"],h1')).filter(function(s){
       return !(aLink && (aLink.contains(s) || s.contains(aLink))) && !(tLink && (tLink.contains(s) || s.contains(tLink))) && !s.querySelector('time');
     });
@@ -1550,6 +1605,14 @@ function fbExtractor(){
     var img = (function(){ for (var k = 0; k < userLinks.length; k++){ var im = userLinks[k].querySelector('img'); if (im && (userLinks[k].getAttribute('href') || '').match(IG_USER_RE)[1] === username) return im; } return null; })()
       // Instagram pone la foto en un <span role="link">, no en un enlace: se reconoce por su texto alternativo
       || (username ? Array.prototype.slice.call(block.querySelectorAll('img[alt]')).filter(function(i){ var al = (i.getAttribute('alt') || '').toLowerCase(); return al.indexOf(username.toLowerCase()) >= 0 && al.length > username.length; })[0] : null)
+      || (function(){
+        if (!username) return null;
+        for (var anc = block.parentElement, k = 0; anc && k < 6; anc = anc.parentElement, k++){
+          var im = Array.prototype.slice.call(anc.querySelectorAll('img[alt]')).filter(function(i){ var al = (i.getAttribute('alt') || '').toLowerCase(); return al.indexOf(username.toLowerCase()) >= 0 && al.length > username.length; })[0];
+          if (im) return im;
+        }
+        return null;
+      })()
       || Array.prototype.slice.call(block.querySelectorAll('img')).filter(function(i){
       var w = i.width || +i.getAttribute('width') || Math.round(i.getBoundingClientRect().width); return w > 0 && w <= 64 && !(i.closest('span[dir="auto"]'));
     })[0];
@@ -1567,6 +1630,22 @@ function fbExtractor(){
       permalink: href ? new URL(href, location.href).href : '', indent: Math.round(block.getBoundingClientRect().left), platform: 'instagram'
     };
   }
+  function igTimeId(t){ var a = t && t.closest('a'); var m = a && (a.getAttribute('href') || '').match(/\/c\/(\d+)(?:\/r\/(\d+))?/); return m ? (m[2] || m[1]) : ''; }
+  function igReplyParents(){
+    var map = {}, times = igTimes();
+    Array.prototype.slice.call(igRoot().querySelectorAll('[role="button"],button')).forEach(function(b){
+      var t = (b.innerText || '').trim();
+      if (!t || t.length > 60 || !IG_TOGGLE_RE.test(t)) return;
+      var box = b.nextElementSibling;
+      if (!box || box.tagName !== 'UL'){ var par = b.parentElement; box = par ? Array.prototype.slice.call(par.children).filter(function(x){ return x.tagName === 'UL'; })[0] : null; }
+      if (!box) return;
+      var parentT = null;
+      times.forEach(function(tt){ if (!box.contains(tt) && !b.contains(tt) && (b.compareDocumentPosition(tt) & Node.DOCUMENT_POSITION_PRECEDING)) parentT = tt; });
+      var pid = igTimeId(parentT); if (!pid) return;
+      Array.prototype.slice.call(box.querySelectorAll('time[datetime]')).forEach(function(rt){ var rid = igTimeId(rt); if (rid && !map[rid]) map[rid] = pid; });
+    });
+    return map;
+  }
   function igExtractAll(){
     var res = [], seen = {}, cap = null;
     igTimes().forEach(function(t, i){
@@ -1578,20 +1657,164 @@ function fbExtractor(){
         c.order = i; res.push(c);
       } catch(e){ console.warn('Comentario omitido', e); }
     });
+    var rp = igReplyParents();
+    res.forEach(function(c){ if (!c.parentId && rp[c.id] && rp[c.id] !== c.id){ c.parentId = rp[c.id]; c.isReply = true; } });
     return { comments: res, postAuthor: cap ? cap.authorName : '', postCaption: cap ? cap.text : '', postDate: cap ? cap.datetime : '' };
+  }
+
+  /* ---------- TikTok ---------- */
+  var TT_BTN_EXCL = /(v[ií]deos?|seguir|follow|perfil|profile|sonido|sound|m[uú]sica|music|traduc|transl|compartir|share|descargar|download)/i;
+  var TT_NODE_SEL = 'div[data-comment-ui-enabled][id],div[class*="DivCommentContentContainer"]';
+  function ttNodes(){
+    return Array.prototype.slice.call(document.querySelectorAll(TT_NODE_SEL)).filter(function(n){
+      return n.querySelector('[data-e2e^="comment-level-"],p[class*="CommentText"]');
+    });
+  }
+  function ttRoot(){
+    var n = ttNodes(); if (!n.length) return document.body;
+    var r = document.querySelector('[class*="DivCommentListContainer"],[data-e2e="comment-list"]');
+    if (r && r.contains(n[0])) return r;
+    var item = n[0].closest('[class*="DivCommentItemContainer"]') || n[0];
+    return item.parentElement || document.body;
+  }
+  function ttTotal(){
+    var els = document.querySelectorAll('[data-e2e="comment-count"],[data-e2e="browse-comment-count"],[class*="CommentTitle"],[class*="DivCommentCountContainer"]');
+    for (var i = 0; i < els.length; i++){ var m = (els[i].textContent || '').match(/(\d[\d.,]*\s*(?:k|mil|m)?)/i); if (m){ var n = parseCount(m[1]); if (n) return n; } }
+    return 0;
+  }
+  function ttHandle(a){ var m = ((a && a.getAttribute('href')) || '').match(/^\/@([^/?#]+)/); return m ? decodeURIComponent(m[1]) : ''; }
+  function ttLevel(n){ var e = n.querySelector('[data-e2e^="comment-level-"]'); var m = e ? (e.getAttribute('data-e2e') || '').match(/(\d+)$/) : null; return m ? +m[1] : 0; }
+  function ttExtractOne(n){
+    var links = Array.prototype.slice.call(n.querySelectorAll('a[href^="/@"]'));
+    var textEl = n.querySelector('[data-e2e^="comment-level-"]') || n.querySelector('p[class*="CommentText"]');
+    var inText = function(a){ return textEl && textEl.contains(a); };
+    var userA = n.querySelector('a[href^="/@"][class*="UserLinkName"]') || links.filter(function(a){ return !a.querySelector('img') && !inText(a); })[0] || links[0] || null;
+    var handle = ttHandle(userA);
+    var nameEl = n.querySelector('[data-e2e^="comment-username-"]') || userA;
+    var display = nameEl ? txt(nameEl).replace(/\s+/g, ' ').trim() : '';
+    var text = textEl ? txt(textEl) : '';
+    var timeEl = n.querySelector('[data-e2e^="comment-time-"]') || n.querySelector('[class*="CreatedTime"]');
+    var likesEl = n.querySelector('[data-e2e="comment-like-count"]') || n.querySelector('[class*="LikeWrapper"] span');
+    var likes = likesEl ? parseCount(txt(likesEl)) : 0;
+    if (!likes){ var lw = n.querySelector('[class*="LikeWrapper"][aria-label]'); if (lw){ var ml = (lw.getAttribute('aria-label') || '').match(/(\d[\d.,]*\s*(?:k|mil|m)?)\s*(me gusta|likes?)/i); if (ml) likes = parseCount(ml[1]); } }
+    var img = (links.filter(function(a){ return a.querySelector('img'); })[0] || n).querySelector('img');
+    var level = ttLevel(n);
+    var isReply = !!n.closest('[class*="DivReplyContainer"]') || level > 1;
+    var parentId = '';
+    if (isReply){
+      var thread = n.closest('[class*="DivCommentItemContainer"]');
+      var top = thread ? Array.prototype.slice.call(thread.querySelectorAll(TT_NODE_SEL)).filter(function(x){ return !x.closest('[class*="DivReplyContainer"]') && ttLevel(x) <= 1; })[0] : null;
+      if (top && top !== n) parentId = top.id || '';
+    }
+    var mentions = textEl ? Array.prototype.slice.call(textEl.querySelectorAll('a[href^="/@"]')).map(function(a){ return ttHandle(a); }).filter(Boolean) : [];
+    var badges = [];
+    Array.prototype.slice.call(n.querySelectorAll('span,div,p')).forEach(function(e){
+      if (e.children.length || (textEl && textEl.contains(e))) return;
+      var t = (e.textContent || '').trim();
+      if (/^(creador|creator|autor|author)$/i.test(t)) badges.push('Autor de la publicación');
+      else if (/^(fijado|pinned)$/i.test(t)) badges.push('Fijado');
+      else if (/(le gusta al creador|liked by creator)/i.test(t)) badges.push('Le gusta al creador');
+    });
+    return {
+      id: n.id || '', parentId: parentId, isReply: isReply, authorName: display || handle, authorId: handle,
+      authorUrl: handle ? 'https://www.tiktok.com/@' + handle : '', authorAvatar: img ? img.src : '', badges: badges,
+      text: text, dateText: timeEl ? txt(timeEl).replace(/ /g, ' ').trim() : '', reactions: likes, attachments: [],
+      mentions: mentions, replyTo: isReply && mentions[0] ? mentions[0] : '', edited: false,
+      permalink: location.href.split('?')[0], indent: Math.round(n.getBoundingClientRect().left), platform: 'tiktok'
+    };
+  }
+  function ttExtractAll(onlyNew){
+    var res = [], seen = {};
+    ttNodes().forEach(function(n, i){
+      if (onlyNew && n.id && byKey[n.id]) return;   // ya recogido: no volver a procesarlo
+      try {
+        var c = ttExtractOne(n);
+        var key = c.id || (c.authorId + '|' + c.text);
+        if (seen[key]) return; seen[key] = 1;
+        c.order = i; res.push(c);
+      } catch(e){ console.warn('Comentario omitido', e); }
+    });
+    var mp = location.pathname.match(/^\/@([^/]+)\/(?:video|photo)\/(\d+)/);
+    var desc = document.querySelector('[data-e2e="browse-video-desc"],[data-e2e="video-desc"]');
+    return { comments: res, postAuthor: mp ? decodeURIComponent(mp[1]) : '', postCaption: desc ? txt(desc) : '', postDate: '' };
+  }
+
+  /* ---------- Publicación original: detección de cambios y recogida incremental ---------- */
+  // Identifica la publicación abierta. En TikTok, Instagram y Facebook la página cambia de publicación sin recargarse.
+  function postKey(){
+    var pth = location.pathname, q = new URLSearchParams(location.search);
+    if (TT){ var m = pth.match(/\/(?:video|photo)\/(\d+)/); return m ? 'tt:' + m[1] : 'tt:' + pth; }
+    if (IG){ return 'ig:' + (igCode() || pth); }
+    return 'fb:' + pth + '|' + (q.get('story_fbid') || '') + '|' + (q.get('fbid') || '') + '|' + (q.get('v') || '');
+  }
+  function keyOf(c){ return c.id || (c.authorName + '|' + c.text); }
+  function platformExtract(onlyNew){
+    if (TT) return ttExtractAll(onlyNew);
+    if (IG) return igExtractAll();
+    var hh = root().querySelector('h2 a, h3 a, strong a');
+    return { comments: extractAll(), postAuthor: hh ? txt(hh) : '', postCaption: '', postDate: '' };
+  }
+  // Añade los comentarios visibles conservando el orden de la página (en TikTok el padre viene por ID: basta con añadir al final)
+  function merge(list){
+    var prev = null;
+    list.forEach(function(c){
+      var k = keyOf(c);
+      if (byKey[k]){ Object.assign(byKey[k], c); prev = byKey[k]; return; }
+      byKey[k] = c;
+      if (TT) collected.push(c);
+      else if (!prev) collected.unshift(c);
+      else collected.splice(collected.indexOf(prev) + 1, 0, c);
+      prev = c;
+    });
+  }
+  // Solo recoge mientras la página sigue mostrando la publicación original
+  function snapshot(full){
+    if (postKey() !== startKey) return;
+    var r = platformExtract(!full);
+    merge(r.comments);
+    if (r.postAuthor) meta.postAuthor = r.postAuthor;
+    if (r.postCaption) meta.postCaption = r.postCaption;
+    if (r.postDate) meta.postDate = r.postDate;
+    meta.url = location.href; meta.title = document.title;
+  }
+  // Pausa con aviso hasta que el usuario decida qué hacer
+  function waitDecision(){
+    return new Promise(function(resolve){
+      bStop.style.display = 'none'; bResume.style.display = ''; bUse.style.display = ''; bRestart.style.display = '';
+      var tick = function(){
+        if (closed){ clearInterval(iv); return; }
+        var back = postKey() === startKey;
+        bResume.disabled = !back; bResume.style.opacity = back ? '1' : '.45'; bResume.style.cursor = back ? 'pointer' : 'not-allowed';
+        st.style.color = back ? '#146c2e' : '#8c1d18';
+        status(back ? 'Has vuelto a la publicación original. Puedes reanudar la extracción.'
+          : '⚠ Cambiaste de publicación. Para no mezclar comentarios, la extracción está en pausa. Llevas ' + collected.length + ' comentarios de la publicación original.');
+      };
+      var iv = setInterval(tick, 400); tick();
+      function done(v){ clearInterval(iv); st.style.color = '#444746'; bResume.style.display = 'none'; bUse.style.display = 'none'; bRestart.style.display = 'none'; bStop.style.display = ''; resolve(v); }
+      bResume.onclick = function(){ if (postKey() === startKey) done('resume'); };
+      bUse.onclick = function(){ done('use'); };
+      bRestart.onclick = function(){ done('restart'); };
+    });
   }
   function finish(){
     status('Extrayendo datos…');
-    var comments, postAuthor = '', postCaption = '', postDate = '';
-    if (IG){ var ir = igExtractAll(); comments = ir.comments; postAuthor = ir.postAuthor; postCaption = ir.postCaption; postDate = ir.postDate; }
-    else { comments = extractAll(); var h = root().querySelector('h2 a, h3 a, strong a'); if (h) postAuthor = txt(h); }
-    var data = { source: 'social-dom-extractor', platform: IG ? 'instagram' : 'facebook', version: 3, url: location.href, title: document.title,
+    var onOriginal = postKey() === startKey;
+    if (onOriginal && !useCollectedOnly) snapshot(true);
+    var comments = collected.map(function(c, i){ c.order = i; return c; });
+    var postAuthor = meta.postAuthor || '', postCaption = meta.postCaption || '', postDate = meta.postDate || '';
+    var data = { source: 'social-dom-extractor', platform: TT ? 'tiktok' : IG ? 'instagram' : 'facebook', version: 3, url: meta.url || location.href, title: meta.title || document.title, cambioDePublicacion: !onOriginal,
       postAuthor: postAuthor, postCaption: postCaption, postDate: postDate, extractedAt: new Date().toISOString(), userAgentLang: navigator.language, count: comments.length, comments: comments };
-    if (IG) data.diag = igDiag(comments.length);
+    if (IG && onOriginal) data.diag = igDiag(comments.length);
+    if (TT && onOriginal) data.diag = { totalSegunTikTok: ttTotal(), comentariosEnPagina: ttNodes().length, extraidos: comments.length,
+      principales: comments.filter(function(c){ return !c.isReply; }).length, respuestas: comments.filter(function(c){ return c.isReply; }).length,
+      botonesRespuestas: document.querySelectorAll('[data-e2e^="view-more"],p[class*="ReplyActionText"]').length,
+      panel: !!document.querySelector('[class*="DivCommentListContainer"],[data-e2e="comment-list"]') };
+    data.diag = data.diag || {}; data.diag.cambioDePublicacion = !onOriginal;
+    if (data.diag) data.diag.pulsados = pressed.filter(function(v, i, a){ return a.indexOf(v) === i; });
     var json = JSON.stringify(data, null, 2);
     out.value = json; out.style.display = 'block';
     bStop.style.display = 'none'; bCopy.style.display = ''; bDl.style.display = '';
-    status(comments.length ? '✓ ' + comments.length + ' comentarios extraídos. Copia el JSON y pégalo en el analizador.'
+    status(comments.length ? '✓ ' + comments.length + ' comentarios extraídos' + (onOriginal ? '' : ' de la publicación original (no se mezclaron con la nueva)') + '. Copia el JSON y pégalo en el analizador.'
       : '⚠ No se encontraron comentarios. Abre la publicación en su propia página y vuelve a intentarlo. Si sigue fallando, envía el JSON: incluye un diagnóstico sin textos ni nombres.');
     bCopy.onclick = function(){
       var ok = function(){ bCopy.textContent = '¡Copiado!'; setTimeout(function(){ bCopy.textContent = 'Copiar JSON'; }, 1500); };
@@ -1607,37 +1830,56 @@ function fbExtractor(){
     window.__fbcx = false;
   }
   (async function(){
-    var clicks = new Map(); var idle = 0, round = 0;
+    var clicks = new Map(), idle = 0, round = 0;
+    var countNow = function(){ return TT ? ttNodes().length : IG ? igTimes().length : articles().length; };
+    startKey = postKey(); snapshot();
     while (!stop && round < 600){
       round++;
-      var r = IG ? igRoot() : root();
-      var btns = Array.prototype.slice.call(r.querySelectorAll(IG ? 'button,div[role="button"],span[role="button"]' : 'div[role="button"],span[role="button"]')).filter(function(b){
-        if ((clicks.get(b) || 0) >= 4) return false;
+      if (postKey() !== startKey){
+        var dec = await waitDecision();
+        if (dec === 'use'){ useCollectedOnly = true; break; }
+        if (dec === 'restart'){ collected = []; byKey = {}; meta = {}; startKey = postKey(); clicks = new Map(); idle = 0; round = 0; pressed = []; snapshot(); }
+        continue;
+      }
+      var r = TT ? ttRoot() : IG ? igRoot() : root();
+      var btnSel = TT ? 'p[role="button"],div[role="button"],span[role="button"],button,[data-e2e^="view-more"],p[class*="ReplyActionText"],[class*="DivViewRepliesContainer"]'
+        : IG ? 'button,div[role="button"],span[role="button"]' : 'div[role="button"],span[role="button"]';
+      var btns = Array.prototype.slice.call(r.querySelectorAll(btnSel)).filter(function(b){
         if (!b.offsetParent) return false;
         var t = (b.innerText || '').trim().replace(/^[\s—–\-·•]+/, '');
+        // Un botón se puede volver a pulsar si su texto cambió ("Ver 68 más" -> "Ver 58 más"); si no, máximo 4 veces
+        var ck = clicks.get(b);
+        if (ck && (ck.n >= (ck.t === t ? 4 : 60))) return false;
         if (!t || t.length > 80 || EXCL.test(t)) return false;
-        if (IG && IG_BTN_EXCL.test(t)) return false;
+        if ((IG || TT) && (IG_BTN_EXCL.test(t) || TT_BTN_EXCL.test(t))) return false;
         return EXP.some(function(re){ return re.test(t); });
       });
       if (IG){ // "Cargar más comentarios" es un botón con solo un icono
         Array.prototype.slice.call(r.querySelectorAll('svg[aria-label]')).forEach(function(s){
           if (!IG_LOAD_RE.test(s.getAttribute('aria-label') || '')) return;
           var b = s.closest('button,[role="button"]') || s.parentElement;
-          if (b && (clicks.get(b) || 0) < 4 && btns.indexOf(b) < 0) btns.push(b);
+          if (b && (!clicks.get(b) || clicks.get(b).n < 4) && btns.indexOf(b) < 0) btns.push(b);
         });
       }
       if (btns.length){
         idle = 0;
-        for (var i = 0; i < btns.length && !stop; i++){
-          var b = btns[i]; clicks.set(b, (clicks.get(b) || 0) + 1);
+        for (var i = 0; i < btns.length && !stop && postKey() === startKey; i++){
+          var b = btns[i], bt = (b.innerText || '').trim().replace(/^[\s—–\-·•]+/, '');
+          var prev = clicks.get(b); clicks.set(b, { n: prev && prev.t === bt ? prev.n + 1 : (prev ? prev.n + 1 : 1), t: bt });
+          if (bt && pressed.length < 60) pressed.push(bt.replace(/\d+/g, 'N'));
           try { b.scrollIntoView({ block: 'center' }); b.click(); } catch(e){}
           await sleep(450 + Math.random() * 450);
         }
       } else {
-        idle++; scrollAll(); await sleep(1300);
-        if (idle >= 4) break;
+        var before = countNow();
+        idle++; scrollAll(); await sleep(TT ? 1800 : 1300);
+        var after = countNow(), total = TT ? ttTotal() : 0;
+        if (after > before) idle = 0;                       // siguen llegando comentarios: continuar
+        if (idle >= (total && after < total ? 8 : 4)) break;
       }
-      status('Desplegando comentarios… ronda ' + round + ' · visibles: ' + (IG ? igTimes().length : articles().length));
+      snapshot();   // recoger en cada ronda mientras se sigue en la publicación original
+      var tot = TT ? ttTotal() : 0;
+      status('Desplegando comentarios · ronda ' + round + ' · ' + countNow() + (tot ? ' de ' + tot : ' visibles'), true);
     }
     finish();
   })();
@@ -1672,17 +1914,26 @@ const PLATFORMS = {
     stepPage:'Elige la cuenta y la publicación', accountLabel:'Cuenta de Instagram',
     loginDesc:'La API de Instagram usa el inicio de sesión de Facebook: se pedirá permiso para leer tus cuentas profesionales y sus comentarios.',
     exStep1:'Abre la publicación en Instagram', exStep1Desc:'Ábrela en su propia página (<b>instagram.com/p/…</b> o <b>/reel/…</b>), no desde el feed, para que se carguen todos los comentarios.',
-    help:'instagram', permHelp:'ig-requisitos', exHelp:'ig-extractor', exTips:'ig-extractor' }
+    help:'instagram', permHelp:'ig-requisitos', exHelp:'ig-extractor', exTips:'ig-extractor' },
+  // TikTok no ofrece una API pública de comentarios: solo extractor e importación
+  tiktok: { name:'TikTok', reactLabel:'Me gusta', noApi:true, urlPh:'https://www.tiktok.com/@usuario/video/…', exPh:'https://www.tiktok.com/@usuario/video/…',
+    mTitle:'API de TikTok', mDesc:'TikTok no ofrece una API pública de comentarios.',
+    exDesc:'Cualquier vídeo que puedas ver en TikTok. Es el método disponible para TikTok.',
+    stepPage:'Elige la página y la publicación', accountLabel:'Página', loginDesc:'',
+    exStep1:'Abre el vídeo en TikTok', exStep1Desc:'Ábrelo en su propia página (<b>tiktok.com/@usuario/video/…</b>) y, si no ves los comentarios, pulsa el icono de comentarios.',
+    help:'tiktok', permHelp:'tiktok', exHelp:'tt-extractor', exTips:'tt-extractor' }
 };
-const curPlatform = () => PREF.get('platform','facebook')==='instagram' ? 'instagram' : 'facebook';
+const curPlatform = () => { const v = PREF.get('platform','facebook'); return PLATFORMS[v] ? v : 'facebook'; };
 function detectPlatform(text){
   const s = String(text||'');
   if(/(^|[\/.])(instagram\.com|instagr\.am)\//i.test(s) || /^(https?:\/\/)?(www\.)?(instagram\.com|instagr\.am)\b/i.test(s)) return 'instagram';
+  if(/(^|[\/.])tiktok\.com\//i.test(s) || /^(https?:\/\/)?([a-z]+\.)?tiktok\.com\b/i.test(s)) return 'tiktok';
   if(/(^|[\/.])(facebook\.com|fb\.com|fb\.watch|fb\.me)\//i.test(s) || /^(https?:\/\/)?([a-z]+\.)?(facebook\.com|fb\.watch)\b/i.test(s)) return 'facebook';
   return null;
 }
-const platName = p => PLATFORMS[p==='instagram'?'instagram':'facebook'].name;
-const platOfMeta = () => S.meta.platform==='instagram' ? 'instagram' : 'facebook';
+const platName = p => (PLATFORMS[p] || PLATFORMS.facebook).name;
+const platDot = p => ({ instagram:'ig', tiktok:'tt' })[p] || 'fb';
+const platOfMeta = () => PLATFORMS[S.meta.platform] ? S.meta.platform : 'facebook';
 
 /* ---------- utilidades ---------- */
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1725,6 +1976,10 @@ function parseFbDate(str, baseIso){
   if(!str) return null;
   const base = baseIso ? new Date(baseIso) : new Date();
   const s = str.toLowerCase().replace(/\s+/g,' ').trim();
+  let ymd = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if(ymd) return new Date(+ymd[1], +ymd[2]-1, +ymd[3], 12).toISOString();
+  ymd = s.match(/^(\d{1,2})-(\d{1,2})$/);   // TikTok: mes-día del año en curso
+  if(ymd){ const d = new Date(base.getFullYear(), +ymd[1]-1, +ymd[2], 12); if(d > base) d.setFullYear(d.getFullYear()-1); return d.toISOString(); }
   if(/^(ahora|justo ahora|just now|now|à l.instant|agora)/.test(s)) return base.toISOString();
   if(/(^|\s)(ayer|yesterday|hier|ontem)(\s|$)/.test(s)){ const d=new Date(base); d.setDate(d.getDate()-1); return d.toISOString(); }
   const m = s.match(/(\d+)\s*(segundos?|seg|sec(?:onds?)?|s|minutos?|mins?|minutes?|m|horas?|hrs?|hours?|h|d[ií]as?|days?|jours?|d|semanas?|sem|weeks?|wks?|w|meses?|months?|mois|mes|mo|años?|anos?|years?|yrs?|ans?|a|y)\b/);
@@ -1866,12 +2121,12 @@ function repairExtractorAuthor(c){
 }
 function fromExtractor(obj){
   const base = obj.extractedAt;
-  const platform = obj.platform==='instagram' ? 'instagram' : 'facebook';
+  const platform = PLATFORMS[obj.platform] ? obj.platform : 'facebook';
   const raw = (obj.comments||[]).map((c,i)=>({...c, order: c.order ?? i})).sort((a,b)=>a.order-b.order);
   raw.forEach((c,i)=>{ if(!c.id) c.id = 'x-'+(i+1); if(platform==='facebook') repairExtractorAuthor(c); });
   inferHierarchy(raw);
   const caption = String(obj.postCaption||'').replace(/\s+/g,' ').trim();
-  const author = obj.postAuthor ? (platform==='instagram' ? '@'+String(obj.postAuthor).replace(/^@/,'') : obj.postAuthor) : '';
+  const author = obj.postAuthor ? (platform!=='facebook' ? '@'+String(obj.postAuthor).replace(/^@/,'') : obj.postAuthor) : '';
   // Instagram publica la fecha exacta (atributo datetime); Facebook solo tiempos relativos.
   const exact = c => c.datetime && !isNaN(Date.parse(c.datetime)) ? new Date(c.datetime).toISOString() : null;
   return { meta:{ url:obj.url, title: caption ? caption.slice(0,160) : obj.title, postAuthor:author, postDate: obj.postDate||'', extractedAt:obj.extractedAt, source:'Extractor de navegador', platform },
@@ -1932,7 +2187,7 @@ function fromGeneric(arr){
     return { id:pick(o,KEYMAP.id), parentId:parent, authorName:String(author), authorUrl:pick(o,KEYMAP.authorUrl), authorId:pick(o,KEYMAP.authorId),
       text:String(pick(o,KEYMAP.text)), createdAt:iso, dateText:String(date), dateApprox:false, reactions:+pick(o,KEYMAP.reactions)||0,
       repliesCount:+pick(o,KEYMAP.repliesCount)||0, permalink:pick(o,KEYMAP.permalink), source:'importado',
-      platform: /insta/i.test(String(pick(o,['platform','plataforma','red','network']))) || detectPlatform(pick(o,KEYMAP.permalink)+' '+pick(o,KEYMAP.authorUrl))==='instagram' ? 'instagram' : 'facebook' };
+      platform: (pf => /tik/i.test(pf) ? 'tiktok' : /insta/i.test(pf) ? 'instagram' : (detectPlatform(pick(o,KEYMAP.permalink)+' '+pick(o,KEYMAP.authorUrl)) || 'facebook'))(String(pick(o,['platform','plataforma','red','network']))) };
   })};
 }
 function parseCSV(text){
@@ -1971,7 +2226,7 @@ function loadData(parsed, {silent=false}={}){
   if(!parsed.comments.length) throw new Error('No se encontraron comentarios. Asegúrate de que la sección de comentarios esté abierta antes de ejecutar el extractor.');
   S.meta = parsed.meta || {};
   S.comments = finalize(parsed.comments, S.meta);
-  if(!S.meta.platform) S.meta.platform = S.comments.filter(c=>c.platform==='instagram').length > S.comments.length/2 ? 'instagram' : 'facebook';
+  if(!S.meta.platform){ const n = {}; S.comments.forEach(c=>n[c.platform]=(n[c.platform]||0)+1); S.meta.platform = Object.keys(n).sort((a,b)=>n[b]-n[a])[0] || 'facebook'; }
   S.selected.clear(); S.page=1; S.sort={key:'idx',dir:'asc'}; S.expanded.clear(); S.collapsed.clear();
   Object.values(S.f).forEach(s=>s.clear()); $('#q').value='';
   try{ localStorage.setItem('fbca:'+STORE_KEY, JSON.stringify({meta:S.meta, comments:S.comments})); }catch(e){}
@@ -2138,7 +2393,8 @@ async function igFetch(){
     $('#gFetch').disabled=false; $('#gStop').classList.add('hidden'); $('#gProg').classList.add('hidden'); gAbort=null;
   }
 }
-const fetchComments = () => curPlatform()==='instagram' ? igFetch() : graphFetch();
+const fetchComments = () => curPlatform()==='tiktok' ? setStatus('#gStatus','TikTok no ofrece una API pública de comentarios: usa el extractor de navegador.',true,'tiktok')
+  : curPlatform()==='instagram' ? igFetch() : graphFetch();
 
 /* ---------- Login con Facebook (JS SDK) ---------- */
 const FB_SCOPES = 'pages_show_list,pages_read_engagement,pages_read_user_content';
@@ -2367,7 +2623,7 @@ function renderMeta(){
   if(m.extractedAt) parts.push(['schedule','Obtenido el '+fmtDate(m.extractedAt)]);
   if(m.totalReported!=null) parts.push(['tag',platName(platOfMeta())+' informa '+fmtN(m.totalReported)]);
   if(m.url) parts.push(['link',`<a href="${esc(m.url)}" target="_blank" rel="noopener">Ver publicación</a>`]);
-  $('#pMeta').innerHTML = `<span class="plat-chip"><i class="pdot ${platOfMeta()==='instagram'?'ig':'fb'}"></i>${platName(platOfMeta())}</span>` + parts.map(([i,t])=>`<span><span class="ms">${i}</span>${t}</span>`).join('');
+  $('#pMeta').innerHTML = `<span class="plat-chip"><i class="pdot ${platDot(platOfMeta())}"></i>${platName(platOfMeta())}</span>` + parts.map(([i,t])=>`<span><span class="ms">${i}</span>${t}</span>`).join('');
 }
 function computeStats(list){
   const authors = {}; let reacts=0, chars=0, att=0, q=0, pos=0, neg=0, neu=0, replies=0;
@@ -2510,19 +2766,20 @@ function renderConv(slice, q){
     const other = c.attachments.filter(a=>a!==img);
     const sc = c.sentiment==='positivo'?'var(--success)':c.sentiment==='negativo'?'var(--error)':'var(--outline)';
     const nameHtml = c.authorUrl ? `<a class="cname" href="${esc(c.authorUrl)}" target="_blank" rel="noopener">${highlight(name,q)}</a>` : `<span class="cname">${highlight(name,q)}</span>`;
-    const ig = c.platform==='instagram';
+    const ig = c.platform==='instagram', tt = c.platform==='tiktok', flat = ig || tt;
     const verified = c.badges.includes('Verificado');
     const otherBadges = c.badges.filter(b=>b!=='Verificado');
     const textHtml = markMention(highlight(c.text,q), c)||'<span class="muted">(sin texto)</span>';
     const toggleLbl = `${esc(kids[0]?.authorName||'Alguien')} respondió · ${kids.length===1?'1 respuesta':kids.length+' respuestas'}`;
-    return `<div class="cnode${lvl===0?' cthread':''}${kids.length?' has-kids':''}${sel?' selected':''}${ig?' ig':''}" data-id="${esc(c.id)}">
+    return `<div class="cnode${lvl===0?' cthread':''}${kids.length?' has-kids':''}${sel?' selected':''}${ig?' ig':''}${tt?' tt':''}" data-id="${esc(c.id)}">
       ${lvl===0 && c.parentId ? `<div class="cctx"><span class="ms">subdirectory_arrow_right</span>En respuesta a ${esc(c.replyTo||'otro comentario')}</div>` : ''}
       <div class="crow">
         <div class="cav">${avatarHtml(c)}</div>
         <div class="cmain">
-          ${ig ? `<div class="bubble-wrap">
+          ${flat ? `<div class="bubble-wrap">
             <div class="bubble" tabindex="0" role="button" aria-label="Comentario de ${esc(name)}. Pulsa para ver los detalles">
-              <div class="ctext${long?' clamp':''}">${nameHtml}${verified?'<span class="ms fill cverif" title="Cuenta verificada">verified</span>':''} ${textHtml}</div>
+              ${tt ? `<div class="cname-line">${nameHtml}${otherBadges.length?`<span class="ttbadge">${esc(otherBadges[0])}</span>`:''}</div><div class="ctext${long?' clamp':''}">${textHtml}</div>`
+                   : `<div class="ctext${long?' clamp':''}">${nameHtml}${verified?'<span class="ms fill cverif" title="Cuenta verificada">verified</span>':''} ${textHtml}</div>`}
               ${long?'<button class="cmore-txt" data-more>Ver más</button>':''}
             </div>
           </div>` : `<div class="bubble-wrap${c.reactions?' has-react':''}">
@@ -2548,7 +2805,7 @@ function renderConv(slice, q){
             ${c.permalink?`<a href="${esc(c.permalink)}" target="_blank" rel="noopener">Ver en ${platName(c.platform)}</a>`:''}
           </div>
         </div>
-        ${ig ? `<span class="cheart${c.reactions?' on':''}" title="${fmtN(c.reactions)} me gusta"><span class="ms${c.reactions?' fill':''}">favorite</span></span>` : ''}
+        ${flat ? `<span class="cheart${c.reactions?' on':''}" title="${fmtN(c.reactions)} me gusta"><span class="ms${c.reactions?' fill':''}">favorite</span>${tt && c.reactions ? `<b>${fmtN(c.reactions)}</b>` : ''}</span>` : ''}
         <label class="csel" style="--lvl:${lvl}" title="Seleccionar"><input type="checkbox" class="rowchk" ${sel?'checked':''} aria-label="Seleccionar comentario de ${esc(name)}"></label>
       </div>
       ${kids.length ? `<div class="creplies">${open ? kids.map(k=>node(k,lvl+1)).join('') :
@@ -2631,7 +2888,7 @@ function showDetail(c){
     ['Autor', c.authorName], ['Perfil', c.authorUrl], ['ID del autor', c.authorId], ['Insignias', c.badges.join(', ')],
     ['Tipo', c.type==='reply'?`Respuesta (nivel ${c.depth})`:'Comentario principal'], ['Responde a', c.replyTo],
     ['Fecha', c.createdAt ? fmtDate(c.createdAt)+(c.dateApprox?' (aproximada)':'') : ''], ['Fecha original', c.dateText],
-    ['Plataforma', platName(c.platform)], [c.platform==='instagram'?'Me gusta':'Reacciones', c.reactions], ...(c.platform==='instagram'?[]:[['Me gusta', c.likes]]), ['Respuestas', c.repliesCount],
+    ['Plataforma', platName(c.platform)], [c.platform!=='facebook'?'Me gusta':'Reacciones', c.reactions], ...(c.platform!=='facebook'?[]:[['Me gusta', c.likes]]), ['Respuestas', c.repliesCount],
     ['Sentimiento', `${c.sentiment} (puntuación ${c.sentimentScore})`], ['Caracteres / palabras', `${c.length} / ${c.words}`],
     ['Hashtags', c.hashtags.join(' ')], ['Menciones', c.mentions.join(', ')], ['Emojis', c.emojis.join(' ')], ['Enlaces', c.urls.join('\n')],
     ['Adjuntos', c.attachments.map(a=>`${a.type}${a.url?': '+a.url:''}`).join('\n')], ['Editado', c.edited?'Sí':''], ['Oculto', c.hidden?'Sí':''],
@@ -2745,7 +3002,7 @@ function doCopy(kind){
 
 /* ---------- demo ---------- */
 function demoData(platform='facebook'){
-  const ig = platform==='instagram';
+  const ig = platform==='instagram', tt = platform==='tiktok';
   const handle = n => n.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,'.');
   const names=['María González','Carlos Pérez','Lucía Fernández','Andrés Romero','Sofía Martínez','Diego Herrera','Valentina Ruiz','Javier Castro','Camila Torres','Mateo Silva','Ana López','Pedro Ramírez','Laura Díaz'];
   const texts=['¡Excelente producto! Lo recomiendo 100% 👏','¿Hacen envíos a Monterrey? ¿Cuánto cuesta?','Pésimo servicio, llevo 2 semanas esperando mi pedido 😡','Me encanta ❤️❤️ ya quiero el mío','Precio por favor','Muy buena calidad, gracias por la atención 🙏','@LauraDíaz mira esto, te va a gustar','No me llegó completo, quiero una solución','Felicidades por el lanzamiento 🎉🎉','¿Tienen en color negro?','Es una estafa, no compren','Súper rápido el envío, todo perfecto 👍','Interesante, ¿dónde están ubicados?','Me gustaría más información sobre las garantías','Hermoso diseño 😍 #nuevacoleccion','El mejor de todos, ya es mi tercera compra','Malo, se rompió al primer uso 👎','Info por inbox por favor','Jajaja justo lo que necesitaba 😂','¿Aceptan tarjeta de crédito?'];
@@ -2770,8 +3027,8 @@ function demoData(platform='facebook'){
     }
   }
   out.sort((a,b)=>Date.parse(a.createdAt)-Date.parse(b.createdAt));
-  out.forEach(c=>{ c.platform = platform; if(ig){ c.authorUrl = 'https://www.instagram.com/'+c.authorName+'/'; c.mentions = (c.text.match(/@[\w.]+/g)||[]).map(m=>m.slice(1)); } });
-  return { meta:{ title: ig ? 'Nueva colección 🌸 Disponible desde hoy #nuevacoleccion (ejemplo)' : 'Lanzamiento de la nueva colección (ejemplo)', postAuthor: ig ? '@'+brand : brand,
+  out.forEach(c=>{ c.platform = platform; if(tt){ c.authorId = handle(c.authorName); c.authorUrl = 'https://www.tiktok.com/@'+c.authorId; } if(ig){ c.authorUrl = 'https://www.instagram.com/'+c.authorName+'/'; c.mentions = (c.text.match(/@[\w.]+/g)||[]).map(m=>m.slice(1)); } });
+  return { meta:{ title: tt ? 'Así preparamos cada pedido 📦 #fyp #envios (ejemplo)' : ig ? 'Nueva colección 🌸 Disponible desde hoy #nuevacoleccion (ejemplo)' : 'Lanzamiento de la nueva colección (ejemplo)', postAuthor: tt ? '@tienda.oficial' : ig ? '@'+brand : brand,
     source:'Datos de ejemplo', extractedAt:new Date().toISOString(), platform }, comments:out };
 }
 
@@ -2824,9 +3081,12 @@ function selectTab(name){
   if(name==='summary') requestAnimationFrame(renderChartsIfVisible);
 }
 function setPlatform(p, silent){
-  p = p==='instagram' ? 'instagram' : 'facebook';
+  p = PLATFORMS[p] ? p : 'facebook';
   PREF.set('platform', p);
   const P = PLATFORMS[p];
+  // TikTok no tiene API pública de comentarios: se oculta ese método
+  $('.method[data-method="fb"]').classList.toggle('hidden', !!P.noApi);
+  if(P.noApi && PREF.get('method','fb')==='fb') setMethod('extractor');
   $$('#platSeg [data-plat]').forEach(b=>{ b.setAttribute('aria-checked', b.dataset.plat===p); b.tabIndex = b.dataset.plat===p ? 0 : -1; });
   $('#mFbTitle').textContent = P.mTitle; $('#mFbDesc').textContent = P.mDesc; $('#mExDesc').textContent = P.exDesc;
   $('#mpFbTitle').textContent = P.mTitle; $('#mpFbHelp').href = '#ayuda/'+P.help; $('#mpExHelp').href = '#ayuda/'+P.exHelp;
@@ -2836,7 +3096,7 @@ function setPlatform(p, silent){
   $('#exStep1Title').textContent = P.exStep1;
   $('#exStep1Desc').innerHTML = `${P.exStep1Desc} <a href="#ayuda/${P.exTips}">Consejos</a>`;
   document.body.dataset.platform = p;
-  if(!silent && FBA.userToken) renderAccounts();
+  if(!silent && FBA.userToken && !P.noApi) renderAccounts();
 }
 function setMethod(m){
   $$('.method').forEach(b=>{ b.setAttribute('aria-checked', b.dataset.method===m); b.tabIndex = b.dataset.method===m?0:-1; });
@@ -2855,10 +3115,10 @@ function setTheme(t){ applyTheme(t); t==='system'?PREF.del('theme'):PREF.set('th
 
 /* ----- onboarding ----- */
 const OB_STEPS = [
-  { icon:'waving_hand', title:'Te damos la bienvenida a Social Comments Analyzer', html:`<p>Con esta herramienta puedes <b>obtener los comentarios</b> de una publicación de <b>Facebook o Instagram</b>, <b>analizarlos</b> y <b>copiarlos o exportarlos</b> a Excel, CSV o JSON.</p>
+  { icon:'waving_hand', title:'Te damos la bienvenida a Social Comments Analyzer', html:`<p>Con esta herramienta puedes <b>obtener los comentarios</b> de una publicación de <b>Facebook, Instagram o TikTok</b>, <b>analizarlos</b> y <b>copiarlos o exportarlos</b> a Excel, CSV o JSON.</p>
     <div class="ob-list"><div class="ob-item"><span class="ms">lock</span><div><b>Privado</b><span>Todo se procesa en tu navegador. No hay ningún servidor intermedio.</span></div></div>
     <div class="ob-item"><span class="ms">bolt</span><div><b>Rápido</b><span>Unos pocos pasos, de la publicación al informe.</span></div></div></div>` },
-  { icon:'alt_route', title:'Elige cómo obtenerlos', html:`<p>Elige la red social (<b>Facebook</b> o <b>Instagram</b>; se detecta sola al pegar un enlace) y uno de estos tres métodos:</p>
+  { icon:'alt_route', title:'Elige cómo obtenerlos', html:`<p>Elige la red social (<b>Facebook</b>, <b>Instagram</b> o <b>TikTok</b>; se detecta sola al pegar un enlace) y uno de estos tres métodos:</p>
     <div class="ob-list">
       <div class="ob-item"><span class="ms">verified_user</span><div><b>Conectar con la API</b><span>Para páginas que administras y sus cuentas profesionales de Instagram. Datos exactos.</span></div></div>
       <div class="ob-item"><span class="ms">travel_explore</span><div><b>Extractor de navegador</b><span>Para cualquier publicación que puedas ver con tu sesión.</span></div></div>
@@ -2870,7 +3130,7 @@ const OB_STEPS = [
     <p class="small">Las guías completas están en <b>Ayuda → Conectar con Facebook</b> e <b>Instagram</b>.</p>` },
   { icon:'travel_explore', title:'Para cualquier otra publicación', html:`<ol style="padding-left:20px">
     <li>Arrastra el botón <b>Social Comments Analyzer</b> a tu barra de marcadores.</li>
-    <li>Abre la publicación en Facebook (elige <b>“Todos los comentarios”</b>) o en Instagram.</li>
+    <li>Abre la publicación en Facebook (elige <b>“Todos los comentarios”</b>), Instagram o TikTok.</li>
     <li>Pulsa el marcador: se abrirán las respuestas y los comentarios ocultos.</li>
     <li>Pulsa <b>Copiar JSON</b> y pégalo aquí.</li></ol>` },
   { icon:'insights', title:'Analiza y exporta', html:`<p>En <b>Resultados</b> verás un resumen con gráficos y los comentarios <b>como en Facebook</b>, con sus respuestas anidadas, o en una tabla con autor, fecha, texto, reacciones y más.</p>
@@ -3019,7 +3279,7 @@ function filterHelp(q){
   $('#igGrant').onclick = igGrant;
   // plataforma: selector manual y detección automática al pegar un enlace
   $$('#platSeg [data-plat]').forEach(b=>b.onclick=()=>setPlatform(b.dataset.plat));
-  $('#platSeg').addEventListener('keydown', e=>{ if(e.key==='ArrowRight'||e.key==='ArrowLeft'){ e.preventDefault(); const n = curPlatform()==='facebook'?'instagram':'facebook'; setPlatform(n); $(`#platSeg [data-plat="${n}"]`).focus(); } });
+  $('#platSeg').addEventListener('keydown', e=>{ if(e.key==='ArrowRight'||e.key==='ArrowLeft'){ e.preventDefault(); const ks = Object.keys(PLATFORMS), i = ks.indexOf(curPlatform()); const n = ks[(i + (e.key==='ArrowRight'?1:-1) + ks.length) % ks.length]; setPlatform(n); $(`#platSeg [data-plat="${n}"]`).focus(); } });
   ['#gUrl','#exUrl'].forEach(s=>$(s).addEventListener('input', e=>{
     const d = detectPlatform(e.target.value);
     if(d && d!==curPlatform()){ setPlatform(d); toast(`Enlace de ${platName(d)} detectado`); }
