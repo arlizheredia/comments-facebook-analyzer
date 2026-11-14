@@ -137,7 +137,11 @@ main{background:var(--surface);border-radius:16px 16px 0 0;margin-right:16px;min
 .grow{flex:1 1 240px;min-width:0}
 .field{display:flex;flex-direction:column;gap:6px;min-width:0}
 .field label{font-size:12px;font-weight:500;color:var(--on-surface-variant)}
-.field .hint{font-size:12px;color:var(--on-surface-variant)}
+.field .hint{font-size:12px;line-height:16px;color:var(--on-surface-variant)}
+/* Filas de campos: alineadas por arriba para que etiquetas y cajas coincidan aunque un campo tenga texto de ayuda */
+.row.fields{align-items:flex-start}
+.field-narrow{flex:0 0 160px}
+@media (max-width:520px){ .field-narrow{flex:1 1 100%} }
 .input,select.input,textarea.input{width:100%;height:48px;padding:0 16px;border:1px solid var(--outline);border-radius:8px;background:var(--surface);color:var(--on-surface);font:400 14px var(--font);outline:none;transition:border-color .15s,box-shadow .15s}
 textarea.input{height:auto;min-height:140px;padding:12px 16px;font-family:var(--mono);font-size:12px;line-height:18px;resize:vertical}
 .input:hover{border-color:var(--on-surface)}
@@ -407,6 +411,25 @@ a.cname:hover{text-decoration:underline}
   .ctext{font-size:14px}
 }
 
+/* ================== ENLACES A LA AYUDA ================== */
+.hlp{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:500;line-height:20px;color:var(--primary);text-decoration:none;border-radius:16px;padding:4px 10px 4px 6px;white-space:nowrap;vertical-align:middle}
+.hlp:hover{background:color-mix(in srgb,var(--primary) 10%,transparent)}
+.hlp .ms{font-size:18px}
+.hlp.inline{padding:0 4px;margin-left:2px}
+.hlp-ic{color:var(--on-surface-variant);margin:-6px -6px -6px auto}
+.hlp-ic:hover{color:var(--primary)}
+.head-links{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0 0 -6px}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:-4px 0 20px}
+.panel-head h2{font-size:18px;line-height:24px;font-weight:500}
+.card>h3{display:flex;align-items:center;gap:8px}
+.chart-card h3{justify-content:flex-start}
+.summary-head{display:flex;justify-content:flex-end;margin:-12px 0 8px}
+.privacy-line{text-align:center;margin-top:8px}
+[id^="h-"]{scroll-margin-top:88px}
+.flash{animation:flash 1.8s ease}
+@keyframes flash{0%,35%{background:var(--primary-container);box-shadow:0 0 0 6px var(--primary-container);border-radius:8px}100%{background:transparent;box-shadow:0 0 0 6px transparent}}
+@media (pointer:coarse){ .hlp-ic{width:40px;height:40px} }
+
 /* ================== AYUDA ================== */
 .help-layout{display:grid;grid-template-columns:240px 1fr;gap:40px;align-items:start}
 .help-layout>*{min-width:0}
@@ -532,6 +555,46 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
 .ms-fb{font-family:var(--font)!important;font-size:18px!important;font-weight:500}
 .touch-only{display:none}
 @media (pointer:coarse) and (hover:none){ .touch-only{display:flex} }
+
+/* ================== REVISIÓN RESPONSIVE ================== */
+/* Tabla comparativa de la ayuda: columnas legibles con desplazamiento horizontal */
+.cmp{min-width:560px}
+.cmp th,.cmp td{overflow-wrap:normal;word-break:normal}
+@media (max-width:900px){
+  /* Chips de filtro e índice de ayuda: una fila desplazable (patrón de Google) */
+  .filters,.toc{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin-left:-16px;margin-right:-16px;padding:2px 16px 6px}
+  .filters::-webkit-scrollbar,.toc::-webkit-scrollbar{display:none}
+  .filters>*,.toc a{flex:none;white-space:nowrap}
+}
+@media (max-width:720px){
+  /* Barra de selección en una línea: solo iconos */
+  .selbar{flex-wrap:nowrap;padding:4px 4px 4px 8px;gap:4px}
+  .selbar .lbl{display:none}
+  .selbar .btn{padding:0 10px}
+  .selbar .btn .ms{margin:0}
+  /* Tarjetas de la tabla: cabecera, texto y una línea de datos */
+  tbody tr{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
+  td.c-chk{order:1}
+  td.c-author{order:2;flex:1;min-width:0}
+  td.c-acts{order:3}
+  td.c-text{order:4;flex-basis:100%}
+  td.c-r{order:5} td.c-rp{order:6} td.c-sent{order:7}
+  td.c-date{order:8;margin-left:auto;font-size:12px}
+  td.c-meta{display:inline-flex;align-items:center;font-size:13px;color:var(--on-surface-variant)}
+  td.zero{display:none}
+  /* Menú Exportar alineado a la derecha de su botón para no salirse de la pantalla */
+  .res-head .menu-anchor:nth-child(2) .menu{left:auto;right:0}
+  /* Enlaces de ayuda alineados con el texto cuando pasan a otra línea */
+  .panel-head .hlp,.head-links{margin-left:-6px}
+  /* Las tablas de la ayuda siguen siendo tablas (las tarjetas son solo para la tabla de comentarios) */
+  .cmp,.kbd-table{display:table}
+  .cmp thead{display:table-header-group}
+  .cmp tbody,.kbd-table tbody{display:table-row-group}
+  .cmp tr,.kbd-table tr{display:table-row;border:0;border-radius:0;padding:0;margin:0}
+  .cmp th,.cmp td,.kbd-table td{display:table-cell}
+  .cmp td,.cmp th{border-bottom:1px solid var(--outline-variant)}
+}
+@media (pointer:coarse) and (hover:none){ .hide-touch{display:none} }
 </style>
 </head>
 <body>
@@ -574,6 +637,7 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
       <div class="page-head">
         <h1 id="h-obtener">Obtén los comentarios</h1>
         <p>Elige cómo quieres obtener los comentarios de una publicación de Facebook.</p>
+        <div class="head-links"><a class="hlp" href="#ayuda/metodos"><span class="ms">help</span>¿Qué método elegir?</a><a class="hlp" href="#ayuda/inicio"><span class="ms">help</span>Primeros pasos</a></div>
       </div>
 
       <div class="methods" role="radiogroup" aria-label="Método">
@@ -593,6 +657,7 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
 
       <!-- ===== Método: Facebook ===== -->
       <div class="card method-panel" id="mp-fb">
+        <div class="panel-head"><h2>Conectar con Facebook</h2><a class="hlp" href="#ayuda/facebook"><span class="ms">help</span>Guía de configuración</a></div>
         <div class="banner warn hidden" id="protoWarn" role="alert">
           <span class="ms">warning</span>
           <div>El inicio de sesión de Facebook solo funciona en <b>https://</b> o <b>http://localhost</b>. Estás abriendo el archivo directamente.
@@ -602,8 +667,8 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
         <ol class="steps">
           <li class="step" id="stepApp">
             <h3>Configura tu app de Facebook</h3>
-            <div class="desc">Solo la primera vez. Se guarda en este navegador. <a href="#ayuda/facebook">¿Cómo crear la app?</a></div>
-            <div class="row">
+            <div class="desc">Solo la primera vez. Se guarda en este navegador. <a href="#ayuda/fb-app">¿Cómo crear la app?</a></div>
+            <div class="row fields">
               <div class="field grow">
                 <label for="fbAppId">App ID</label>
                 <input class="input" type="text" id="fbAppId" placeholder="123456789012345" inputmode="numeric" autocomplete="off">
@@ -616,7 +681,7 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
           </li>
           <li class="step" id="stepLogin">
             <h3>Inicia sesión</h3>
-            <div class="desc">Se pedirá permiso para leer las páginas que administras y sus comentarios.</div>
+            <div class="desc">Se pedirá permiso para leer las páginas que administras y sus comentarios. <a href="#ayuda/fb-permisos">¿Qué permisos se piden?</a></div>
             <div class="row">
               <button class="btn fb" id="fbLogin"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M24 12.07C24 5.41 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.04V9.41c0-3.02 1.8-4.7 4.54-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.5c-1.5 0-1.96.93-1.96 1.89v2.26h3.32l-.53 3.5h-2.8V24C19.62 23.1 24 18.1 24 12.07"/></svg>Continuar con Facebook</button>
               <button class="btn outlined hidden" id="fbLogout"><span class="ms">logout</span>Cerrar sesión</button>
@@ -657,29 +722,30 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
         <div class="status" id="gStatus" role="status"></div>
         <details class="adv">
           <summary>Opciones avanzadas <span class="ms">expand_more</span></summary>
-          <div class="row" style="margin-top:12px">
+          <div class="row fields" style="margin-top:16px">
             <div class="field grow">
               <label for="gToken">Token de acceso</label>
               <input class="input" type="password" id="gToken" placeholder="Se completa al iniciar sesión" autocomplete="off">
-              <span class="hint">Puedes pegar un Page Access Token generado en Graph API Explorer.</span>
+              <span class="hint">Puedes pegar un Page Access Token generado en Graph API Explorer. <a href="#ayuda/fb-token">Sobre el token</a></span>
             </div>
-            <div class="field" style="width:140px">
+            <div class="field field-narrow">
               <label for="gVer">Versión de la API</label>
               <input class="input" type="text" id="gVer" value="v23.0">
             </div>
           </div>
-          <label class="check" style="margin-top:12px"><input type="checkbox" id="gRemember"> Recordar el token mientras esté abierta esta pestaña</label>
+          <label class="check" style="margin-top:16px"><input type="checkbox" id="gRemember"> Recordar el token mientras esté abierta esta pestaña</label>
         </details>
       </div>
 
       <!-- ===== Método: Extractor ===== -->
       <div class="card method-panel hidden" id="mp-extractor">
+        <div class="panel-head"><h2>Extractor de navegador</h2><a class="hlp" href="#ayuda/extractor"><span class="ms">help</span>Guía del extractor</a></div>
         <div class="banner warn touch-only" style="margin-top:0"><span class="ms">computer</span>
           <div>El extractor necesita un <b>ordenador</b> (Chrome, Edge, Firefox o Safari de escritorio): la versión móvil de Facebook no lo admite. Desde este dispositivo puedes <b>importar</b> el JSON generado en el ordenador o usar <b>Conectar con Facebook</b>.</div></div>
         <ol class="steps">
           <li class="step">
             <h3>Abre la publicación en Facebook</h3>
-            <div class="desc">En el selector de orden de comentarios elige <b>“Todos los comentarios”</b> para no perder ninguno.</div>
+            <div class="desc">En el selector de orden de comentarios elige <b>“Todos los comentarios”</b> para no perder ninguno. <a href="#ayuda/ex-consejos">Consejos</a></div>
             <div class="row" style="align-items:flex-end">
               <div class="field grow">
                 <label for="exUrl">URL de la publicación</label>
@@ -695,7 +761,7 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
               <a class="bookmarklet" id="bookmarklet" href="#" title="Arrástrame a la barra de marcadores">Comments-Analyzer</a>
               <button class="btn text" id="copyScript"><span class="ms">content_copy</span>Copiar código para la consola</button>
             </div>
-            <p class="small muted" style="margin-top:8px">¿No ves la barra de marcadores? Pulsa <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> (<kbd>⌘</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> en Mac). <a href="#ayuda/extractor">Ver guía</a></p>
+            <p class="small muted hide-touch" style="margin-top:8px">¿No ves la barra de marcadores? Pulsa <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> (<kbd>⌘</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> en Mac). <a href="#ayuda/ex-marcador">Ver guía</a></p>
           </li>
           <li class="step">
             <h3>Pega el resultado</h3>
@@ -710,6 +776,7 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
 
       <!-- ===== Método: Importar ===== -->
       <div class="card method-panel hidden" id="mp-import">
+        <div class="panel-head"><h2>Importar archivo</h2><a class="hlp" href="#ayuda/importar"><span class="ms">help</span>Formatos admitidos</a></div>
         <label class="dropzone" id="dropzone" for="fileIn">
           <span class="ms">cloud_upload</span>
           <h3 style="margin-top:8px">Arrastra un archivo aquí</h3>
@@ -720,12 +787,13 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
         <textarea class="input" id="impPaste" placeholder="Pega aquí un JSON o CSV con encabezados (autor, texto, fecha…)" aria-label="Contenido a importar"></textarea>
         <div class="row" style="margin-top:12px">
           <button class="btn filled" id="impAnalyze"><span class="ms">analytics</span>Analizar</button>
-          <a class="btn text" href="#ayuda/importar">Formatos admitidos</a>
+          <a class="btn text" href="#ayuda/importar"><span class="ms">help</span>Columnas reconocidas</a>
         </div>
       </div>
 
       <div class="status" id="globalStatus" role="alert"></div>
       <div class="demo-line">¿Solo quieres probar? <button class="btn text" id="demoBtn"><span class="ms">science</span>Cargar datos de ejemplo</button></div>
+      <p class="privacy-line small muted"><span class="ms sm" style="vertical-align:-4px">lock</span> Los comentarios se procesan solo en este navegador. <a href="#ayuda/privacidad">Privacidad y datos</a></p>
     </section>
 
     <!-- ======================= RESULTADOS ======================= -->
@@ -735,6 +803,7 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
         <h2>Todavía no hay comentarios</h2>
         <p>Obtén los comentarios de una publicación o carga los datos de ejemplo para ver el análisis.</p>
         <a class="btn filled" href="#obtener"><span class="ms">add_comment</span>Obtener comentarios</a>
+        <p style="margin-top:16px"><a class="hlp" href="#ayuda/inicio"><span class="ms">help</span>Ver primeros pasos</a></p>
       </div>
 
       <div id="resContent" class="hidden">
@@ -755,6 +824,8 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
                 <button role="menuitem" data-copy="json"><span class="ms">data_object</span>Como JSON</button>
                 <hr>
                 <button role="menuitem" data-copy="summary"><span class="ms">summarize</span>Resumen del análisis</button>
+                <hr>
+                <a role="menuitem" href="#ayuda/exportar"><span class="ms">help</span>¿Qué formato elegir?</a>
               </div>
             </div>
             <div class="menu-anchor">
@@ -766,6 +837,8 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
                 <button role="menuitem" data-exp="json"><span class="ms">data_object</span>JSON (.json)</button>
                 <button role="menuitem" data-exp="txt"><span class="ms">description</span>Texto (.txt)</button>
                 <button role="menuitem" data-exp="html"><span class="ms">web</span>Informe HTML</button>
+                <hr>
+                <a role="menuitem" href="#ayuda/exportar"><span class="ms">help</span>¿Qué formato elegir?</a>
               </div>
             </div>
             <div class="menu-anchor">
@@ -773,6 +846,8 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
               <div class="menu" id="resMenu" role="menu">
                 <a role="menuitem" href="#obtener"><span class="ms">add_comment</span>Analizar otra publicación</a>
                 <button role="menuitem" id="clearBtn"><span class="ms">delete</span>Borrar estos datos</button>
+                <hr>
+                <a role="menuitem" href="#ayuda/analisis"><span class="ms">help</span>Ayuda sobre los resultados</a>
               </div>
             </div>
           </div>
@@ -784,21 +859,22 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
         </div>
 
         <div class="tabpanel active" id="tp-summary" role="tabpanel" aria-labelledby="tab-summary">
+          <div class="summary-head"><a class="hlp" href="#ayuda/analisis"><span class="ms">help</span>Cómo interpretar estas métricas</a></div>
           <div class="stats" id="stats"></div>
           <div class="charts">
-            <div class="card chart chart-card"><h3><span id="tlTitle">Comentarios en el tiempo</span><span id="tlApprox"></span></h3><div id="chartTimeline"></div></div>
-            <div class="card chart chart-card"><h3>Actividad por hora del día</h3><div id="chartHours"></div></div>
-            <div class="card"><h3>Autores más activos</h3><div id="topAuthors"></div></div>
+            <div class="card chart chart-card"><h3><span id="tlTitle">Comentarios en el tiempo</span><span id="tlApprox"></span><a class="icon-btn sm hlp-ic" href="#ayuda/an-tiempo" aria-label="Ayuda: gráfico de actividad" title="Ayuda: gráfico de actividad"><span class="ms">help</span></a></h3><div id="chartTimeline"></div></div>
+            <div class="card chart chart-card"><h3>Actividad por hora del día<a class="icon-btn sm hlp-ic" href="#ayuda/an-tiempo" aria-label="Ayuda: actividad por hora" title="Ayuda: actividad por hora"><span class="ms">help</span></a></h3><div id="chartHours"></div></div>
+            <div class="card"><h3>Autores más activos<a class="icon-btn sm hlp-ic" href="#ayuda/an-autores" aria-label="Ayuda: autores más activos" title="Ayuda: autores más activos"><span class="ms">help</span></a></h3><div id="topAuthors"></div></div>
             <div class="card">
-              <h3>Sentimiento estimado</h3>
+              <h3>Sentimiento estimado<a class="icon-btn sm hlp-ic" href="#ayuda/an-sentimiento" aria-label="Ayuda: cómo se estima el sentimiento" title="Ayuda: cómo se estima el sentimiento"><span class="ms">help</span></a></h3>
               <div class="sentbar" id="sentBar" role="img"></div>
               <div class="legend" id="sentLegend"></div>
               <h3 style="margin-top:24px">Con más reacciones</h3>
               <div id="topLiked"></div>
             </div>
-            <div class="card"><h3>Palabras más frecuentes</h3><div class="tag-chips" id="topWords"></div></div>
+            <div class="card"><h3>Palabras más frecuentes<a class="icon-btn sm hlp-ic" href="#ayuda/an-palabras" aria-label="Ayuda: palabras frecuentes" title="Ayuda: palabras frecuentes"><span class="ms">help</span></a></h3><div class="tag-chips" id="topWords"></div></div>
             <div class="card">
-              <h3>Emojis</h3><div class="tag-chips" id="topEmojis"></div>
+              <h3>Emojis<a class="icon-btn sm hlp-ic" href="#ayuda/an-etiquetas" aria-label="Ayuda: emojis, hashtags y menciones" title="Ayuda: emojis, hashtags y menciones"><span class="ms">help</span></a></h3><div class="tag-chips" id="topEmojis"></div>
               <h3 style="margin-top:24px">Hashtags y menciones</h3><div class="tag-chips" id="topTags"></div>
             </div>
           </div>
@@ -829,14 +905,15 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
             <button class="fchip" data-fg="extra" data-fv="att" aria-pressed="false"><span class="ms">check</span>Con adjuntos</button>
             <button class="fchip" data-fg="extra" data-fv="noreply" aria-pressed="false"><span class="ms">check</span>Sin responder</button>
             <button class="btn text sm hidden" id="fReset">Quitar filtros</button>
+            <a class="hlp" href="#ayuda/filtrar"><span class="ms">help</span>Cómo buscar y filtrar</a>
           </div>
           <div class="selbar hidden" id="selbar">
             <button class="icon-btn sm" id="selNone" aria-label="Quitar selección"><span class="ms">close</span></button>
             <b id="selCount"></b>
             <span class="spacer"></span>
-            <button class="btn text sm" data-copy="tsv"><span class="ms">content_copy</span>Copiar</button>
-            <button class="btn text sm" data-exp="xlsx"><span class="ms">download</span>Excel</button>
-            <button class="btn text sm" data-exp="csv">CSV</button>
+            <button class="btn text sm" data-copy="tsv" aria-label="Copiar selección" title="Copiar"><span class="ms">content_copy</span><span class="lbl">Copiar</span></button>
+            <button class="btn text sm" data-exp="xlsx" aria-label="Exportar selección a Excel" title="Excel"><span class="ms">grid_on</span><span class="lbl">Excel</span></button>
+            <button class="btn text sm" data-exp="csv" aria-label="Exportar selección a CSV" title="CSV"><span class="ms">csv</span><span class="lbl">CSV</span></button>
           </div>
           <div class="conv-bar">
             <label class="row conv-only" style="gap:8px">Ordenar
@@ -889,6 +966,7 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
     <section class="view" id="view-ayuda" aria-labelledby="h-help">
       <div class="help-hero">
         <div>
+          <a class="btn tonal sm hidden" id="helpBack" href="#obtener" style="margin-bottom:12px"><span class="ms">arrow_back</span><span id="helpBackTxt">Volver</span></a>
           <h1 id="h-help">Centro de ayuda</h1>
           <p style="margin:4px 0 0;opacity:.85">Guías, respuestas a preguntas frecuentes y consejos para sacar el máximo partido.</p>
         </div>
@@ -929,7 +1007,7 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
 
           <article class="help-article" id="h-facebook" data-title="Conectar con Facebook">
             <h2><span class="ms">verified_user</span>Conectar con Facebook</h2>
-            <h3>1. Crear la app (una sola vez)</h3>
+            <h3 id="h-fb-app">1. Crear la app (una sola vez)</h3>
             <ol>
               <li>Entra en <a href="https://developers.facebook.com/apps/" target="_blank" rel="noopener">developers.facebook.com/apps</a> y pulsa <b>Crear app</b>. Elige el caso de uso para administrar páginas (o el tipo <i>Empresa</i>).</li>
               <li>Agrega el producto <b>Inicio de sesión con Facebook</b> (o <i>Facebook Login for Business</i>).</li>
@@ -937,33 +1015,33 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
               <li>En <b>Configuración → Básica</b> copia el <b>App ID</b> y pégalo en el paso 1.</li>
               <li>Si usas <i>Login for Business</i>, crea una configuración con los permisos de abajo y pega su <b>Configuration ID</b>.</li>
             </ol>
-            <h3>2. Permisos que se solicitan</h3>
+            <h3 id="h-fb-permisos">2. Permisos que se solicitan</h3>
             <ul>
               <li><code>pages_show_list</code>: ver la lista de páginas que administras.</li>
               <li><code>pages_read_engagement</code>: leer publicaciones y métricas.</li>
               <li><code>pages_read_user_content</code>: leer los comentarios de los usuarios.</li>
             </ul>
             <p>Mientras la app esté en <b>modo desarrollo</b>, solo pueden iniciar sesión sus administradores, desarrolladores y testers, sin necesidad de revisión. Para que la use cualquier persona, Meta exige la <i>App Review</i>.</p>
-            <h3>3. Dónde abrir la página</h3>
+            <h3 id="h-fb-https">3. Dónde abrir la página</h3>
             <p>Facebook solo permite iniciar sesión desde <b>https://</b> o <b>http://localhost</b>. Para probar en tu equipo:</p>
             <p><code>python3 -m http.server 8000</code> → abre <code>http://localhost:8000</code></p>
-            <h3>Sobre el token</h3>
+            <h3 id="h-fb-token">Sobre el token</h3>
             <p>Al elegir una página se genera su <i>token de acceso</i> automáticamente. Dura alrededor de 1–2 horas; después vuelve a iniciar sesión. El token nunca se guarda de forma permanente.</p>
           </article>
 
           <article class="help-article" id="h-extractor" data-title="Extractor de navegador">
             <h2><span class="ms">travel_explore</span>Extractor de navegador</h2>
             <p>Es un pequeño script que se ejecuta <b>dentro de la pestaña de Facebook</b>, donde ya tienes la sesión iniciada. Abre los comentarios ocultos, lee los que están en pantalla y genera un JSON.</p>
-            <h3>Con el marcador (recomendado)</h3>
+            <h3 id="h-ex-marcador">Con el marcador (recomendado)</h3>
             <ol>
               <li>Muestra la barra de marcadores (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd>).</li>
               <li>Arrastra el botón azul <b>Comments-Analyzer</b> hasta la barra.</li>
               <li>Abre la publicación, elige <b>Todos los comentarios</b> y pulsa el marcador.</li>
               <li>Espera a que termine (puedes pulsar <i>Detener y extraer</i>) y pulsa <b>Copiar JSON</b>.</li>
             </ol>
-            <h3>Con la consola</h3>
+            <h3 id="h-ex-consola">Con la consola</h3>
             <p>Pulsa <kbd>F12</kbd> → <i>Console</i>, pega el código y pulsa <kbd>Enter</kbd>. Chrome puede pedirte escribir <code>allow pasting</code> la primera vez.</p>
-            <h3>Consejos</h3>
+            <h3 id="h-ex-consejos">Consejos</h3>
             <ul>
               <li>Abre la publicación en su propia página o ventana, no desde el feed.</li>
               <li>Las publicaciones con miles de comentarios pueden tardar varios minutos.</li>
@@ -990,8 +1068,11 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
               <li><b>Comentarios / Respuestas:</b> los comentarios principales y las respuestas a ellos.</li>
               <li><b>Autores únicos:</b> personas distintas que comentaron.</li>
               <li><b>Periodo:</b> tiempo entre el primer y el último comentario.</li>
-              <li><b>Sentimiento estimado:</b> se calcula con un diccionario de palabras y emojis positivos y negativos (español e inglés), teniendo en cuenta negaciones como “no”. Es orientativo: no detecta ironía ni sarcasmo.</li>
-              <li><b>Palabras frecuentes:</b> excluye palabras vacías (“de”, “que”, “the”…). Pulsa una para filtrar los comentarios que la contienen.</li>
+              <li id="h-an-tiempo"><b>Comentarios en el tiempo y actividad por hora:</b> se agrupan por hora (si abarcan menos de 2 días), por día o por semana. Con el extractor las fechas son aproximadas (≈), y la actividad por hora solo se muestra si hay precisión horaria.</li>
+              <li id="h-an-autores"><b>Autores más activos:</b> quienes más comentaron. Pulsa un nombre para ver solo sus comentarios.</li>
+              <li id="h-an-sentimiento"><b>Sentimiento estimado:</b> se calcula con un diccionario de palabras y emojis positivos y negativos (español e inglés), teniendo en cuenta negaciones como “no”. Es orientativo: no detecta ironía ni sarcasmo.</li>
+              <li id="h-an-palabras"><b>Palabras frecuentes:</b> excluye palabras vacías (“de”, “que”, “the”…). Pulsa una para filtrar los comentarios que la contienen.</li>
+              <li id="h-an-etiquetas"><b>Emojis, hashtags y menciones:</b> los más usados. Pulsa cualquiera para filtrar los comentarios que lo contienen.</li>
             </ul>
           </article>
 
@@ -1000,7 +1081,7 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
             <ul>
               <li>Escribe en el buscador para filtrar por texto o autor. Usa <code>autor:"Nombre Apellido"</code> para un autor concreto.</li>
               <li>Los <b>chips de filtro</b> se combinan entre grupos: por ejemplo <i>Respuestas</i> + <i>Negativos</i>.</li>
-              <li>La vista <b>Conversación</b> muestra los comentarios como en Facebook: burbujas con avatar, reacciones y respuestas anidadas. Los hilos se muestran desplegados; pulsa “Ocultar respuestas” para plegar uno, o usa <i>Expandir todo</i> / <i>Contraer todo</i>.</li>
+              <li id="h-fi-vistas">La vista <b>Conversación</b> muestra los comentarios como en Facebook: burbujas con avatar, reacciones y respuestas anidadas. Los hilos se muestran desplegados; pulsa “Ocultar respuestas” para plegar uno, o usa <i>Expandir todo</i> / <i>Contraer todo</i>.</li>
               <li>Con el extractor, la jerarquía se reconstruye a partir de la sangría con la que Facebook muestra las respuestas. Si importas un JSON de una versión anterior del extractor, se deduce del orden: cada respuesta pertenece al comentario que la precede.</li>
               <li>La vista <b>Tabla</b> muestra todos los campos en columnas. <b>Agrupar hilos</b> coloca cada respuesta debajo de su comentario.</li>
               <li>Pulsa los encabezados de la tabla para ordenar.</li>
@@ -1034,13 +1115,13 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
 
           <article class="help-article faq" id="h-faq" data-title="Problemas frecuentes">
             <h2><span class="ms">quiz</span>Problemas frecuentes</h2>
-            <details><summary>El botón “Continuar con Facebook” no hace nada</summary><div class="ans">Comprueba que abres la página desde <code>https://</code> o <code>http://localhost</code>, que el App ID es correcto y que el dominio está en “Dominios permitidos para el SDK de JavaScript”. Los bloqueadores de anuncios pueden impedir que se cargue el SDK de Facebook. Si el navegador bloqueó la ventana emergente, vuelve a pulsar el botón.</div></details>
-            <details><summary>“No se encontraron páginas”</summary><div class="ans">En el diálogo de Facebook, pulsa <i>Editar acceso</i> y marca las páginas que quieres usar. Debes tener un rol en la página que permita moderar o crear contenido.</div></details>
-            <details><summary>Los comentarios salen sin nombre de autor</summary><div class="ans">Facebook solo devuelve el autor si usas el token de la <b>página dueña de la publicación</b> con el permiso <code>pages_read_user_content</code>. Con el extractor, el autor se obtiene de lo que se ve en pantalla.</div></details>
-            <details><summary>El extractor encuentra menos comentarios de los esperados</summary><div class="ans">Elige “Todos los comentarios” en lugar de “Más relevantes” antes de ejecutarlo y deja que termine. Algunos comentarios pueden estar ocultos o eliminados, o no ser visibles para tu cuenta.</div></details>
-            <details><summary>“Error validating access token” o “Session has expired”</summary><div class="ans">El token caducó. Cierra sesión y vuelve a pulsar <i>Continuar con Facebook</i>.</div></details>
-            <details><summary>Las URLs con “pfbid” no se reconocen</summary><div class="ans">Con la sesión iniciada, usa <b>Ver publicaciones</b> y elige la publicación de la lista. Así no hace falta la URL.</div></details>
-            <details><summary>El Excel no se descarga</summary><div class="ans">La exportación a Excel carga una librería desde internet. Sin conexión se descargará un CSV, que Excel también abre.</div></details>
+            <details id="h-faq-login"><summary>El botón “Continuar con Facebook” no hace nada</summary><div class="ans">Comprueba que abres la página desde <code>https://</code> o <code>http://localhost</code>, que el App ID es correcto y que el dominio está en “Dominios permitidos para el SDK de JavaScript”. Los bloqueadores de anuncios pueden impedir que se cargue el SDK de Facebook. Si el navegador bloqueó la ventana emergente, vuelve a pulsar el botón.</div></details>
+            <details id="h-faq-paginas"><summary>“No se encontraron páginas”</summary><div class="ans">En el diálogo de Facebook, pulsa <i>Editar acceso</i> y marca las páginas que quieres usar. Debes tener un rol en la página que permita moderar o crear contenido.</div></details>
+            <details id="h-faq-autor"><summary>Los comentarios salen sin nombre de autor</summary><div class="ans">Facebook solo devuelve el autor si usas el token de la <b>página dueña de la publicación</b> con el permiso <code>pages_read_user_content</code>. Con el extractor, el autor se obtiene de lo que se ve en pantalla.</div></details>
+            <details id="h-faq-extractor"><summary>El extractor encuentra menos comentarios de los esperados</summary><div class="ans">Elige “Todos los comentarios” en lugar de “Más relevantes” antes de ejecutarlo y deja que termine. Algunos comentarios pueden estar ocultos o eliminados, o no ser visibles para tu cuenta.</div></details>
+            <details id="h-faq-token"><summary>“Error validating access token” o “Session has expired”</summary><div class="ans">El token caducó. Cierra sesión y vuelve a pulsar <i>Continuar con Facebook</i>.</div></details>
+            <details id="h-faq-pfbid"><summary>Las URLs con “pfbid” no se reconocen</summary><div class="ans">Con la sesión iniciada, usa <b>Ver publicaciones</b> y elige la publicación de la lista. Así no hace falta la URL.</div></details>
+            <details id="h-faq-excel"><summary>El Excel no se descarga</summary><div class="ans">La exportación a Excel carga una librería desde internet. Sin conexión se descargará un CSV, que Excel también abre.</div></details>
           </article>
 
           <article class="help-article" id="h-atajos" data-title="Atajos de teclado">
@@ -1082,6 +1163,7 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
   </div>
   <div class="dlg-body" id="detailBody"></div>
   <div class="dlg-actions">
+    <span style="margin-right:auto"><a class="hlp" href="#ayuda/analisis"><span class="ms">help</span>¿Qué significa cada dato?</a></span>
     <button class="btn text" id="dCopyJson"><span class="ms">data_object</span>Copiar JSON</button>
     <button class="btn tonal" id="dCopyTxt"><span class="ms">content_copy</span>Copiar texto</button>
   </div>
@@ -1391,7 +1473,10 @@ function download(name, content, type){
   setTimeout(()=>URL.revokeObjectURL(a.href),2000);
   toast('Descargando '+name);
 }
-function setStatus(sel,msg,err){ const e=$(sel); e.textContent=msg||''; e.classList.toggle('err',!!err); }
+function setStatus(sel,msg,err,help){
+  const e=$(sel); e.textContent=msg||''; e.classList.toggle('err',!!err);
+  if(err && msg){ const a=document.createElement('a'); a.className='hlp inline'; a.href='#ayuda/'+(help||'faq'); a.textContent='Ver solución'; e.append(' ', a); }
+}
 function fileStamp(){ return new Date().toISOString().slice(0,16).replace(/[:T]/g,'-'); }
 
 /* ---------- fechas relativas ---------- */
@@ -1680,7 +1765,7 @@ async function findPfbid(pageId, pfbid, token, ver, log){
 async function graphFetch(){
   const input=$('#gUrl').value, token=$('#gToken').value.trim(), ver=apiVer();
   if(!input.trim()){ setStatus('#gStatus','Indica la URL o el ID de la publicación, o elige una de la lista.',true); $('#gUrl').focus(); return; }
-  if(!token){ setStatus('#gStatus','Primero inicia sesión con Facebook (o pega un token en Opciones avanzadas).',true); return; }
+  if(!token){ setStatus('#gStatus','Primero inicia sesión con Facebook (o pega un token en Opciones avanzadas).',true,'facebook'); return; }
   try{ $('#gRemember').checked ? sessionStorage.setItem('fbca:token',token) : sessionStorage.removeItem('fbca:token'); }catch(e){}
   gAbort = new AbortController();
   const log = m => setStatus('#gStatus', m);
@@ -1715,7 +1800,7 @@ async function graphFetch(){
     }));
   }catch(e){
     if(e.name==='AbortError') log('Descarga detenida.');
-    else setStatus('#gStatus', e.message + (e.code===10||e.code===200?' — Comprueba que el token sea de la página y tenga el permiso pages_read_user_content.':'') + (e.code===190?' — El token caducó: vuelve a iniciar sesión.':''), true);
+    else setStatus('#gStatus', e.message + (e.code===10||e.code===200?' — Comprueba que el token sea de la página y tenga el permiso pages_read_user_content.':'') + (e.code===190?' — El token caducó: vuelve a iniciar sesión.':''), true, e.code===190?'faq-token':(e.code===10||e.code===200)?'faq-autor':/pfbid|no se reconoce|share/i.test(e.message)?'faq-pfbid':'faq');
   }finally{
     $('#gFetch').disabled=false; $('#gStop').classList.add('hidden'); $('#gProg').classList.add('hidden'); gAbort=null;
   }
@@ -1724,7 +1809,7 @@ async function graphFetch(){
 /* ---------- Login con Facebook (JS SDK) ---------- */
 const FB_SCOPES = 'pages_show_list,pages_read_engagement,pages_read_user_content';
 const FBA = { appId:null, sdkPromise:null, user:null, userToken:null, expiresAt:null, pages:[], page:null, postsNext:null };
-function fbStatus(msg, err){ setStatus('#fbStatus', msg, err); }
+function fbStatus(msg, err, help){ setStatus('#fbStatus', msg, err, help); }
 function loadFbSdk(appId){
   if(FBA.sdkPromise && FBA.appId===appId) return FBA.sdkPromise;
   FBA.appId = appId;
@@ -1753,23 +1838,23 @@ function preloadSdk(){
   if(location.protocol==='file:') return;
   loadFbSdk(id).then(FB=>{
     FB.getLoginStatus(r=>{ if(r.status==='connected' && !FBA.userToken) onFbAuth(r.authResponse); }, true);
-  }).catch(e=>fbStatus(e.message, true));
+  }).catch(e=>fbStatus(e.message, true, 'faq-login'));
 }
 function fbLogin(){
   const id = validAppId();
-  if(!id){ fbStatus('Escribe un App ID válido (solo números) en el paso 1.', true); $('#fbAppId').focus(); return; }
-  if(location.protocol==='file:'){ fbStatus('El inicio de sesión no funciona abriendo el archivo directamente. Usa http://localhost o https://.', true); return; }
+  if(!id){ fbStatus('Escribe un App ID válido (solo números) en el paso 1.', true, 'fb-app'); $('#fbAppId').focus(); return; }
+  if(location.protocol==='file:'){ fbStatus('El inicio de sesión no funciona abriendo el archivo directamente. Usa http://localhost o https://.', true, 'fb-https'); return; }
   const configId = $('#fbConfigId').value.trim();
   const opts = configId ? { config_id: configId } : { scope: FB_SCOPES, return_scopes: true, auth_type: 'rerequest' };
   const doLogin = () => FB.login(r=>{
     if(r.authResponse) onFbAuth(r.authResponse);
-    else fbStatus('Se canceló el inicio de sesión.', true);
+    else fbStatus('Se canceló el inicio de sesión.', true, 'faq-login');
   }, opts);
   // FB.login debe llamarse dentro del clic para que el navegador no bloquee la ventana emergente.
   if(window.FB && FBA.appId===id) return doLogin();
   fbStatus('Cargando el SDK de Facebook…');
   loadFbSdk(id).then(()=>{ fbStatus('Listo. Si no se abrió la ventana de Facebook, pulsa el botón otra vez.'); doLogin(); })
-    .catch(e=>fbStatus(e.message, true));
+    .catch(e=>fbStatus(e.message, true, 'faq-login'));
 }
 async function onFbAuth(auth){
   FBA.userToken = auth.accessToken;
@@ -1791,14 +1876,14 @@ async function onFbAuth(auth){
     FBA.pages = pages;
     if(!pages.length){
       $('#pageDesc').textContent='No hay páginas disponibles.';
-      fbStatus('No se encontraron páginas. En la ventana de Facebook pulsa “Editar acceso” y marca al menos una página que administres' + (missing.length?`. Permisos sin conceder: ${missing.join(', ')}.`:'.'), true);
+      fbStatus('No se encontraron páginas. En la ventana de Facebook pulsa “Editar acceso” y marca al menos una página que administres' + (missing.length?`. Permisos sin conceder: ${missing.join(', ')}.`:'.'), true, 'faq-paginas');
       return;
     }
     $('#fbPage').innerHTML = pages.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}${p.category?' · '+esc(p.category):''}</option>`).join('');
     $('#fbPagesBox').classList.remove('hidden');
     $('#pageDesc').textContent='El token de la página se genera automáticamente.';
     selectFbPage(pages[0].id);
-    fbStatus(missing.length ? `Faltan permisos: ${missing.join(', ')}. Puede que no se lean los comentarios o sus autores.` : '', !!missing.length);
+    fbStatus(missing.length ? `Faltan permisos: ${missing.join(', ')}. Puede que no se lean los comentarios o sus autores.` : '', !!missing.length, 'fb-permisos');
     loadFbPosts(false);
   }catch(e){ fbStatus(e.message, true); }
 }
@@ -1933,9 +2018,10 @@ function renderStats(){
   $('#stats').innerHTML = cards.map(([i,k,v])=>`<div class="stat"><div class="k"><span class="ms">${i}</span>${k}</div><div class="v">${v}</div></div>`).join('');
   $('#tabCount').textContent = fmtN(st.total);
 }
-function svgBars(data, {h=200, labelEvery=1, label='Gráfico'}={}){
+// Se dibuja al ancho real del contenedor para que los textos de los ejes mantengan su tamaño en móvil.
+function svgBars(data, {W=600, h=200, labelEvery=1, label='Gráfico'}={}){
   if(!data.length) return '<div class="no-rows">Sin fechas disponibles</div>';
-  const W=600, pad={l:32,r:8,t:12,b:28}, iw=W-pad.l-pad.r, ih=h-pad.t-pad.b;
+  const pad={l:30,r:6,t:12,b:28}, iw=W-pad.l-pad.r, ih=h-pad.t-pad.b;
   const max=Math.max(1,...data.map(d=>d.v)), bw=iw/data.length;
   const ticks=[...new Set([0,Math.round(max/2),max])];
   let s=`<svg viewBox="0 0 ${W} ${h}" role="img" aria-label="${esc(label)}">`;
@@ -1951,6 +2037,11 @@ function hbars(items, attr){
   if(!items.length) return '<div class="muted small">Sin datos</div>';
   const max = Math.max(...items.map(i=>i.v));
   return items.map(i=>`<div class="hbar"><button class="lbl" data-${attr}="${esc(i.key??i.l)}" title="${esc(i.l)}">${esc(i.l)}</button><div class="track"><div class="fill" style="width:${(i.v/max*100).toFixed(1)}%"></div></div><span class="num">${esc(i.label??i.v)}</span></div>`).join('');
+}
+const chartW = sel => { const w = Math.round($(sel).clientWidth); return w > 0 ? Math.max(240, w) : 600; };
+const chartH = W => Math.round(Math.min(220, Math.max(170, W * 0.42)));
+function renderChartsIfVisible(){
+  if(S.comments.length && S.stats && $('#view-resultados').classList.contains('active') && $('#tp-summary').classList.contains('active')) renderCharts();
 }
 function renderCharts(){
   const list=S.comments, st=S.stats;
@@ -1977,10 +2068,12 @@ function renderCharts(){
       }
       $('#tlTitle').textContent = unit==='hour' ? 'Comentarios por hora' : 'Comentarios por día';
     }
-    $('#chartTimeline').innerHTML = svgBars(data,{labelEvery:Math.ceil(data.length/10), label:$('#tlTitle').textContent});
+    const W1 = chartW('#chartTimeline');
+    $('#chartTimeline').innerHTML = svgBars(data,{W:W1, h:chartH(W1), labelEvery:Math.ceil(data.length/Math.max(3,Math.floor(W1/60))), label:$('#tlTitle').textContent});
     const precise = !approx || list.some(c=>/\d+\s*(min|h\b|hora|hr)/i.test(c.dateText||''));
     const hours=Array(24).fill(0); ts.forEach(t=>hours[new Date(t).getHours()]++);
-    $('#chartHours').innerHTML = precise ? svgBars(hours.map((v,i)=>({l:i+'', v, title:i+':00 – '+i+':59'})),{labelEvery:3,label:'Actividad por hora'}) : '<div class="no-rows">Las fechas obtenidas no tienen precisión horaria.</div>';
+    const W2 = chartW('#chartHours');
+    $('#chartHours').innerHTML = precise ? svgBars(hours.map((v,i)=>({l:i+'', v, title:i+':00 – '+i+':59'})),{W:W2, h:chartH(W2), labelEvery:W2<360?4:W2<520?3:2, label:'Actividad por hora'}) : '<div class="no-rows">Las fechas obtenidas no tienen precisión horaria.</div>';
   } else {
     $('#chartTimeline').innerHTML = $('#chartHours').innerHTML = '<div class="no-rows">Sin fechas disponibles</div>';
   }
@@ -2111,9 +2204,9 @@ function renderTable(){
         ${c.attachments.length?`<div class="att"><span class="ms">attach_file</span>${c.attachments.map(a=>esc(a.type)).join(', ')}</div>`:''}
         ${c.edited?'<div class="att"><span class="ms">edit</span>Editado</div>':''}</td>
       <td class="c-date">${c.createdAt?`${c.dateApprox?`<span class="approx" title="Aproximada a partir de “${esc(c.dateText)}”">≈ </span>`:''}${fmtDate(c.createdAt)}`:esc(c.dateText||'—')}</td>
-      <td class="num c-meta c-r">${c.reactions||'—'}</td>
-      <td class="num c-meta c-rp">${c.repliesCount||'—'}</td>
-      <td class="c-meta"><span class="pill-s ${c.sentiment==='positivo'?'pos':c.sentiment==='negativo'?'neg':''}">${c.sentiment[0].toUpperCase()+c.sentiment.slice(1)}</span></td>
+      <td class="num c-meta c-r${c.reactions?'':' zero'}">${c.reactions||'—'}</td>
+      <td class="num c-meta c-rp${c.repliesCount?'':' zero'}">${c.repliesCount||'—'}</td>
+      <td class="c-meta c-sent"><span class="pill-s ${c.sentiment==='positivo'?'pos':c.sentiment==='negativo'?'neg':''}">${c.sentiment[0].toUpperCase()+c.sentiment.slice(1)}</span></td>
       <td class="c-acts"><div class="rowacts">
         <button class="icon-btn sm" data-act="copy" aria-label="Copiar comentario" title="Copiar"><span class="ms">content_copy</span></button>
         <button class="icon-btn sm" data-act="info" aria-label="Ver detalles" title="Detalles"><span class="ms">info</span></button>
@@ -2288,16 +2381,39 @@ function demoData(){
    ===================================================================== */
 const VIEWS=['obtener','resultados','ayuda'];
 function go(view, section){ const h = '#'+view+(section?'/'+section:''); if(location.hash!==h) location.hash=h; else route(); }
+// Sección de la ayuda relacionada con lo que el usuario está viendo
+function contextHelp(){
+  const v = (location.hash.replace(/^#/,'').split('/')[0]) || curView;
+  if(v==='obtener') return {fb:'facebook', extractor:'extractor', import:'importar'}[PREF.get('method','fb')] || 'metodos';
+  if(v==='resultados') return !S.comments.length ? 'inicio' : $('#tp-list').classList.contains('active') ? 'filtrar' : 'analisis';
+  return '';
+}
+const scrollPos = {}; let curView = null, lastNonHelp = null;
 function route(){
   const [v, sec] = location.hash.replace(/^#/,'').split('/');
   const view = VIEWS.includes(v) ? v : (S.comments.length ? 'resultados' : 'obtener');
+  if(curView && curView!==view) scrollPos[curView] = window.scrollY;
+  const prevView = curView; curView = view;
+  if(view!=='ayuda') lastNonHelp = view;
+  $$('dialog[open]').forEach(d=>{ if(d.id!=='onboarding') d.close(); });
+  const hb = $('#helpBack');
+  if(view==='ayuda' && lastNonHelp){ hb.classList.remove('hidden'); hb.href = '#'+lastNonHelp; $('#helpBackTxt').textContent = 'Volver a '+({obtener:'Obtener', resultados:'Resultados'}[lastNonHelp]); }
+  else hb.classList.add('hidden');
   $$('.view').forEach(x=>x.classList.toggle('active', x.id==='view-'+view));
   $$('.nav-item').forEach(a=>a.toggleAttribute('aria-current', a.dataset.view===view) || a.dataset.view===view && a.setAttribute('aria-current','page'));
   $$('.nav-item').forEach(a=>{ if(a.dataset.view===view) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
   document.title = {obtener:'Obtener comentarios', resultados:'Resultados', ayuda:'Ayuda'}[view] + ' · Analizador de Comentarios';
   closeMenus();
-  if(view==='ayuda' && sec){ const t=$('#h-'+sec); if(t){ setTimeout(()=>t.scrollIntoView({behavior:'smooth',block:'start'}),30); } }
-  else window.scrollTo({top:0});
+  if(view==='ayuda' && sec){
+    const t = document.getElementById('h-'+sec);
+    if(t){
+      if(t.closest('.help-article.hidden')){ $('#helpQ').value=''; filterHelp(''); }
+      if(t.tagName==='DETAILS') t.open = true;
+      setTimeout(()=>{ t.scrollIntoView({behavior:'smooth', block:'start'}); t.classList.remove('flash'); void t.offsetWidth; t.classList.add('flash'); }, 40);
+    }
+  }
+  else if(prevView!==view) window.scrollTo({top: scrollPos[view]||0});
+  if(view==='resultados' && prevView!==view) requestAnimationFrame(renderChartsIfVisible);
 }
 function selectTab(name){
   ['summary','list'].forEach(n=>{
@@ -2306,6 +2422,7 @@ function selectTab(name){
     $('#tp-'+n).classList.toggle('active', on);
   });
   PREF.set('tab', name);
+  if(name==='summary') requestAnimationFrame(renderChartsIfVisible);
 }
 function setMethod(m){
   $$('.method').forEach(b=>{ b.setAttribute('aria-checked', b.dataset.method===m); b.tabIndex = b.dataset.method===m?0:-1; });
@@ -2386,7 +2503,7 @@ function filterHelp(q){
 (function init(){
   applyTheme(PREF.get('theme','system'));
   $('#themeBtn').onclick = ()=>{ const cur=PREF.get('theme','system'); const nx = cur==='system'?'light':cur==='light'?'dark':'system'; setTheme(nx); toast('Tema: '+(nx==='light'?'claro':nx==='dark'?'oscuro':'del sistema')); };
-  $('#helpBtn').onclick = ()=>go('ayuda');
+  $('#helpBtn').onclick = ()=>go('ayuda', contextHelp());
 
   // menús
   document.addEventListener('click', e=>{
@@ -2421,6 +2538,9 @@ function filterHelp(q){
 
   // router
   window.addEventListener('hashchange', route);
+  // redibuja los gráficos al girar el dispositivo o cambiar el tamaño de la ventana
+  let rzT, lastW = window.innerWidth;
+  window.addEventListener('resize', ()=>{ if(Math.abs(window.innerWidth-lastW) < 8) return; lastW = window.innerWidth; clearTimeout(rzT); rzT = setTimeout(renderChartsIfVisible, 150); });
 
   // métodos
   $$('.method').forEach(b=>b.onclick=()=>setMethod(b.dataset.method));
@@ -2443,7 +2563,7 @@ function filterHelp(q){
     if(!/facebook\.com|fb\.com|fb\.watch/.test(u)){ toast('La URL no parece de Facebook'); return; }
     window.open(u,'_blank','noopener');
   };
-  const tryLoad = raw => { try{ loadData(parseAny(raw)); }catch(e){ setStatus('#globalStatus',e.message,true); toast(e.message); } };
+  const tryLoad = raw => { try{ loadData(parseAny(raw)); }catch(e){ const sec = /extractor|sección de comentarios/i.test(e.message)?'faq-extractor':'importar'; setStatus('#globalStatus',e.message,true,sec); toast(e.message,{label:'Ayuda',run:()=>go('ayuda',sec)}); } };
   $('#exAnalyze').onclick = ()=>tryLoad($('#exPaste').value);
 
   // importar + arrastrar y soltar
@@ -2564,7 +2684,7 @@ function filterHelp(q){
     const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName) || document.activeElement?.isContentEditable;
     if(typing || e.ctrlKey || e.metaKey || e.altKey || document.querySelector('dialog[open]')) return;
     if(e.key==='/'){ e.preventDefault(); const v=location.hash.split('/')[0]; if(v==='#ayuda') $('#helpQ').focus(); else if(S.comments.length){ go('resultados'); selectTab('list'); setTimeout(()=>$('#q').focus(),50); } }
-    else if(e.key==='?'){ e.preventDefault(); go('ayuda'); }
+    else if(e.key==='?'){ e.preventDefault(); go('ayuda', contextHelp()); }
     else if(e.key==='g'){ gPressed=Date.now(); }
     else if(Date.now()-gPressed<1000 && e.key==='o'){ go('obtener'); gPressed=0; }
     else if(Date.now()-gPressed<1000 && e.key==='r'){ go('resultados'); gPressed=0; }
