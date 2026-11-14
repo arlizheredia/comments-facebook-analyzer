@@ -268,7 +268,7 @@ details.adv[open] summary .ms{transform:rotate(180deg)}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
 .approx{color:var(--warning);cursor:help}
 .tag-chips{display:flex;flex-wrap:wrap;gap:8px}
-.tchip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--outline-variant);background:var(--surface);color:var(--on-surface);font:500 13px var(--font);cursor:pointer}
+.tchip{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--outline-variant);background:var(--surface);color:var(--on-surface);font:500 13px var(--font);cursor:pointer}
 .tchip:hover{background:var(--surface-container)}
 .tchip b{font-weight:400;color:var(--on-surface-variant)}
 
@@ -632,6 +632,126 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
   .cmp td,.cmp th{border-bottom:1px solid var(--outline-variant)}
 }
 @media (pointer:coarse) and (hover:none){ .hide-touch{display:none} }
+
+/* ================== VISUALIZACIÓN (guía dataviz) ================== */
+:root{--viz-1:#2a78d6;--viz-1-hover:#1c5cab;--viz-pos:#0ca30c;--viz-neu:#8a8883;--viz-neg:#d03b3b;
+  --viz-pos-ink:#0b0b0b;--viz-neu-ink:#0b0b0b;--viz-neg-ink:#ffffff;--viz-grid:#ebeae6;--viz-axis:#6b6a66;--viz-tip-bg:#1f1f1f;--viz-tip-fg:#ffffff}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--viz-1:#3987e5;--viz-1-hover:#6da7ec;--viz-neu:#5f5e5a;--viz-neg:#e66767;
+  --viz-neu-ink:#ffffff;--viz-neg-ink:#0b0b0b;--viz-grid:#2e2e2b;--viz-axis:#a3a29b;--viz-tip-bg:#f0efec;--viz-tip-fg:#111111}}
+:root[data-theme="dark"]{--viz-1:#3987e5;--viz-1-hover:#6da7ec;--viz-neu:#5f5e5a;--viz-neg:#e66767;
+  --viz-neu-ink:#ffffff;--viz-neg-ink:#0b0b0b;--viz-grid:#2e2e2b;--viz-axis:#a3a29b;--viz-tip-bg:#f0efec;--viz-tip-fg:#111111}
+@media (min-width:1100px){ .viz-wide{grid-column:span 2} }
+.viz-card{display:flex;flex-direction:column;gap:14px;min-width:0}
+.viz-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.viz-head h3{margin:0;font-size:16px;line-height:22px}
+.viz-sub{margin:2px 0 0;font-size:13px;line-height:18px;color:var(--on-surface-variant)}
+.viz-actions{display:flex;align-items:center;gap:6px;flex:none}
+.viz-actions .hlp-ic{margin:-6px -8px 0 0}
+.viz-h4{margin:4px 0 -4px;font:500 13px var(--font);color:var(--on-surface-variant)}
+.viz-plot{min-height:120px}
+.viz-plot svg{display:block;width:100%;height:auto;overflow:visible}
+.viz-plot .tick{fill:var(--viz-axis);font:11px var(--font);font-variant-numeric:tabular-nums}
+.viz-plot .grid{stroke:var(--viz-grid);stroke-width:1;shape-rendering:crispEdges}
+.viz-plot .base{stroke:var(--viz-axis);stroke-opacity:.45;stroke-width:1;shape-rendering:crispEdges}
+.viz-plot .col{outline:none}
+.viz-plot .col-bar{fill:var(--viz-1);transition:fill .12s}
+.viz-plot .col:hover .col-bar,.viz-plot .col:focus .col-bar{fill:var(--viz-1-hover)}
+.viz-plot .col-hit{fill:transparent}
+.viz-plot .col:focus-visible .col-hit{stroke:var(--primary);stroke-width:2}
+.viz-plot .peak-label{fill:var(--on-surface);font:600 12px var(--font);font-variant-numeric:tabular-nums}
+.viz-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;min-height:170px;color:var(--on-surface-variant);padding:16px}
+.viz-empty .ms{font-size:32px;opacity:.7}
+.viz-empty p{margin:0;font-size:13px;max-width:320px}
+.viz-empty b{color:var(--on-surface);font-weight:500}
+.viz-data{font-size:12px}
+.viz-data summary{cursor:pointer;color:var(--primary);font-weight:500;width:max-content}
+.viz-data .vd{display:grid;grid-template-columns:1fr auto;gap:2px 16px;max-height:220px;overflow:auto;margin-top:8px;padding:8px 12px;border-radius:8px;background:var(--surface-container)}
+.viz-data .vd span:nth-child(even){text-align:right;font-variant-numeric:tabular-nums;color:var(--on-surface)}
+.viz-data .vd span:nth-child(odd){color:var(--on-surface-variant)}
+/* Barra segmentada alta (sentimiento) */
+.segbar{display:flex;gap:2px;height:28px}
+.seg{display:flex;align-items:center;padding:0 8px;border-radius:4px;font:600 12px var(--font);min-width:2px;outline:none;cursor:default}
+.seg:focus-visible{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--primary)}
+.seg span{white-space:nowrap}
+.seg.nolabel span{visibility:hidden}
+.seg.neg{background:var(--viz-neg);color:var(--viz-neg-ink)}
+.seg.neu{background:var(--viz-neu);color:var(--viz-neu-ink)}
+.seg.pos{background:var(--viz-pos);color:var(--viz-pos-ink)}
+.viz-legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--on-surface-variant)}
+.viz-legend span{display:inline-flex;align-items:center;gap:6px}
+.viz-legend i{width:10px;height:10px;border-radius:2px;flex:none}
+.viz-legend .ms{font-size:16px}
+/* Barras ordenadas */
+.rbars{display:flex;flex-direction:column;gap:2px;margin:0 -6px}
+.rbar{display:grid;grid-template-columns:minmax(0,38%) minmax(0,1fr);align-items:center;gap:12px;width:100%;border:0;background:none;color:var(--on-surface);font:inherit;text-align:left;padding:5px 6px;border-radius:8px;cursor:pointer}
+.rbar:hover,.rbar:focus-visible{background:var(--surface-container)}
+.rbar:hover .rb-fill,.rbar:focus-visible .rb-fill{background:var(--viz-1-hover)}
+.rb-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+.rbar.emoji .rb-label{font-size:18px;line-height:22px}
+.rbar.emoji{grid-template-columns:32px minmax(0,1fr)}
+.rb-lane{display:flex;align-items:center;gap:8px;min-width:0}
+.rb-fill{height:14px;background:var(--viz-1);border-radius:0 4px 4px 0;flex:none;min-width:2px;transition:background .12s}
+.rb-val{font-size:12px;color:var(--on-surface-variant);font-variant-numeric:tabular-nums;white-space:nowrap}
+.viz-more{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px;color:var(--on-surface-variant)}
+.viz-more .tchip{height:28px;font-size:12px}
+/* Lista de comentarios destacados */
+.toplist{list-style:none;margin:0 -8px;padding:0;display:flex;flex-direction:column;gap:2px}
+.tl-row{display:flex;gap:10px;align-items:flex-start;width:100%;border:0;background:none;color:var(--on-surface);font:inherit;text-align:left;padding:8px;border-radius:10px;cursor:pointer}
+.tl-row:hover,.tl-row:focus-visible{background:var(--surface-container)}
+.tl-rank{width:16px;flex:none;font-size:12px;color:var(--on-surface-variant);font-variant-numeric:tabular-nums;padding-top:8px;text-align:right}
+.tl-body{flex:1;min-width:0}
+.tl-name{display:block;font-weight:500;font-size:13px;line-height:18px}
+.tl-text{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:13px;line-height:18px;color:var(--on-surface-variant)}
+.tl-count{flex:none;display:inline-flex;align-items:center;gap:4px;font-size:13px;color:var(--on-surface-variant);padding-top:7px;font-variant-numeric:tabular-nums}
+.tl-count .ms{font-size:16px}
+/* Tooltip propio (accesible con teclado) */
+.viz-tip{position:fixed;z-index:200;pointer-events:none;background:var(--viz-tip-bg);color:var(--viz-tip-fg);border-radius:8px;padding:6px 10px;font-size:12px;line-height:16px;box-shadow:var(--elev2);opacity:0;transform:translateY(4px);transition:opacity .1s,transform .1s;max-width:240px;left:0;top:0}
+.viz-tip.show{opacity:1;transform:none}
+.viz-tip strong{display:block;font-size:14px;line-height:20px;font-weight:600}
+.viz-tip span{opacity:.78}
+/* Indicadores */
+.stat .v{font-variant-numeric:normal}
+.stat .sub{font-size:12px;line-height:16px;color:var(--on-surface-variant);margin-top:2px}
+@media (max-width:720px){ .rbar{grid-template-columns:minmax(0,42%) minmax(0,1fr)} }
+@media (min-width:900px){ .stats{grid-template-columns:repeat(4,minmax(0,1fr))} }
+@media (max-width:899px){ .stats{grid-template-columns:repeat(2,minmax(0,1fr))} }
+/* Sentimiento por tipo: barras segmentadas finas junto a sus cifras */
+.sbt{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px 12px;align-items:center;font-size:13px;margin-top:4px}
+.sbt-name{color:var(--on-surface-variant)}
+.sbt-bar{display:flex;gap:2px;height:8px;outline:none;border-radius:4px}
+.sbt-bar:focus-visible{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--primary)}
+.sbt-bar i{border-radius:4px;min-width:2px}
+.sbt-val{font-variant-numeric:tabular-nums;color:var(--on-surface-variant);font-size:12px;white-space:nowrap}
+
+
+/* ================== AYUDA (Markdown) ================== */
+.help-note{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:12px;background:var(--surface-container);margin:12px 0;font-size:14px;line-height:22px}
+.help-note .ms{font-size:20px;color:var(--primary);margin-top:1px}
+.help-article pre{background:var(--surface-container);border-radius:10px;padding:12px 14px;overflow-x:auto;margin:10px 0}
+.help-article pre code{background:none;border:0;padding:0;font-size:13px}
+.help-article h3[id]{scroll-margin-top:88px}
+.help-count{margin:0 0 16px}
+mark.hl{background:#fde293;color:#1f1f1f;border-radius:2px;padding:0 1px}
+
+/* Tendencia */
+:root{--viz-avg:#3d3c39}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--viz-avg:#e4e3dd}}
+:root[data-theme="dark"]{--viz-avg:#e4e3dd}
+.viz-head .viz-actions{flex-wrap:wrap;justify-content:flex-end}
+.seg.mini{height:30px;border-radius:15px}
+.seg.mini button{padding:0 12px;font-size:12px}
+.viz-plot .avg-line{fill:none;stroke:var(--viz-avg);stroke-width:2;stroke-linejoin:round;stroke-linecap:round;pointer-events:none}
+.viz-plot .cum-area{fill:var(--viz-1);fill-opacity:.1;pointer-events:none}
+.viz-plot .cum-line{fill:none;stroke:var(--viz-1);stroke-width:2;stroke-linejoin:round;stroke-linecap:round;pointer-events:none}
+.viz-plot .cum-dot{fill:var(--viz-1);stroke:var(--surface);stroke-width:2;pointer-events:none}
+.viz-plot .col:hover .cum-guide,.viz-plot .col:focus .cum-guide{stroke:var(--viz-axis);stroke-opacity:.6}
+.viz-plot .cum-guide{stroke:transparent;stroke-width:1}
+.viz-key{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:12px;color:var(--on-surface-variant);margin-top:6px}
+.viz-key span{display:inline-flex;align-items:center;gap:6px}
+.viz-key .k-bar{width:10px;height:10px;border-radius:2px;background:var(--viz-1)}
+.viz-key .k-line{width:16px;height:2px;border-radius:1px;background:var(--viz-avg)}
+.viz-trend{color:var(--on-surface)}
+@media (max-width:720px){ .viz-head{flex-wrap:wrap} }
 </style>
 </head>
 <body>
@@ -911,21 +1031,46 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
           <div class="summary-head"><a class="hlp" href="#ayuda/analisis"><span class="ms">help</span>Cómo interpretar estas métricas</a></div>
           <div class="stats" id="stats"></div>
           <div class="charts">
-            <div class="card chart chart-card"><h3><span id="tlTitle">Comentarios en el tiempo</span><span id="tlApprox"></span><a class="icon-btn sm hlp-ic" href="#ayuda/an-tiempo" aria-label="Ayuda: gráfico de actividad" title="Ayuda: gráfico de actividad"><span class="ms">help</span></a></h3><div id="chartTimeline"></div></div>
-            <div class="card chart chart-card"><h3>Actividad por hora del día<a class="icon-btn sm hlp-ic" href="#ayuda/an-tiempo" aria-label="Ayuda: actividad por hora" title="Ayuda: actividad por hora"><span class="ms">help</span></a></h3><div id="chartHours"></div></div>
-            <div class="card"><h3>Autores más activos<a class="icon-btn sm hlp-ic" href="#ayuda/an-autores" aria-label="Ayuda: autores más activos" title="Ayuda: autores más activos"><span class="ms">help</span></a></h3><div id="topAuthors"></div></div>
-            <div class="card">
-              <h3>Sentimiento estimado<a class="icon-btn sm hlp-ic" href="#ayuda/an-sentimiento" aria-label="Ayuda: cómo se estima el sentimiento" title="Ayuda: cómo se estima el sentimiento"><span class="ms">help</span></a></h3>
-              <div class="sentbar" id="sentBar" role="img"></div>
-              <div class="legend" id="sentLegend"></div>
-              <h3 style="margin-top:24px">Con más reacciones</h3>
+            <section class="card viz-card viz-wide" aria-labelledby="tlTitle">
+              <header class="viz-head"><div><h3 id="tlTitle">Comentarios en el tiempo</h3><p class="viz-sub" id="tlSub"></p><p class="viz-sub viz-trend" id="tlTrend"></p></div><div class="viz-actions"><div class="seg mini" role="radiogroup" aria-label="Vista del gráfico" id="tlMode"><button role="radio" data-m="bars" aria-checked="true" id="tlModeBars">Por día</button><button role="radio" data-m="cum" aria-checked="false">Acumulado</button></div><span id="tlApprox"></span><a class="icon-btn sm hlp-ic" href="#ayuda/an-tiempo" aria-label="Ayuda: gráfico de actividad" title="Ayuda: gráfico de actividad"><span class="ms">help</span></a></div></header>
+              <div class="viz-plot" id="chartTimeline"></div>
+              <details class="viz-data" id="tlData"><summary>Ver datos</summary><div></div></details>
+            </section>
+            <section class="card viz-card" aria-labelledby="sentTitle">
+              <header class="viz-head"><div><h3 id="sentTitle">Sentimiento estimado</h3><p class="viz-sub" id="sentSub"></p></div><div class="viz-actions"><a class="icon-btn sm hlp-ic" href="#ayuda/an-sentimiento" aria-label="Ayuda: cómo se estima el sentimiento" title="Ayuda: cómo se estima el sentimiento"><span class="ms">help</span></a></div></header>
+              <div id="sentBar"></div>
+              <div class="viz-legend" id="sentLegend"></div>
+              <h4 class="viz-h4">Por tipo</h4>
+              <div class="sbt" id="sentByType"></div>
+            </section>
+            <section class="card viz-card" aria-labelledby="hrTitle">
+              <header class="viz-head"><div><h3 id="hrTitle">Actividad por hora del día</h3><p class="viz-sub" id="hrSub"></p></div><div class="viz-actions"><a class="icon-btn sm hlp-ic" href="#ayuda/an-tiempo" aria-label="Ayuda: actividad por hora" title="Ayuda: actividad por hora"><span class="ms">help</span></a></div></header>
+              <div class="viz-plot" id="chartHours"></div>
+              <details class="viz-data" id="hrData"><summary>Ver datos</summary><div></div></details>
+            </section>
+            <section class="card viz-card" aria-labelledby="auTitle">
+              <header class="viz-head"><div><h3 id="auTitle">Autores más activos</h3><p class="viz-sub" id="auSub"></p></div><div class="viz-actions"><a class="icon-btn sm hlp-ic" href="#ayuda/an-autores" aria-label="Ayuda: autores más activos" title="Ayuda: autores más activos"><span class="ms">help</span></a></div></header>
+              <div id="topAuthors"></div>
+            </section>
+            <section class="card viz-card" aria-labelledby="lkTitle">
+              <header class="viz-head"><div><h3 id="lkTitle">Comentarios con más reacciones</h3><p class="viz-sub" id="lkSub"></p></div></header>
               <div id="topLiked"></div>
-            </div>
-            <div class="card"><h3>Palabras más frecuentes<a class="icon-btn sm hlp-ic" href="#ayuda/an-palabras" aria-label="Ayuda: palabras frecuentes" title="Ayuda: palabras frecuentes"><span class="ms">help</span></a></h3><div class="tag-chips" id="topWords"></div></div>
-            <div class="card">
-              <h3>Emojis<a class="icon-btn sm hlp-ic" href="#ayuda/an-etiquetas" aria-label="Ayuda: emojis, hashtags y menciones" title="Ayuda: emojis, hashtags y menciones"><span class="ms">help</span></a></h3><div class="tag-chips" id="topEmojis"></div>
-              <h3 style="margin-top:24px">Hashtags y menciones</h3><div class="tag-chips" id="topTags"></div>
-            </div>
+            </section>
+            <section class="card viz-card" aria-labelledby="wdTitle">
+              <header class="viz-head"><div><h3 id="wdTitle">Palabras más frecuentes</h3><p class="viz-sub" id="wdSub"></p></div><div class="viz-actions"><a class="icon-btn sm hlp-ic" href="#ayuda/an-palabras" aria-label="Ayuda: palabras frecuentes" title="Ayuda: palabras frecuentes"><span class="ms">help</span></a></div></header>
+              <div id="topWords"></div>
+              <div class="viz-more" id="moreWords"></div>
+            </section>
+            <section class="card viz-card" aria-labelledby="emTitle">
+              <header class="viz-head"><div><h3 id="emTitle">Emojis más usados</h3><p class="viz-sub" id="emSub"></p></div><div class="viz-actions"><a class="icon-btn sm hlp-ic" href="#ayuda/an-etiquetas" aria-label="Ayuda: emojis, hashtags y menciones" title="Ayuda: emojis, hashtags y menciones"><span class="ms">help</span></a></div></header>
+              <div id="topEmojis"></div>
+            </section>
+            <section class="card viz-card" aria-labelledby="tgTitle">
+              <header class="viz-head"><div><h3 id="tgTitle">Hashtags</h3><p class="viz-sub" id="tgSub"></p></div><div class="viz-actions"><a class="icon-btn sm hlp-ic" href="#ayuda/an-etiquetas" aria-label="Ayuda: emojis, hashtags y menciones" title="Ayuda: emojis, hashtags y menciones"><span class="ms">help</span></a></div></header>
+              <div class="tag-chips" id="topHashtags"></div>
+              <h4 class="viz-h4">Menciones</h4>
+              <div class="tag-chips" id="topMentions"></div>
+            </section>
           </div>
         </div>
 
@@ -1027,215 +1172,284 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
       <div class="help-layout">
         <nav class="toc" id="toc" aria-label="Contenido de la ayuda"></nav>
         <div id="helpContent">
-          <article class="help-article" id="h-inicio" data-title="Primeros pasos">
-            <h2><span class="ms">rocket_launch</span>Primeros pasos</h2>
-            <p>Esta herramienta obtiene los comentarios de una publicación de <b>Facebook, Instagram o TikTok</b>, los analiza y te permite copiarlos o exportarlos. Todo ocurre en tu navegador.</p>
-            <ol>
-              <li><b>Elige la red social y un método</b> en la sección <a href="#obtener">Obtener</a>: conectar con la API, usar el extractor de navegador o importar un archivo. Si pegas un enlace, la red social se detecta sola.</li>
-              <li><b>Obtén los comentarios</b> siguiendo los pasos numerados de cada método.</li>
-              <li><b>Revisa el resumen</b>: autores más activos, actividad en el tiempo, sentimiento, palabras y emojis frecuentes.</li>
-              <li><b>Filtra y busca</b> en la pestaña <i>Comentarios</i>.</li>
-              <li><b>Copia o exporta</b> a Excel, CSV, JSON, texto o informe HTML.</li>
-            </ol>
-            <p><button class="btn tonal sm" data-action="tour"><span class="ms">school</span>Ver de nuevo el tutorial</button></p>
-          </article>
+          <p class="help-count small muted hidden" id="helpCount" aria-live="polite"></p>
+          <!-- Contenido del Centro de ayuda en Markdown: se convierte en HTML al cargar la app -->
+          <script type="text/markdown" id="helpSource">
+# Primeros pasos {#inicio icon=rocket_launch}
 
-          <article class="help-article" id="h-metodos" data-title="Elegir un método">
-            <h2><span class="ms">alt_route</span>Elegir un método</h2>
-            <div class="cmp-wrap"><table class="cmp">
-              <thead><tr><th></th><th>Conectar (API)</th><th>Extractor</th><th>Importar</th></tr></thead>
-              <tbody>
-                <tr><td><b>Publicaciones</b></td><td>Páginas de Facebook que administras y sus cuentas profesionales de Instagram (no disponible para TikTok)</td><td>Cualquiera que puedas ver con tu sesión</td><td>Lo que contenga el archivo</td></tr>
-                <tr><td><b>Fechas</b></td><td>Exactas</td><td>Aproximadas (≈) en Facebook y TikTok, exactas en Instagram</td><td>Según el archivo</td></tr>
-                <tr><td><b>Reacciones / Me gusta</b></td><td>Sí</td><td>Si están visibles</td><td>Si existen</td></tr>
-                <tr><td><b>Requisitos</b></td><td>App de Meta + https/localhost</td><td>Navegador de escritorio</td><td>Ninguno</td></tr>
-              </tbody>
-            </table></div>
-            <p>Si administras la página o la cuenta, <b>Conectar</b> con la API da los datos más completos y fiables. Para cualquier otra publicación usa el <b>Extractor</b>.</p>
-          </article>
+Social Comments Analyzer obtiene los comentarios de una publicación de **Facebook, Instagram o TikTok**, los analiza y te permite copiarlos o exportarlos. Todo ocurre en tu navegador: no hay servidor intermedio.
 
-          <article class="help-article" id="h-facebook" data-title="Conectar con Facebook">
-            <h2><span class="ms">verified_user</span>Conectar con Facebook</h2>
-            <h3 id="h-fb-app">1. Crear la app (una sola vez)</h3>
-            <ol>
-              <li>Entra en <a href="https://developers.facebook.com/apps/" target="_blank" rel="noopener">developers.facebook.com/apps</a> y pulsa <b>Crear app</b>. Elige el caso de uso para administrar páginas (o el tipo <i>Empresa</i>).</li>
-              <li>Agrega el producto <b>Inicio de sesión con Facebook</b> (o <i>Facebook Login for Business</i>).</li>
-              <li>En su configuración activa <b>Inicio de sesión con el SDK de JavaScript</b> y agrega tu dominio en <b>Dominios permitidos para el SDK de JavaScript</b>. <code>localhost</code> está permitido en modo desarrollo.</li>
-              <li>En <b>Configuración → Básica</b> copia el <b>App ID</b> y pégalo en el paso 1.</li>
-              <li>Si usas <i>Login for Business</i>, crea una configuración con los permisos de abajo y pega su <b>Configuration ID</b>.</li>
-            </ol>
-            <h3 id="h-fb-permisos">2. Permisos que se solicitan</h3>
-            <ul>
-              <li><code>pages_show_list</code>: ver la lista de páginas que administras.</li>
-              <li><code>pages_read_engagement</code>: leer publicaciones y métricas.</li>
-              <li><code>pages_read_user_content</code>: leer los comentarios de los usuarios.</li>
-            </ul>
-            <p>Mientras la app esté en <b>modo desarrollo</b>, solo pueden iniciar sesión sus administradores, desarrolladores y testers, sin necesidad de revisión. Para que la use cualquier persona, Meta exige la <i>App Review</i>.</p>
-            <h3 id="h-fb-https">3. Dónde abrir la página</h3>
-            <p>Facebook solo permite iniciar sesión desde <b>https://</b> o <b>http://localhost</b>. Para probar en tu equipo:</p>
-            <p><code>python3 -m http.server 8000</code> → abre <code>http://localhost:8000</code></p>
-            <h3 id="h-fb-token">Sobre el token</h3>
-            <p>Al elegir una página se genera su <i>token de acceso</i> automáticamente. Dura alrededor de 1–2 horas; después vuelve a iniciar sesión. El token nunca se guarda de forma permanente.</p>
-          </article>
+1. **Elige la red social y un método** en [Obtener](#obtener). Si pegas un enlace, la red se detecta sola.
+2. **Obtén los comentarios** siguiendo los pasos numerados del método elegido.
+3. **Revisa el resumen**: indicadores, actividad en el tiempo, sentimiento, autores, palabras y emojis.
+4. **Explora los comentarios** en la vista de conversación o de tabla, con búsqueda y filtros.
+5. **Copia o exporta** a Excel, CSV, JSON, texto, Markdown o informe HTML.
 
-          <article class="help-article" id="h-instagram" data-title="Instagram">
-            <h2><span class="ms">photo_camera</span>Instagram</h2>
-            <p>Puedes analizar comentarios de Instagram con la API oficial (tus cuentas profesionales) o con el extractor (cualquier publicación que puedas ver). Elige <b>Instagram</b> en <a href="#obtener">Obtener</a> o pega directamente un enlace <code>instagram.com/p/…</code> o <code>/reel/…</code>.</p>
-            <h3 id="h-ig-requisitos">Requisitos para la API</h3>
-            <ul>
-              <li>Una <b>cuenta profesional</b> de Instagram (Empresa o Creador) <b>vinculada a una página de Facebook</b> que administres. Se vincula desde la configuración de la página o desde la app de Instagram (<i>Configuración → Centro de cuentas</i>).</li>
-              <li>La misma app de Meta que usas para Facebook, con el caso de uso o producto de <b>Instagram</b> añadido (API de Instagram con inicio de sesión de Facebook).</li>
-              <li>Permisos adicionales: <code>instagram_basic</code> (ver tus cuentas y publicaciones) e <code>instagram_manage_comments</code> (leer sus comentarios). Solo se piden cuando eliges Instagram.</li>
-            </ul>
-            <h3 id="h-ig-api">Usar la API</h3>
-            <ol>
-              <li>Elige <b>Instagram</b> y el método <b>Conectar con Instagram</b>.</li>
-              <li>Pulsa <b>Continuar con Facebook</b>. Si ya tenías la sesión iniciada para Facebook, pulsa <b>Conceder acceso a Instagram</b>.</li>
-              <li>Elige tu cuenta de Instagram y la publicación de la lista. También puedes pegar su URL: se busca entre las publicaciones recientes de tus cuentas.</li>
-            </ol>
-            <p>Se obtienen el usuario, el texto, la fecha exacta, los me gusta y las respuestas de cada comentario. La API no proporciona la foto de perfil de quien comenta.</p>
-            <h3 id="h-ig-extractor">Usar el extractor</h3>
-            <ol>
-              <li>Abre la publicación en <b>instagram.com</b>, en su propia página (no desde el feed).</li>
-              <li>Pulsa el marcador <b>Social Comments Analyzer</b>: es el mismo que en Facebook y detecta solo en qué red estás.</li>
-              <li>El extractor pulsa por ti “Ver respuestas” y “Cargar más comentarios”. Al terminar, copia el JSON y pégalo en la app.</li>
-            </ol>
-            <p>En Instagram las <b>fechas son exactas</b>, porque la página incluye la fecha completa de cada comentario. La descripción de la publicación no se cuenta como comentario; se usa como título.</p>
-            <h3 id="h-ig-limites">Límites y uso responsable</h3>
-            <ul>
-              <li>La API solo da acceso a publicaciones de <b>tus</b> cuentas profesionales; para las demás usa el extractor.</li>
-              <li>Las condiciones de uso de Instagram limitan la recogida automatizada de datos. Usa el extractor para publicaciones concretas que puedas ver, sin automatizarlo de forma masiva, y trata los datos según la normativa de protección de datos.</li>
-              <li>Si Instagram cambia el diseño de su web, puede que algunos datos dejen de detectarse con el extractor.</li>
-            </ul>
-          </article>
+<p><button class="btn tonal sm" data-action="tour"><span class="ms">school</span>Ver de nuevo el tutorial</button></p>
 
-          <article class="help-article" id="h-tiktok" data-title="TikTok">
-            <h2><span class="ms">music_video</span>TikTok</h2>
-            <p>Para TikTok se usa el <b>extractor de navegador</b> (o la importación de un archivo). TikTok no ofrece una API pública de comentarios: su API de investigación está reservada a investigadores aprobados, por eso la opción “Conectar” no aparece cuando eliges TikTok.</p>
-            <h3 id="h-tt-extractor">Usar el extractor</h3>
-            <ol>
-              <li>Abre el vídeo en <b>tiktok.com</b>, en su propia página (<code>tiktok.com/@usuario/video/…</code>). Si no ves los comentarios, pulsa el icono de comentarios.</li>
-              <li>Pulsa el marcador <b>Social Comments Analyzer</b>: es el mismo de Facebook e Instagram y detecta solo en qué red estás.</li>
-              <li>El extractor pulsa por ti “Ver N respuestas” y “Ver N más”, y desplaza la lista para cargar más comentarios. Al terminar, copia el JSON y pégalo en la app.</li>
-            </ol>
-            <p>Se obtienen el nombre visible y el usuario (<code>@usuario</code>) de cada persona, el texto, los me gusta, las respuestas y las etiquetas “Creador” o “Fijado”. TikTok muestra fechas como “11-5” (5 de noviembre) o “Hace 1 semana(s)”: se convierten en fechas aproximadas (≈).</p>
-            <h3 id="h-tt-limites">Límites y uso responsable</h3>
-            <ul>
-              <li>TikTok puede pedir que inicies sesión o que superes una verificación para ver todos los comentarios.</li>
-              <li>Las condiciones de uso de TikTok limitan la recogida automatizada de datos: usa el extractor para vídeos concretos, sin automatizarlo de forma masiva.</li>
-              <li>Si TikTok cambia el diseño de su web, puede que algunos datos dejen de detectarse.</li>
-            </ul>
-          </article>
+# Elegir red y método {#metodos icon=alt_route}
 
-          <article class="help-article" id="h-extractor" data-title="Extractor de navegador">
-            <h2><span class="ms">travel_explore</span>Extractor de navegador</h2>
-            <p>Es un pequeño script que se ejecuta <b>dentro de la pestaña de Facebook o Instagram</b>, donde ya tienes la sesión iniciada (para Instagram, consulta también <a href="#ayuda/ig-extractor">Usar el extractor en Instagram</a>). Abre los comentarios ocultos, lee los que están en pantalla y genera un JSON.</p>
-            <h3 id="h-ex-marcador">Con el marcador (recomendado)</h3>
-            <ol>
-              <li>Muestra la barra de marcadores (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd>).</li>
-              <li>Arrastra el botón azul <b>Social Comments Analyzer</b> hasta la barra.</li>
-              <li>Abre la publicación, elige <b>Todos los comentarios</b> y pulsa el marcador.</li>
-              <li>Espera a que termine (puedes pulsar <i>Detener y extraer</i>) y pulsa <b>Copiar JSON</b>.</li>
-            </ol>
-            <h3 id="h-ex-consola">Con la consola</h3>
-            <p>Pulsa <kbd>F12</kbd> → <i>Console</i>, pega el código y pulsa <kbd>Enter</kbd>. Chrome puede pedirte escribir <code>allow pasting</code> la primera vez.</p>
-            <h3 id="h-ex-consejos">Consejos</h3>
-            <ul>
-              <li>Abre la publicación en su propia página o ventana, no desde el feed.</li>
-              <li>Las publicaciones con miles de comentarios pueden tardar varios minutos.</li>
-              <li>Facebook muestra fechas relativas (“3 h”, “2 sem”). Se convierten en fechas aproximadas, marcadas con <span class="approx">≈</span>.</li>
-              <li>Si Facebook cambia su diseño, puede que algunos datos no se detecten.</li>
-            </ul>
-          </article>
+| | Conectar (API) | Extractor de navegador | Importar |
+|---|---|---|---|
+| **Facebook** | Páginas que administras | Cualquier publicación visible | Archivo JSON o CSV |
+| **Instagram** | Cuentas profesionales vinculadas a tus páginas | Cualquier publicación visible | Archivo JSON o CSV |
+| **TikTok** | No disponible | Cualquier vídeo visible | Archivo JSON o CSV |
+| **Fechas** | Exactas | Exactas en Instagram; aproximadas (≈) en Facebook y TikTok | Según el archivo |
+| **Requisitos** | App de Meta + `https://` o `localhost` | Navegador de escritorio | Ninguno |
 
-          <article class="help-article" id="h-importar" data-title="Importar archivos">
-            <h2><span class="ms">upload_file</span>Importar archivos</h2>
-            <p>Formatos admitidos:</p>
-            <ul>
-              <li><b>JSON del extractor</b> o un JSON exportado desde esta aplicación.</li>
-              <li><b>Respuesta de la Graph API</b> (<code>{"data":[…]}</code>).</li>
-              <li><b>Arreglo JSON genérico</b> de objetos.</li>
-              <li><b>CSV / TSV</b> con encabezados. Se detecta el separador (coma, punto y coma o tabulador).</li>
-            </ul>
-            <p>Columnas reconocidas automáticamente (en español o inglés): <code>autor</code>/<code>author</code>/<code>name</code>, <code>texto</code>/<code>text</code>/<code>message</code>/<code>comment</code>, <code>fecha</code>/<code>date</code>/<code>created_time</code>/<code>timestamp</code>, <code>reacciones</code>/<code>likes</code>, <code>respuestas</code>/<code>replies</code>, <code>id</code>, <code>parent_id</code>, <code>url</code>.</p>
-          </article>
+Si administras la página o la cuenta, **Conectar** da los datos más completos. Para cualquier otra publicación usa el **Extractor**.
 
-          <article class="help-article" id="h-analisis" data-title="Entender el análisis">
-            <h2><span class="ms">insights</span>Entender el análisis</h2>
-            <ul>
-              <li><b>Comentarios / Respuestas:</b> los comentarios principales y las respuestas a ellos.</li>
-              <li><b>Autores únicos:</b> personas distintas que comentaron.</li>
-              <li><b>Periodo:</b> tiempo entre el primer y el último comentario.</li>
-              <li id="h-an-tiempo"><b>Comentarios en el tiempo y actividad por hora:</b> se agrupan por hora (si abarcan menos de 2 días), por día o por semana. Con el extractor las fechas son aproximadas (≈), y la actividad por hora solo se muestra si hay precisión horaria.</li>
-              <li id="h-an-autores"><b>Autores más activos:</b> quienes más comentaron. Pulsa un nombre para ver solo sus comentarios.</li>
-              <li id="h-an-sentimiento"><b>Sentimiento estimado:</b> se calcula con un diccionario de palabras y emojis positivos y negativos (español e inglés), teniendo en cuenta negaciones como “no”. Es orientativo: no detecta ironía ni sarcasmo.</li>
-              <li id="h-an-palabras"><b>Palabras frecuentes:</b> excluye palabras vacías (“de”, “que”, “the”…). Pulsa una para filtrar los comentarios que la contienen.</li>
-              <li id="h-an-etiquetas"><b>Emojis, hashtags y menciones:</b> los más usados. Pulsa cualquiera para filtrar los comentarios que lo contienen.</li>
-            </ul>
-          </article>
+# Conectar con Facebook {#facebook icon=verified_user}
 
-          <article class="help-article" id="h-filtrar" data-title="Buscar y filtrar">
-            <h2><span class="ms">filter_list</span>Buscar y filtrar</h2>
-            <ul>
-              <li>Escribe en el buscador para filtrar por texto o autor. Usa <code>autor:"Nombre Apellido"</code> para un autor concreto.</li>
-              <li>Los <b>chips de filtro</b> se combinan entre grupos: por ejemplo <i>Respuestas</i> + <i>Negativos</i>.</li>
-              <li id="h-fi-vistas">La vista <b>Conversación</b> muestra los comentarios como en Facebook: burbujas con avatar, reacciones y respuestas anidadas. Los hilos se muestran desplegados; pulsa “Ocultar respuestas” para plegar uno, o usa <i>Expandir todo</i> / <i>Contraer todo</i>.</li>
-              <li>Con el extractor, la jerarquía se reconstruye a partir de la sangría con la que Facebook muestra las respuestas. Si importas un JSON de una versión anterior del extractor, se deduce del orden: cada respuesta pertenece al comentario que la precede.</li>
-              <li>La vista <b>Tabla</b> muestra todos los campos en columnas. <b>Agrupar hilos</b> coloca cada respuesta debajo de su comentario.</li>
-              <li>Pulsa los encabezados de la tabla para ordenar.</li>
-              <li>Marca filas para trabajar solo con esas: copiar y exportar usarán la selección.</li>
-              <li>Haz doble clic en una fila (o pulsa <span class="ms sm" style="vertical-align:-4px">info</span>) para ver todos sus datos.</li>
-            </ul>
-          </article>
+## 1. Crear la app (una sola vez) {#fb-app}
 
-          <article class="help-article" id="h-exportar" data-title="Copiar y exportar">
-            <h2><span class="ms">ios_share</span>Copiar y exportar</h2>
-            <p>Se exportan los comentarios <b>seleccionados</b>, o si no hay selección, <b>todos los filtrados</b>.</p>
-            <ul>
-              <li><b>Copiar como tabla:</b> pégalo directamente en Excel o Google Sheets.</li>
-              <li><b>Excel (.xlsx):</b> incluye la hoja <i>Comentarios</i> con todos los campos y la hoja <i>Resumen</i>.</li>
-              <li><b>CSV:</b> en UTF-8, compatible con Excel (los acentos y emojis se mantienen).</li>
-              <li><b>JSON:</b> se puede volver a importar en esta aplicación.</li>
-              <li><b>Informe HTML:</b> un documento listo para compartir o imprimir.</li>
-            </ul>
-          </article>
+1. Entra en [developers.facebook.com/apps](https://developers.facebook.com/apps/) y pulsa **Crear app** (caso de uso para administrar páginas, o tipo *Empresa*).
+2. Agrega el producto **Inicio de sesión con Facebook** (o *Facebook Login for Business*).
+3. Activa **Inicio de sesión con el SDK de JavaScript** y agrega tu dominio en **Dominios permitidos para el SDK de JavaScript**. `localhost` está permitido en modo desarrollo.
+4. En **Configuración → Básica** copia el **App ID** y pégalo en el paso 1 de *Conectar*.
+5. Si usas *Login for Business*, crea una configuración con los permisos de abajo y pega su **Configuration ID**.
 
-          <article class="help-article" id="h-privacidad" data-title="Privacidad y datos">
-            <h2><span class="ms">shield</span>Privacidad y datos</h2>
-            <ul>
-              <li>Esta aplicación no tiene servidor: los comentarios se procesan y guardan <b>solo en tu navegador</b>.</li>
-              <li>Se guardan en el navegador: los últimos comentarios analizados, el App ID, el tema y tus preferencias (como no volver a ver el tutorial).</li>
-              <li>El token de Facebook solo se conserva si lo pides, y únicamente mientras la pestaña esté abierta.</li>
-              <li>Puedes borrarlo todo desde <b>⋮ → Restablecer preferencias</b> y <b>Resultados → ⋮ → Borrar estos datos</b>.</li>
-              <li>Usa los datos de forma responsable y conforme a las condiciones de Facebook y a la normativa de protección de datos aplicable.</li>
-            </ul>
-          </article>
+## 2. Permisos que se solicitan {#fb-permisos}
 
-          <article class="help-article faq" id="h-faq" data-title="Problemas frecuentes">
-            <h2><span class="ms">quiz</span>Problemas frecuentes</h2>
-            <details id="h-faq-login"><summary>El botón “Continuar con Facebook” no hace nada</summary><div class="ans">Comprueba que abres la página desde <code>https://</code> o <code>http://localhost</code>, que el App ID es correcto y que el dominio está en “Dominios permitidos para el SDK de JavaScript”. Los bloqueadores de anuncios pueden impedir que se cargue el SDK de Facebook. Si el navegador bloqueó la ventana emergente, vuelve a pulsar el botón.</div></details>
-            <details id="h-faq-paginas"><summary>“No se encontraron páginas”</summary><div class="ans">En el diálogo de Facebook, pulsa <i>Editar acceso</i> y marca las páginas que quieres usar. Debes tener un rol en la página que permita moderar o crear contenido.</div></details>
-            <details id="h-faq-autor"><summary>Los comentarios salen sin nombre de autor</summary><div class="ans">Facebook solo devuelve el autor si usas el token de la <b>página dueña de la publicación</b> con el permiso <code>pages_read_user_content</code>. Con el extractor, el autor se obtiene de lo que se ve en pantalla.</div></details>
-            <details id="h-faq-extractor"><summary>El extractor encuentra menos comentarios de los esperados</summary><div class="ans">Elige “Todos los comentarios” en lugar de “Más relevantes” antes de ejecutarlo y deja que termine. Algunos comentarios pueden estar ocultos o eliminados, o no ser visibles para tu cuenta.</div></details>
-            <details id="h-faq-token"><summary>“Error validating access token” o “Session has expired”</summary><div class="ans">El token caducó. Cierra sesión y vuelve a pulsar <i>Continuar con Facebook</i>.</div></details>
-            <details id="h-faq-pfbid"><summary>Las URLs con “pfbid” no se reconocen</summary><div class="ans">Con la sesión iniciada, usa <b>Ver publicaciones</b> y elige la publicación de la lista. Así no hace falta la URL.</div></details>
-            <details id="h-faq-ig-cuenta"><summary>No aparece mi cuenta de Instagram</summary><div class="ans">La cuenta debe ser <b>profesional</b> (Empresa o Creador) y estar <b>vinculada a una página de Facebook</b> que administres. Al iniciar sesión, en la ventana de Facebook pulsa <i>Editar acceso</i> y marca tanto la página como la cuenta de Instagram. Si lo cambiaste después, cierra sesión y vuelve a entrar.</div></details>
-            <details id="h-faq-ig-permisos"><summary>Error de permisos al leer comentarios de Instagram</summary><div class="ans">Pulsa <b>Conceder acceso a Instagram</b> y acepta <code>instagram_basic</code> e <code>instagram_manage_comments</code>. Comprueba que tu app de Meta tiene añadido el caso de uso de Instagram y que tu usuario tiene un rol en la app mientras esté en modo desarrollo.</div></details>
-            <details id="h-faq-tt"><summary>El extractor no encuentra comentarios en TikTok</summary><div class="ans">Abre el vídeo en su propia página (no desde el feed “Para ti”) y asegúrate de que la lista de comentarios está visible; si no, pulsa el icono de comentarios. Si TikTok te pide iniciar sesión o una verificación, complétala y vuelve a pulsar el marcador.</div></details>
-            <details id="h-faq-excel"><summary>El Excel no se descarga</summary><div class="ans">La exportación a Excel carga una librería desde internet. Sin conexión se descargará un CSV, que Excel también abre.</div></details>
-          </article>
+- `pages_show_list`: ver la lista de páginas que administras.
+- `pages_read_engagement`: leer publicaciones y métricas.
+- `pages_read_user_content`: leer los comentarios de los usuarios.
 
-          <article class="help-article" id="h-atajos" data-title="Atajos de teclado">
-            <h2><span class="ms">keyboard</span>Atajos de teclado</h2>
-            <table class="kbd-table">
-              <tr><td style="width:140px"><kbd>/</kbd></td><td>Buscar (comentarios o ayuda)</td></tr>
-              <tr><td><kbd>?</kbd></td><td>Abrir la ayuda</td></tr>
-              <tr><td><kbd>g</kbd> luego <kbd>o</kbd></td><td>Ir a Obtener</td></tr>
-              <tr><td><kbd>g</kbd> luego <kbd>r</kbd></td><td>Ir a Resultados</td></tr>
-              <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Página anterior / siguiente de comentarios</td></tr>
-              <tr><td><kbd>Esc</kbd></td><td>Cerrar diálogos y menús</td></tr>
-            </table>
-          </article>
+> Mientras la app esté en **modo desarrollo**, solo pueden iniciar sesión sus administradores, desarrolladores y testers. Para que la use cualquier persona, Meta exige la *App Review*.
+
+## 3. Dónde abrir la página {#fb-https}
+
+Facebook solo permite iniciar sesión desde `https://` o `http://localhost`. La versión publicada ya usa `https://`. Para probar en tu equipo:
+
+```
+python3 -m http.server 8000
+```
+
+y abre `http://localhost:8000`.
+
+## Sobre el token {#fb-token}
+
+Al elegir una página se genera su *token de acceso* automáticamente. Dura alrededor de 1–2 horas; después vuelve a iniciar sesión. El token nunca se guarda de forma permanente.
+
+# Instagram {#instagram icon=photo_camera}
+
+Analiza Instagram con la **API oficial** (tus cuentas profesionales) o con el **extractor** (cualquier publicación visible). Elige *Instagram* en [Obtener](#obtener) o pega un enlace `instagram.com/p/…` o `/reel/…`.
+
+## Requisitos para la API {#ig-requisitos}
+
+- Una **cuenta profesional** (Empresa o Creador) **vinculada a una página de Facebook** que administres.
+- La misma app de Meta que usas para Facebook, con el caso de uso de **Instagram** añadido.
+- Permisos adicionales: `instagram_basic` e `instagram_manage_comments`. Solo se piden cuando eliges Instagram.
+
+## Usar la API {#ig-api}
+
+1. Elige **Instagram** y el método **Conectar con Instagram**.
+2. Pulsa **Continuar con Facebook**. Si ya tenías la sesión iniciada para Facebook, pulsa **Conceder acceso a Instagram**.
+3. Elige tu cuenta y la publicación de la lista. También puedes pegar su URL: se busca entre tus publicaciones recientes.
+
+Se obtienen usuario, texto, fecha exacta, me gusta y respuestas. La API no proporciona la foto de perfil de quien comenta.
+
+## Usar el extractor {#ig-extractor}
+
+1. Abre la publicación en **instagram.com**, en su propia página (no desde el feed).
+2. Pulsa el marcador **Social Comments Analyzer**: es el mismo para las tres redes.
+3. El extractor pulsa por ti “Ver todas las respuestas” y “Cargar más comentarios”. Al terminar, copia el JSON y pégalo en la app.
+
+En Instagram las **fechas son exactas**. La descripción de la publicación no cuenta como comentario: se usa como título.
+
+## Límites y uso responsable {#ig-limites}
+
+- La API solo da acceso a publicaciones de **tus** cuentas profesionales; para las demás usa el extractor.
+- Las condiciones de uso de Instagram limitan la recogida automatizada de datos: úsalo para publicaciones concretas, sin automatizarlo de forma masiva.
+- Si Instagram cambia el diseño de su web, algunos datos pueden dejar de detectarse. El [diagnóstico](#ayuda/ex-diag) ayuda a detectarlo.
+
+# TikTok {#tiktok icon=music_video}
+
+Para TikTok se usa el **extractor de navegador** o la importación de un archivo. TikTok no ofrece una API pública de comentarios (su API de investigación está reservada a investigadores aprobados), por eso “Conectar” no aparece al elegir TikTok.
+
+## Usar el extractor {#tt-extractor}
+
+1. Abre el vídeo en **tiktok.com**, en su propia página (`tiktok.com/@usuario/video/…`). Si no ves los comentarios, pulsa el icono de comentarios.
+2. Pulsa el marcador **Social Comments Analyzer**.
+3. El extractor despliega “Ver N respuestas” y “Ver N más” hasta cargar todas las respuestas, y desplaza la lista para cargar más comentarios. El panel muestra el avance como “54 de 209”.
+
+Se obtienen el nombre visible y el usuario (`@usuario`), el texto, los me gusta, las respuestas y las etiquetas “Creador”, “Fijado” o “Le gusta al creador”. Fechas como “11-5” (5 de noviembre) o “Hace 1 semana(s)” se convierten en fechas aproximadas (≈).
+
+## Límites y uso responsable {#tt-limites}
+
+- TikTok puede pedir que inicies sesión o una verificación para ver todos los comentarios.
+- El total que muestra TikTok puede incluir comentarios eliminados u ocultos.
+- Las condiciones de uso de TikTok limitan la recogida automatizada: úsalo para vídeos concretos.
+
+# Extractor de navegador {#extractor icon=travel_explore}
+
+Es un pequeño script que se ejecuta **dentro de la pestaña de la red social**, donde ya tienes la sesión iniciada. Un **único marcador** sirve para Facebook, Instagram y TikTok: detecta solo en qué red estás.
+
+## Con el marcador (recomendado) {#ex-marcador}
+
+1. Muestra la barra de marcadores ([[Ctrl]]+[[Shift]]+[[B]], o [[⌘]]+[[Shift]]+[[B]] en Mac).
+2. Arrastra el botón azul **Social Comments Analyzer** desde [Obtener → Extractor](#obtener) hasta la barra.
+3. Abre la publicación y pulsa el marcador.
+
+> El marcador guarda una copia del código. Cuando la app se actualice, **bórralo y vuelve a arrastrarlo** para usar la versión nueva.
+
+## Con la consola {#ex-consola}
+
+Pulsa [[F12]] → *Console*, pega el código (botón *Copiar código para la consola*) y pulsa [[Enter]]. Chrome puede pedirte escribir `allow pasting` la primera vez.
+
+## El panel de extracción {#ex-panel}
+
+- **Progreso**: rondas y comentarios visibles (“N de total” en TikTok), siempre en una sola línea.
+- **Detener y extraer**: termina ahora con lo recogido.
+- **Reiniciar captura**: descarta lo recogido y empieza de nuevo en la publicación abierta. Pide confirmación si ya hay comentarios.
+- Al terminar: **Copiar JSON** o **Descargar .json**, y pégalo en *Pega el resultado* (el botón **Limpiar** vacía el cuadro, con opción de deshacer).
+
+## Si cambias de publicación {#ex-cambio}
+
+Si durante la extracción la página pasa a otra publicación (por ejemplo, al deslizar al siguiente reel), el extractor **se pausa y avisa**, sin pulsar nada en la nueva. Los comentarios se van guardando mientras sigues en la original, así que nunca se mezclan. Opciones:
+
+- **Reanudar**: se activa al volver a la publicación original.
+- **Usar lo recogido**: genera el JSON solo con la publicación original.
+- **Empezar con esta publicación**: descarta lo anterior y extrae la nueva.
+
+## Diagnóstico {#ex-diag}
+
+El JSON incluye un apartado `diag` con recuentos y la estructura de la página **sin textos ni nombres**. Útil si faltan comentarios:
+
+- Instagram: `idsEnPagina`, `faltan` (IDs presentes en la página pero no extraídos) y `botonesPendientes`.
+- TikTok: `totalSegunTikTok`, `principales`, `respuestas` y `pulsados` (botones pulsados).
+- `cambioDePublicacion`: indica si hubo un cambio de publicación.
+
+## Consejos {#ex-consejos}
+
+- Abre la publicación en su propia página o ventana, no desde el feed.
+- En Facebook elige **“Todos los comentarios”** en lugar de “Más relevantes”.
+- Las publicaciones con miles de comentarios pueden tardar varios minutos.
+- El extractor necesita un ordenador: las versiones móviles de las redes no lo admiten.
+
+# Importar archivos {#importar icon=upload_file}
+
+Formatos admitidos (arrastra el archivo o pega su contenido):
+
+- **JSON del extractor** o un JSON exportado desde esta aplicación.
+- **Respuestas de la API**: Graph API de Facebook (`{"data":[…]}`) o de Instagram.
+- **Arreglo JSON genérico** de objetos.
+- **CSV / TSV** con encabezados; el separador se detecta solo.
+
+Columnas reconocidas (español o inglés): `autor`/`author`/`name`, `texto`/`text`/`message`/`comment`, `fecha`/`date`/`created_time`/`timestamp`, `reacciones`/`likes`, `respuestas`/`replies`, `id`, `parent_id`, `url` y `plataforma`.
+
+# Entender el análisis {#analisis icon=insights}
+
+## Indicadores {#an-indicadores}
+
+Total, comentarios, respuestas, autores únicos, reacciones (o me gusta), preguntas, longitud media y periodo. Cada uno incluye una línea de contexto, como el porcentaje del total o la media por comentario.
+
+## Actividad en el tiempo {#an-tiempo}
+
+Comentarios por hora (si abarcan menos de 2 días), por día o por semana, y actividad por hora del día. El subtítulo indica el máximo y la media. Pasa el ratón o usa [[Tab]] sobre una columna para ver su valor, y **Ver datos** muestra la tabla. Con el extractor de Facebook y TikTok las fechas son aproximadas (≈) y la actividad por hora solo aparece si hay precisión horaria.
+
+## Autores más activos {#an-autores}
+
+Barras ordenadas con quienes más comentaron. Pulsa un nombre para ver solo sus comentarios.
+
+## Sentimiento estimado {#an-sentimiento}
+
+Barra con el reparto entre negativos, neutrales y positivos, y desglose **por tipo** (comentarios frente a respuestas). Se calcula con un diccionario de palabras, raíces y emojis en español e inglés (incluye el vocabulario habitual de quejas de compra y entrega: “tardanza”, “demora”, “maloliente”…). Las negaciones como “no” invierten el sentido, los términos negativos pesan más (−1,5 frente a +1) y lo que va después de “pero” o “aunque” cuenta el doble. Las respuestas de **acuerdo** (“concuerdo contigo”, “me pasó lo mismo”, “tienes razón”) toman la polaridad del comentario al que responden, y las de **desacuerdo** (“no estoy de acuerdo”) la invierten; el detalle del comentario lo indica.
+
+> Es orientativo: no detecta ironía ni sarcasmo, ni sabe de qué marca se habla (elogiar a la competencia para criticar a otra puede salir mixto).
+
+## Palabras frecuentes {#an-palabras}
+
+Las 10 más usadas en barras y las siguientes como etiquetas, excluyendo palabras vacías (“de”, “que”, “the”…). Pulsa una para filtrar.
+
+## Emojis, hashtags y menciones {#an-etiquetas}
+
+Los más usados de cada tipo. Pulsa cualquiera para ver los comentarios que lo contienen. **Comentarios con más reacciones** lista los cinco destacados; pulsa uno para ver todos sus datos.
+
+# Buscar y filtrar {#filtrar icon=filter_list}
+
+- Escribe en el buscador para filtrar por texto o autor; usa `autor:"Nombre Apellido"` para un autor concreto.
+- Los **chips de filtro** se combinan entre grupos, por ejemplo *Respuestas* + *Negativos*.
+- Pulsa los encabezados de la tabla para ordenar, y marca filas para copiar o exportar solo esas.
+
+## Conversación y tabla {#fi-vistas}
+
+- **Conversación**: los comentarios como en cada red (burbujas en Facebook, estilo Instagram o TikTok), con respuestas anidadas. Pliega un hilo con *Ocultar respuestas* o usa *Expandir todo* / *Contraer todo*.
+- **Tabla**: todos los campos en columnas; *Agrupar hilos* coloca cada respuesta bajo su comentario.
+- Haz doble clic en una fila o pulsa {ms:info} para ver todos sus datos.
+
+# Copiar y exportar {#exportar icon=ios_share}
+
+Se usan los comentarios **seleccionados** o, si no hay selección, **todos los filtrados**.
+
+| Formato | Para qué sirve |
+|---|---|
+| Copiar como tabla | Pegar directamente en Excel o Google Sheets |
+| Excel (.xlsx) | Hoja *Comentarios* con todos los campos y hoja *Resumen* |
+| CSV | UTF-8 compatible con Excel; conserva acentos y emojis |
+| JSON | Volver a importarlo en esta aplicación |
+| Informe HTML | Compartir o imprimir |
+
+Cada comentario incluye su **plataforma**.
+
+# Privacidad y datos {#privacidad icon=shield}
+
+- No hay servidor: los comentarios se procesan y guardan **solo en tu navegador**.
+- Se guardan los últimos comentarios analizados, el App ID, el tema y tus preferencias (por ejemplo, no volver a ver el tutorial).
+- El token de Facebook solo se conserva si lo pides, y únicamente mientras la pestaña esté abierta.
+- Puedes borrarlo todo con **⋮ → Restablecer preferencias** y **Resultados → ⋮ → Borrar estos datos**.
+- Usa los datos de forma responsable y conforme a las condiciones de cada red y a la normativa de protección de datos.
+
+# Problemas frecuentes {#faq icon=quiz .faq}
+
+??? El botón “Continuar con Facebook” no hace nada {#faq-login}
+    Comprueba que abres la página desde `https://` o `http://localhost`, que el App ID es correcto y que el dominio está en “Dominios permitidos para el SDK de JavaScript”. Los bloqueadores de anuncios pueden impedir que cargue el SDK. Si el navegador bloqueó la ventana emergente, vuelve a pulsar el botón.
+
+??? “No se encontraron páginas” {#faq-paginas}
+    En la ventana de Facebook pulsa *Editar acceso* y marca las páginas que quieres usar. Debes tener un rol que permita moderar o crear contenido.
+
+??? Los comentarios salen sin nombre de autor {#faq-autor}
+    Con la API, Facebook solo devuelve el autor si usas el token de la **página dueña de la publicación** con `pages_read_user_content`. Con el extractor, el autor se obtiene de lo que se ve en pantalla.
+
+??? El extractor encuentra menos comentarios de los esperados {#faq-extractor}
+    Elige “Todos los comentarios” en Facebook y deja que termine. Mira el apartado `diag` del JSON: en Instagram, `faltan` indica los IDs presentes pero no extraídos y `botonesPendientes` los botones sin pulsar; en TikTok compara `totalSegunTikTok` con `extraidos`. Algunos comentarios pueden estar ocultos o eliminados.
+
+??? El extractor se pausó solo {#faq-cambio}
+    La página cambió de publicación (por ejemplo, pasaste al siguiente vídeo). Vuelve a la original y pulsa **Reanudar**, usa lo recogido o empieza con la nueva. Así nunca se mezclan comentarios de publicaciones distintas.
+
+??? “Error validating access token” o “Session has expired” {#faq-token}
+    El token caducó. Cierra sesión y vuelve a pulsar *Continuar con Facebook*.
+
+??? Las URLs con “pfbid” no se reconocen {#faq-pfbid}
+    Con la sesión iniciada, usa **Ver publicaciones** y elige la publicación de la lista. Así no hace falta la URL.
+
+??? No aparece mi cuenta de Instagram {#faq-ig-cuenta}
+    La cuenta debe ser **profesional** y estar **vinculada a una página de Facebook** que administres. En la ventana de Facebook pulsa *Editar acceso* y marca la página y la cuenta de Instagram. Si lo cambiaste después, cierra sesión y vuelve a entrar.
+
+??? Error de permisos al leer comentarios de Instagram {#faq-ig-permisos}
+    Pulsa **Conceder acceso a Instagram** y acepta `instagram_basic` e `instagram_manage_comments`. Comprueba que tu app de Meta tiene el caso de uso de Instagram y que tu usuario tiene un rol en la app mientras esté en modo desarrollo.
+
+??? El extractor no encuentra comentarios en TikTok {#faq-tt}
+    Abre el vídeo en su propia página (no desde “Para ti”) con la lista de comentarios visible. Si TikTok pide iniciar sesión o una verificación, complétala y vuelve a pulsar el marcador.
+
+??? El marcador sigue fallando tras una actualización {#faq-marcador}
+    El marcador guarda una copia del código. Bórralo de la barra y vuelve a arrastrar el botón **Social Comments Analyzer** desde *Obtener → Extractor*, y recarga la app sin caché ([[Ctrl]]+[[Shift]]+[[R]]).
+
+??? El Excel no se descarga {#faq-excel}
+    La exportación a Excel carga una librería desde internet. Sin conexión se descarga un CSV, que Excel también abre.
+
+# Atajos de teclado {#atajos icon=keyboard}
+
+| Atajo | Acción |
+|---|---|
+| [[/]] | Buscar (comentarios o ayuda) |
+| [[?]] | Abrir la ayuda de la pantalla actual |
+| [[g]] y luego [[o]] | Ir a Obtener |
+| [[g]] y luego [[r]] | Ir a Resultados |
+| [[←]] [[→]] | Página anterior / siguiente de comentarios |
+| [[Tab]] | Recorrer columnas y barras de los gráficos |
+| [[Esc]] | Cerrar diálogos y menús |
+          </script>
           <div class="no-rows hidden" id="helpEmpty">No hay resultados para tu búsqueda.</div>
         </div>
       </div>
@@ -1311,11 +1525,20 @@ function fbExtractor(){
   var bUse = el('button', btnCss + ';display:none', 'Usar lo recogido');
   var bRestart = el('button', btnCss + ';display:none;background:#c2e7ff;color:#001d35', 'Empezar con esta publicación');
   var out = el('textarea','display:none;width:100%;height:90px;margin-top:10px;background:#f0f4f9;color:#1f1f1f;border:0;border-radius:8px;padding:8px;font:11px monospace');
-  bar.append(bStop, bResume, bUse, bRestart, bCopy, bDl, bClose); ui.append(ttl, st, bar, out); document.body.appendChild(ui);
+  var bRestartAll = el('button', btnCss + ';background:transparent;color:#0b57d0;box-shadow:inset 0 0 0 1px #c4c7c5', 'Reiniciar captura');
+  bar.append(bStop, bResume, bUse, bRestart, bCopy, bDl, bRestartAll, bClose); ui.append(ttl, st, bar, out); document.body.appendChild(ui);
   // oneLine: el progreso nunca se parte en dos líneas (si no cabe, se recorta con …)
   function status(t, oneLine){ st.textContent = t; st.title = oneLine ? t : ''; st.style.whiteSpace = oneLine ? 'nowrap' : 'normal'; st.style.overflow = 'hidden'; st.style.textOverflow = 'ellipsis'; }
   bStop.onclick = function(){ stop = true; status('Deteniendo…'); };
-  var closed = false;
+  var closed = false, finished = false, restarting = false;
+  // Reiniciar: descarta lo recogido y vuelve a lanzar el extractor en la publicación abierta
+  function relaunch(){ closed = true; stop = true; ui.remove(); window.__fbcx = false; setTimeout(fbExtractor, 60); }
+  bRestartAll.onclick = function(){
+    var n = collected.length;
+    if (n && !confirm('Se descartarán los ' + n + ' comentarios recogidos y empezará una captura nueva de esta publicación. ¿Continuar?')) return;
+    if (finished) relaunch();
+    else { restarting = true; stop = true; status('Reiniciando…', true); }
+  };
   bClose.onclick = function(){ stop = true; closed = true; ui.remove(); window.__fbcx = false; };
 
   var LABEL_RE = /^(comentario|comment|respuesta|reply|réponse|commentaire|comentário|resposta|kommentar|antwort|commento|risposta)/i;
@@ -1706,7 +1929,10 @@ function fbExtractor(){
       var top = thread ? Array.prototype.slice.call(thread.querySelectorAll(TT_NODE_SEL)).filter(function(x){ return !x.closest('[class*="DivReplyContainer"]') && ttLevel(x) <= 1; })[0] : null;
       if (top && top !== n) parentId = top.id || '';
     }
-    var mentions = textEl ? Array.prototype.slice.call(textEl.querySelectorAll('a[href^="/@"]')).map(function(a){ return ttHandle(a); }).filter(Boolean) : [];
+    var mentions = textEl ? Array.prototype.slice.call(textEl.querySelectorAll('a[href^="/@"]')).map(function(a){
+      var t = txt(a).replace(/^@/, '').trim(); if (t) return t;
+      var hnd = ttHandle(a); return /^MS4wLj/.test(hnd) || hnd.length > 30 ? '' : hnd;   // ID interno: no es un nombre
+    }).filter(Boolean) : [];
     var badges = [];
     Array.prototype.slice.call(n.querySelectorAll('span,div,p')).forEach(function(e){
       if (e.children.length || (textEl && textEl.contains(e))) return;
@@ -1780,7 +2006,7 @@ function fbExtractor(){
   // Pausa con aviso hasta que el usuario decida qué hacer
   function waitDecision(){
     return new Promise(function(resolve){
-      bStop.style.display = 'none'; bResume.style.display = ''; bUse.style.display = ''; bRestart.style.display = '';
+      bStop.style.display = 'none'; bRestartAll.style.display = 'none'; bResume.style.display = ''; bUse.style.display = ''; bRestart.style.display = '';
       var tick = function(){
         if (closed){ clearInterval(iv); return; }
         var back = postKey() === startKey;
@@ -1790,13 +2016,15 @@ function fbExtractor(){
           : '⚠ Cambiaste de publicación. Para no mezclar comentarios, la extracción está en pausa. Llevas ' + collected.length + ' comentarios de la publicación original.');
       };
       var iv = setInterval(tick, 400); tick();
-      function done(v){ clearInterval(iv); st.style.color = '#444746'; bResume.style.display = 'none'; bUse.style.display = 'none'; bRestart.style.display = 'none'; bStop.style.display = ''; resolve(v); }
+      function done(v){ clearInterval(iv); bRestartAll.style.display = ''; st.style.color = '#444746'; bResume.style.display = 'none'; bUse.style.display = 'none'; bRestart.style.display = 'none'; bStop.style.display = ''; resolve(v); }
       bResume.onclick = function(){ if (postKey() === startKey) done('resume'); };
       bUse.onclick = function(){ done('use'); };
       bRestart.onclick = function(){ done('restart'); };
     });
   }
   function finish(){
+    if (restarting){ relaunch(); return; }
+    finished = true;
     status('Extrayendo datos…');
     var onOriginal = postKey() === startKey;
     if (onOriginal && !useCollectedOnly) snapshot(true);
@@ -2009,24 +2237,48 @@ const POS = ['bueno','buena','buenos','buenas','excelente','genial','gracias','i
 const NEG = ['malo','mala','malos','malas','pésimo','pesimo','pésima','pesima','horrible','terrible','odio','asco','fraude','estafa','estafadores','mentira','mentiras','mentirosos','peor','basura','triste','decepción','decepcion','decepcionado','decepcionada','problema','problemas','queja','nunca','lamentable','vergüenza','verguenza','robo','ladrones','caro','lento','error','falla','fallas','mal','tarde','molesto','molesta','indignante','abuso','denuncia','cancelar','bad','worst','hate','awful','scam','fraud','poor','sad','angry','disappointed','problem','slow','broken','fake','never'];
 const POS_E = ['❤','😍','🥰','😊','😁','😀','😃','👍','👏','🙌','💯','🔥','🎉','💪','😂','🤣','💙','💚','💛','💜','♥','😘','🤩','✨','🙏'];
 const NEG_E = ['😡','😠','🤬','👎','😢','😭','😞','😒','🙄','💩','😤','😔','😩','😫','🤮','😑'];
+// Más vocabulario negativo habitual en quejas de compras y entregas
+NEG.push('falló','fallo','fallaron','fallan','fallando','desagradable','desagradables','tardanza','tardanzas','demora','demoras','demorado','retraso','retrasos','retrasado','maloliente','malolientes','podrido','podrida','podridos','podridas','vencido','vencida','vencidos','vencidas','roto','rota','rotos','rotas','dañado','dañada','dañados','dañadas','defectuoso','defectuosa','incompleto','incompleta','equivocado','equivocada','apestoso','apestosa','asqueroso','asquerosa','engaño','engañan','engañaron','engañado','engañada','estafaron','estafado','estafada','robaron','robado','irresponsable','irresponsables','incumplen','incumplieron','incumplimiento','pérdida','perdida','perdido','frustrante','frustrado','frustrada','insatisfecho','insatisfecha','descontento','descontenta','inaceptable','desastre','fatal','nefasto','nefasta','mediocre','ineficiente','ineficientes','grosero','grosera','groseros','maltrato','reclamo','reclamación','reclamacion','devolución','devolucion','reembolso','nadie','ignoran','espera','esperando','tardaron','tardan','tarda','demoran','demoraron','jamás','jamas','cobran','cobraron','abusivo','abusivos','olor','hediondo','feo','fea','feos','feas','disgusto','arrepentido','arrepentida','horror','desastroso','desastrosa','awful','terrible','rude','late','delay','delayed','rotten','damaged','refund','worse');
+POS.push('puntual','puntuales','eficiente','eficientes','amable','amables','atento','atenta','atentos','personalizada','personalizado','satisfecho','satisfecha','satisfechos','contento','contenta','contentos','fresco','fresca','frescos','frescas','confiable','confiables','seguro','segura','responsables','profesional','profesionales','impecable','encantado','encantada','agradezco','buenísimo','buenisimo','riquísimo','riquisimo','rico','rica','delicioso','deliciosa','ok','fast','friendly','fresh','reliable');
 const POSS = new Set(POS), NEGS = new Set(NEG);
+// Raíces: cubren conjugaciones y derivados (se comparan sin tildes)
+const NEG_STEMS = ['desagrad','tardanz','demor','retras','malolient','podrid','apest','asquer','estaf','engan','defectuos','incumpl','irrespons','decepcion','frustr','insatisf','descontent','indign','pesim','horribl','lamentabl','vergonz','abusiv','fraudul'];
+const POS_STEMS = ['recomend','agradec','excelen','encant','maravill','fantast','satisf','puntual','eficien','profesional','felicit','impecabl'];
+const ADVERSATIVE = new Set(['pero','aunque','sin embargo','embargo','but','however']);
 const NEGATORS = new Set(['no','nunca','ni','jamás','jamas','not','never','sin']);
 const norm = w => w.normalize('NFD').replace(/[̀-ͯ]/g,'');
 const EMOJI_RE = /\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*/gu;
 function tokenize(text){ return (text||'').toLowerCase().replace(/https?:\/\/\S+/g,' ').match(/[\p{L}\p{N}][\p{L}\p{N}'’_-]*/gu) || []; }
+function polarity(w){
+  const n = norm(w);
+  if(NEGS.has(w) || NEGS.has(n)) return -1;   // lo negativo primero: "insatisfecho" no debe contar como "satisf…"
+  if(POSS.has(w) || POSS.has(n)) return 1;
+  if(n.length >= 5){
+    if(NEG_STEMS.some(s => n.startsWith(s))) return -1;
+    if(POS_STEMS.some(s => n.startsWith(s))) return 1;
+  }
+  return 0;
+}
+// Puntuación: +1 por término positivo, −1,5 por negativo (las quejas pesan más que los elogios de cortesía);
+// la negación previa (hasta 2 palabras: "no me gustó", "no es bueno") invierte; lo que sigue a "pero/aunque" vale el doble.
 function sentiment(text){
-  const toks = tokenize(text); let score=0;
+  const toks = tokenize(text); let score=0, boost=1;
   toks.forEach((w,i)=>{
-    const neg = i>0 && NEGATORS.has(toks[i-1]);
-    if(POSS.has(w)||POSS.has(norm(w))) score += neg?-1:1;
-    else if(NEGS.has(w)||NEGS.has(norm(w))) score += neg?1:-1;
+    if(ADVERSATIVE.has(w)){ boost = 2; return; }
+    const pol = polarity(w); if(!pol) return;
+    const neg = (i>0 && NEGATORS.has(toks[i-1])) || (i>1 && NEGATORS.has(toks[i-2]) && !polarity(toks[i-1]));
+    const v = (neg ? -pol : pol);
+    score += (v < 0 ? -1.5 : 1) * boost;
   });
+  score = Math.round(score * 2) / 2;
   POS_E.forEach(e=>{ if(text.includes(e)) score+=1; });
   NEG_E.forEach(e=>{ if(text.includes(e)) score-=1; });
   return { score, label: score>0?'positivo':score<0?'negativo':'neutral' };
 }
 
 /* ---------- normalización ---------- */
+// Identificadores internos que no son nombres (p. ej. secUid de TikTok "MS4wLjABAAAA…")
+const isOpaqueId = s => /^MS4wLj/.test(s) || (/^[A-Za-z0-9_-]{24,}$/.test(s) && /\d/.test(s) && /[A-Z]/.test(s) && /[a-z]/.test(s));
 function finalize(list, meta){
   const byId = new Map();
   list.forEach((c,i)=>{
@@ -2052,14 +2304,49 @@ function finalize(list, meta){
     c.length = [...c.text].length;
     c.words = tokenize(c.text).length;
     c.hashtags = (c.text.match(/#[\p{L}\p{N}_]+/gu)||[]);
-    c.mentions = Array.from(new Set([...c.mentions, ...(c.text.match(/@[\p{L}\p{N}_.]+/gu)||[])]));
+    // Menciones limpias: sin "@", sin duplicados, sin IDs internos (TikTok usa /@MS4wLj… en los enlaces) ni restos de una letra.
+    // En TikTok los nombres visibles llevan espacios ("@Miguel Ángel"), así que no se deducen del texto.
+    const fromText = c.platform === 'tiktok' ? [] : (c.text.match(/@[\p{L}\p{N}_.]{2,}/gu) || []);
+    const seenM = new Set();
+    c.mentions = [...c.mentions, ...fromText].map(m => String(m).replace(/^@/, '').trim())
+      .filter(m => m.length >= 2 && !isOpaqueId(m) && !seenM.has(m.toLowerCase()) && seenM.add(m.toLowerCase()));
     c.emojis = c.text.match(EMOJI_RE) || [];
     c.isQuestion = /[?¿]/.test(c.text);
     c.urls = c.text.match(/https?:\/\/\S+/g) || [];
     const s = sentiment(c.text); c.sentiment=s.label; c.sentimentScore=s.score;
     c.createdTs = c.createdAt ? Date.parse(c.createdAt) : NaN;
   });
+  inheritAgreement(list, byId);
   return list;
+}
+/* Acuerdo / desacuerdo: una respuesta como "concuerdo contigo" o "me pasó lo mismo" no tiene polaridad propia;
+   toma la del comentario al que se refiere (el del autor mencionado en el mismo hilo o, si no, el comentario padre).
+   El desacuerdo ("no estoy de acuerdo", "mentira") la invierte. Se recorre en orden, así que las cadenas se propagan. */
+const AGREE_RE = /(^|[^\p{L}])(concuerdo|coincido|de acuerdo|tienes?( toda la)? razon|tienen( toda la)? razon|exacto|exactamente|asi mismo|asimismo|a mi tambien|a mi igual|igual que tu|igual me paso|me paso (lo mismo|igual|exactamente)|lo mismo (digo|me paso|pienso)|pienso (igual|lo mismo)|totalmente|muy cierto|es cierto|eso mismo|tal cual|ni mas ni menos|asi es|same|agree|so true)(?=$|[^\p{L}])|(^|\s)(\+1|x2)(?=$|\s)/u;
+const DISAGREE_RE = /(^|[^\p{L}])(no (estoy|estamos|esta) de acuerdo|en desacuerdo|discrepo|no coincido|no concuerdo|no (tienes?|tienen) razon|eso es mentira|es falso|disagree)(?=$|[^\p{L}])/u;
+function inheritAgreement(list, byId){
+  const rootOf = c => { let p = c, g = 0; while(p.parentId && byId.has(p.parentId) && g++ < 10) p = byId.get(p.parentId); return p.id; };
+  list.forEach((c, i) => {
+    if(!c.parentId && !c.mentions.length) return;
+    let t = norm(c.text.toLowerCase());
+    // quitar el nombre mencionado al principio ("Dinna Ramirez Cuevas concuerdo contigo")
+    [c.replyTo, ...c.mentions].filter(Boolean).forEach(n => { const nn = norm(String(n).toLowerCase()); if(t.startsWith(nn)) t = t.slice(nn.length); });
+    const dis = DISAGREE_RE.test(t), agr = !dis && AGREE_RE.test(t);
+    if(!dis && !agr) return;
+    // destino: último comentario anterior del mismo hilo cuyo autor está mencionado; si no, el padre
+    const names = new Set([c.replyTo, ...c.mentions].filter(Boolean).map(n => norm(String(n).toLowerCase())));
+    const root = rootOf(c); let target = null;
+    for(let j = i - 1; j >= 0; j--){
+      const o = list[j];
+      if(names.has(norm(String(o.authorName).toLowerCase())) && rootOf(o) === root){ target = o; break; }
+    }
+    if(!target && c.parentId && byId.has(c.parentId)) target = byId.get(c.parentId);
+    if(!target || !target.sentimentScore) return;
+    c.sentimentOwn = c.sentimentScore;
+    c.sentimentScore = Math.round((c.sentimentScore + (agr ? 1 : -1) * target.sentimentScore) * 2) / 2;
+    c.sentiment = c.sentimentScore > 0 ? 'positivo' : c.sentimentScore < 0 ? 'negativo' : 'neutral';
+    c.sentimentFrom = `${agr ? 'acuerdo' : 'desacuerdo'} con ${target.authorName || 'el comentario anterior'}`;
+  });
 }
 /* Reconstruye la jerarquía de los datos del extractor:
    1) usa el parentId del enlace si apunta a un comentario existente;
@@ -2626,106 +2913,283 @@ function renderMeta(){
   $('#pMeta').innerHTML = `<span class="plat-chip"><i class="pdot ${platDot(platOfMeta())}"></i>${platName(platOfMeta())}</span>` + parts.map(([i,t])=>`<span><span class="ms">${i}</span>${t}</span>`).join('');
 }
 function computeStats(list){
-  const authors = {}; let reacts=0, chars=0, att=0, q=0, pos=0, neg=0, neu=0, replies=0;
-  const words={}, emojis={}, tags={};
+  const authors = {}; let reacts=0, chars=0, wordsN=0, att=0, q=0, pos=0, neg=0, neu=0, replies=0;
+  const words={}, emojis={}, tags={}, hashtags={}, mentions={};
   list.forEach(c=>{
     const k=c.authorName||'(desconocido)';
     authors[k] ||= {name:k, count:0, reactions:0}; authors[k].count++; authors[k].reactions+=c.reactions;
-    reacts+=c.reactions; chars+=c.length; if(c.attachments.length) att++; if(c.isQuestion) q++;
+    reacts+=c.reactions; chars+=c.length; wordsN+=c.words||0; if(c.attachments.length) att++; if(c.isQuestion) q++;
     if(c.type==='reply') replies++;
     c.sentiment==='positivo'?pos++:c.sentiment==='negativo'?neg++:neu++;
     tokenize(c.text).forEach(w=>{ if(w.length<3||STOP.has(w)||STOP.has(norm(w))||/^\d+$/.test(w)) return; words[w]=(words[w]||0)+1; });
     c.emojis.forEach(e=>emojis[e]=(emojis[e]||0)+1);
-    [...c.hashtags, ...c.mentions].forEach(t=>tags[t]=(tags[t]||0)+1);
+    c.hashtags.forEach(t=>{ hashtags[t]=(hashtags[t]||0)+1; tags[t]=(tags[t]||0)+1; });
+    c.mentions.forEach(t=>{ const m = String(t).replace(/^@/,''); mentions[m]=(mentions[m]||0)+1; tags[t]=(tags[t]||0)+1; });
   });
   const top = (o,n)=>Object.entries(o).sort((a,b)=>b[1]-a[1]).slice(0,n);
-  return { total:list.length, comments:list.length-replies, replies, uniqueAuthors:Object.keys(authors).length, reacts, avgLen: list.length?Math.round(chars/list.length):0,
-    att, q, pos, neg, neu, authors:Object.values(authors).sort((a,b)=>b.count-a.count||b.reactions-a.reactions), words:top(words,30), emojis:top(emojis,16), tags:top(tags,16) };
+  return { total:list.length, comments:list.length-replies, replies, uniqueAuthors:Object.keys(authors).length, reacts,
+    avgLen: list.length?Math.round(chars/list.length):0, avgWords: list.length?Math.round(wordsN/list.length):0,
+    att, q, pos, neg, neu, authors:Object.values(authors).sort((a,b)=>b.count-a.count||b.reactions-a.reactions),
+    words:top(words,30), emojis:top(emojis,16), tags:top(tags,16), hashtags:top(hashtags,14), mentions:top(mentions,14) };
 }
+const fmtDec = n => (n||0).toLocaleString('es',{maximumFractionDigits:1});
+const pctTxt = (a,b) => b ? Math.round(a/b*100)+' %' : '—';
+const dayTxt = t => new Date(t).toLocaleDateString('es',{day:'numeric',month:'short'});
 function renderStats(){
   const st = computeStats(S.comments); S.stats=st;
   const dates = S.comments.map(c=>c.createdTs).filter(t=>!isNaN(t));
-  const span = dates.length ? (Math.max(...dates)-Math.min(...dates)) : 0;
+  const mn = dates.length ? Math.min(...dates) : 0, mx = dates.length ? Math.max(...dates) : 0, span = mx - mn;
   const spanTxt = !dates.length ? '—' : span<36e5 ? Math.round(span/6e4)+' min' : span<864e5*2 ? Math.round(span/36e5)+' h' : Math.round(span/864e5)+' días';
+  const range = !dates.length ? 'sin fechas' : dayTxt(mn)===dayTxt(mx) ? dayTxt(mn) : dayTxt(mn)+' – '+dayTxt(mx);
   const cards = [
-    ['forum','Total',fmtN(st.total)], ['chat_bubble','Comentarios',fmtN(st.comments)], ['reply','Respuestas',fmtN(st.replies)],
-    ['group','Autores únicos',fmtN(st.uniqueAuthors)], ['favorite',PLATFORMS[platOfMeta()].reactLabel,fmtN(st.reacts)], ['help','Preguntas',fmtN(st.q)],
-    ['text_fields','Longitud media',fmtN(st.avgLen)+' car.'], ['date_range','Periodo',spanTxt]
+    ['forum','Total',fmtN(st.total),'comentarios y respuestas'],
+    ['chat_bubble','Comentarios',fmtN(st.comments),pctTxt(st.comments,st.total)+' del total'],
+    ['reply','Respuestas',fmtN(st.replies),pctTxt(st.replies,st.total)+' del total'],
+    ['group','Autores únicos',fmtN(st.uniqueAuthors),st.uniqueAuthors?fmtDec(st.total/st.uniqueAuthors)+' comentarios por autor':''],
+    ['favorite',PLATFORMS[platOfMeta()].reactLabel,fmtN(st.reacts),'media de '+fmtDec(st.total?st.reacts/st.total:0)+' por comentario'],
+    ['help','Preguntas',fmtN(st.q),pctTxt(st.q,st.total)+' de los comentarios'],
+    ['text_fields','Longitud media',fmtN(st.avgLen)+' car.',fmtN(st.avgWords)+' palabras de media'],
+    ['date_range','Periodo',spanTxt,range]
   ];
-  $('#stats').innerHTML = cards.map(([i,k,v])=>`<div class="stat"><div class="k"><span class="ms">${i}</span>${k}</div><div class="v">${v}</div></div>`).join('');
+  $('#stats').innerHTML = cards.map(([i,k,v,s])=>`<div class="stat"><div class="k"><span class="ms">${i}</span>${k}</div><div class="v">${v}</div>${s?`<div class="sub">${esc(s)}</div>`:''}</div>`).join('');
   $('#tabCount').textContent = fmtN(st.total);
 }
-// Se dibuja al ancho real del contenedor para que los textos de los ejes mantengan su tamaño en móvil.
-function svgBars(data, {W=600, h=200, labelEvery=1, label='Gráfico'}={}){
-  if(!data.length) return '<div class="no-rows">Sin fechas disponibles</div>';
-  const pad={l:30,r:6,t:12,b:28}, iw=W-pad.l-pad.r, ih=h-pad.t-pad.b;
-  const max=Math.max(1,...data.map(d=>d.v)), bw=iw/data.length;
-  const ticks=[...new Set([0,Math.round(max/2),max])];
-  let s=`<svg viewBox="0 0 ${W} ${h}" role="img" aria-label="${esc(label)}">`;
-  ticks.forEach(t=>{ const y=pad.t+ih-(t/max)*ih; s+=`<line x1="${pad.l}" x2="${W-pad.r}" y1="${y}" y2="${y}" stroke="var(--outline-variant)" stroke-dasharray="${t?'2 3':''}"/><text class="axis" x="${pad.l-6}" y="${y+4}" text-anchor="end">${t}</text>`; });
-  data.forEach((d,i)=>{
-    const bh=Math.max(d.v?2:0,(d.v/max)*ih), x=pad.l+i*bw, y=pad.t+ih-bh, w=Math.max(1,bw*0.7);
-    s+=`<rect class="bar" x="${x+(bw-w)/2}" y="${y}" width="${w}" height="${bh}" rx="${Math.min(4,w/2)}"><title>${esc(d.title||d.l)}: ${d.v}</title></rect>`;
-    if(i%labelEvery===0) s+=`<text class="axis" x="${x+bw/2}" y="${h-pad.b+16}" text-anchor="middle">${esc(d.l)}</text>`;
-  });
-  return s+'</svg>';
+/* ---------- Componentes de visualización ---------- */
+// Escala con valores redondos (1, 2, 5 × 10ⁿ)
+function niceScale(maxV){
+  maxV = Math.max(1, maxV);
+  const rough = maxV / 3, mag = Math.pow(10, Math.floor(Math.log10(rough)));
+  const norm = rough / mag;
+  const step = Math.max(1, (norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 5 ? 5 : 10) * mag);
+  const max = Math.ceil(maxV / step) * step, ticks = [];
+  for(let v = 0; v <= max + 1e-9; v += step) ticks.push(Math.round(v));
+  return { max, ticks };
 }
-function hbars(items, attr){
-  if(!items.length) return '<div class="muted small">Sin datos</div>';
-  const max = Math.max(...items.map(i=>i.v));
-  return items.map(i=>`<div class="hbar"><button class="lbl" data-${attr}="${esc(i.key??i.l)}" title="${esc(i.l)}">${esc(i.l)}</button><div class="track"><div class="fill" style="width:${(i.v/max*100).toFixed(1)}%"></div></div><span class="num">${esc(i.label??i.v)}</span></div>`).join('');
+const countTxt = (n, sing, plur) => fmtN(n) + ' ' + (n === 1 ? sing : plur);
+// Columnas: un solo color, base plana y extremo redondeado (4px), rejilla fina continua, máximo rotulado, tooltip por columna
+function columnChart(data, { W = 600, h = 200, label = 'Gráfico', unit = ['comentario','comentarios'], avg = null, avgName = '' } = {}){
+  if(!data.length) return vizEmpty('event_busy', 'Sin fechas disponibles');
+  const pad = { l: 34, r: 8, t: 22, b: 26 }, iw = W - pad.l - pad.r, ih = h - pad.t - pad.b;
+  const maxV = Math.max(...data.map(d => d.v)), sc = niceScale(maxV);
+  const slot = iw / data.length, bw = Math.min(24, Math.max(2, slot * 0.62));
+  const every = Math.max(1, Math.ceil(data.length / Math.max(2, Math.floor(iw / 46))));
+  const peak = data.findIndex(d => d.v === maxV && maxV > 0);
+  const y = v => pad.t + ih - (v / sc.max) * ih;
+  let s = `<svg viewBox="0 0 ${W} ${h}" role="group" aria-label="${esc(label)}">`;
+  sc.ticks.forEach(t => { const yy = Math.round(y(t)) + .5;
+    if(t) s += `<line class="grid" x1="${pad.l}" x2="${W - pad.r}" y1="${yy}" y2="${yy}"/>`;
+    s += `<text class="tick" x="${pad.l - 8}" y="${yy + 4}" text-anchor="end">${fmtN(t)}</text>`; });
+  data.forEach((d, i) => {
+    const cx = pad.l + slot * (i + .5), x = cx - bw / 2, bh = d.v ? Math.max(2, (d.v / sc.max) * ih) : 0, top = pad.t + ih - bh;
+    const r = Math.min(4, bw / 2, bh);
+    const path = bh ? `M${x},${pad.t + ih}V${top + r}Q${x},${top} ${x + r},${top}H${x + bw - r}Q${x + bw},${top} ${x + bw},${top + r}V${pad.t + ih}Z` : '';
+    const tv = countTxt(d.v, unit[0], unit[1]);
+    const tl = avg ? `${d.tl} · ${avgName}: ${fmtDec(avg[i])}` : d.tl;
+    s += `<g class="col" tabindex="0" role="img" aria-label="${esc(d.tl)}: ${esc(tv)}" data-tv="${esc(tv)}" data-tl="${esc(tl)}">`
+      + `<rect class="col-hit" x="${pad.l + slot * i}" y="${pad.t}" width="${slot}" height="${ih}" rx="4"/>`
+      + (path ? `<path class="col-bar" d="${path}"/>` : '') + `</g>`;
+    if(i === peak) s += `<text class="peak-label" x="${cx}" y="${top - 6}" text-anchor="middle">${fmtN(d.v)}</text>`;
+    if(i % every === 0) s += `<text class="tick" x="${cx}" y="${h - pad.b + 17}" text-anchor="middle">${esc(d.l)}</text>`;
+  });
+  s += `<line class="base" x1="${pad.l}" x2="${W - pad.r}" y1="${pad.t + ih + .5}" y2="${pad.t + ih + .5}"/>`;
+  if(avg && avg.length === data.length){   // media móvil: misma escala, línea fina por encima de las columnas
+    s += `<path class="avg-line" d="${avg.map((v, i) => `${i ? 'L' : 'M'}${(pad.l + slot * (i + .5)).toFixed(1)},${y(v).toFixed(1)}`).join('')}"/>`;
+  }
+  return s + '</svg>';
+}
+// Acumulado: área suave + línea de 2px con el valor final rotulado; cada punto tiene su zona de tooltip
+function cumulativeChart(data, { W = 600, h = 200, label = 'Acumulado' } = {}){
+  if(!data.length) return vizEmpty('event_busy', 'Sin fechas disponibles');
+  const pad = { l: 40, r: 14, t: 22, b: 26 }, iw = W - pad.l - pad.r, ih = h - pad.t - pad.b;
+  let acc = 0; const cum = data.map(d => (acc += d.v));
+  const sc = niceScale(acc), slot = iw / data.length;
+  const x = i => pad.l + slot * (i + .5), y = v => pad.t + ih - (v / sc.max) * ih;
+  const every = Math.max(1, Math.ceil(data.length / Math.max(2, Math.floor(iw / 46))));
+  let s = `<svg viewBox="0 0 ${W} ${h}" role="group" aria-label="${esc(label)}">`;
+  sc.ticks.forEach(t => { const yy = Math.round(y(t)) + .5;
+    if(t) s += `<line class="grid" x1="${pad.l}" x2="${W - pad.r}" y1="${yy}" y2="${yy}"/>`;
+    s += `<text class="tick" x="${pad.l - 8}" y="${yy + 4}" text-anchor="end">${fmtN(t)}</text>`; });
+  const line = cum.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join('');
+  s += `<path class="cum-area" d="${line}L${x(cum.length - 1).toFixed(1)},${pad.t + ih}L${x(0).toFixed(1)},${pad.t + ih}Z"/>`;
+  data.forEach((d, i) => {
+    const tv = countTxt(cum[i], 'comentario acumulado', 'comentarios acumulados');
+    s += `<g class="col" tabindex="0" role="img" aria-label="${esc(d.tl)}: ${esc(tv)}" data-tv="${esc(tv)}" data-tl="${esc(d.tl)} · ${esc(countTxt(d.v,'nuevo','nuevos'))}">`
+      + `<rect class="col-hit" x="${pad.l + slot * i}" y="${pad.t}" width="${slot}" height="${ih}"/>`
+      + `<line class="cum-guide" x1="${x(i)}" x2="${x(i)}" y1="${pad.t}" y2="${pad.t + ih}"/></g>`;
+    if(i % every === 0) s += `<text class="tick" x="${x(i)}" y="${h - pad.b + 17}" text-anchor="middle">${esc(d.l)}</text>`;
+  });
+  s += `<path class="cum-line" d="${line}"/>`;
+  const li = cum.length - 1;
+  s += `<circle class="cum-dot" cx="${x(li)}" cy="${y(cum[li])}" r="4"/><text class="peak-label" x="${x(li)}" y="${y(cum[li]) - 10}" text-anchor="end">${fmtN(cum[li])}</text>`;
+  s += `<line class="base" x1="${pad.l}" x2="${W - pad.r}" y1="${pad.t + ih + .5}" y2="${pad.t + ih + .5}"/>`;
+  return s + '</svg>';
+}
+// Media móvil hacia atrás (ventana w)
+function movingAvg(vals, w){ let sum = 0; return vals.map((v, i) => { sum += v; if(i >= w) sum -= vals[i - w]; return sum / Math.min(i + 1, w); }); }
+// Tendencia: últimos N periodos frente a los N anteriores (o segunda mitad frente a la primera)
+function trendText(vals, per){
+  if(vals.length < 4) return '';
+  const n = vals.length >= (per === 'día' ? 14 : 8) ? (per === 'día' ? 7 : per === 'semana' ? 4 : 6) : Math.floor(vals.length / 2);
+  const last = vals.slice(-n).reduce((a, b) => a + b, 0), prev = vals.slice(-2 * n, -n).reduce((a, b) => a + b, 0);
+  const plural = { 'día': 'días', 'hora': 'horas', 'semana': 'semanas' }[per] || per;
+  const f = per !== 'día';   // hora y semana son femeninos
+  const span = `en ${n === 1 ? (f ? 'la última ' : 'el último ') + per : (f ? 'las últimas ' : 'los últimos ') + n + ' ' + plural} frente a ${n === 1 ? (f ? 'la anterior' : 'el anterior') : (f ? 'las ' : 'los ') + n + ' anteriores'}`;
+  if(!prev && !last) return `Tendencia: sin comentarios ${span}`;
+  if(!prev) return `Tendencia: ▲ ${countTxt(last, 'comentario nuevo', 'comentarios nuevos')} ${span} (antes no había)`;
+  const ch = Math.round((last - prev) / prev * 100);
+  const arrow = ch > 5 ? '▲' : ch < -5 ? '▼' : '▶';
+  const word = ch > 5 ? 'más' : ch < -5 ? 'menos' : 'estable';
+  return `Tendencia: ${arrow} ${ch > 5 || ch < -5 ? Math.abs(ch) + ' % ' + word : word} ${span} (${fmtN(last)} frente a ${fmtN(prev)})`;
+}
+function vizEmpty(icon, title, detail){
+  return `<div class="viz-empty"><span class="ms">${icon}</span><p><b>${esc(title)}</b></p>${detail?`<p>${esc(detail)}</p>`:''}</div>`;
+}
+function vizDataList(rows){ return `<div class="vd">${rows.map(([k,v])=>`<span>${esc(k)}</span><span>${esc(v)}</span>`).join('')}</div>`; }
+// Barras ordenadas de un solo color, valor en el extremo; cada fila filtra al pulsarla
+function rankedBars(items, attr, { emoji = false, unit = '' } = {}){
+  if(!items.length) return vizEmpty('bar_chart', 'Sin datos');
+  const max = Math.max(...items.map(i => i.v));
+  return `<div class="rbars" role="list">${items.map(i => `<button class="rbar${emoji ? ' emoji' : ''}" role="listitem" data-${attr}="${esc(i.key ?? i.l)}" title="${esc(i.l)} · ${fmtN(i.v)}${unit ? ' ' + unit : ''}" aria-label="${esc(i.l)}: ${fmtN(i.v)}${unit ? ' ' + unit : ''}. Pulsa para filtrar"><span class="rb-label">${esc(i.l)}</span><span class="rb-lane"><span class="rb-fill" style="width:${Math.max(2, (i.v / max) * 82).toFixed(1)}%"></span><span class="rb-val">${fmtN(i.v)}</span></span></button>`).join('')}</div>`;
+}
+function chipList(arr, empty, prefix = ''){
+  return arr.length ? arr.map(([w,n]) => `<button class="tchip" data-q="${esc(prefix + w)}">${esc(prefix + w)} <b>${n}</b></button>`).join('') : `<span class="muted small">${esc(empty)}</span>`;
+}
+// Tooltip único para todos los gráficos (puntero y teclado); el texto se inserta con textContent
+let vizTipEl = null;
+function vizTip(){ if(!vizTipEl){ vizTipEl = document.createElement('div'); vizTipEl.className = 'viz-tip'; vizTipEl.setAttribute('role','tooltip'); document.body.appendChild(vizTipEl); } return vizTipEl; }
+function hideVizTip(){ if(vizTipEl) vizTipEl.classList.remove('show'); }
+function showVizTip(el, x, y){
+  const t = vizTip(); t.replaceChildren();
+  const v = document.createElement('strong'); v.textContent = el.dataset.tv;
+  const l = document.createElement('span'); l.textContent = el.dataset.tl || '';
+  t.append(v, l); t.classList.add('show');
+  const r = t.getBoundingClientRect();
+  let L = x + 14, T = y - r.height - 12;
+  if(L + r.width > innerWidth - 8) L = x - r.width - 14;
+  if(T < 8) T = y + 18;
+  t.style.left = Math.max(8, L) + 'px'; t.style.top = T + 'px';
+}
+function bindVizTips(root){
+  root.addEventListener('pointermove', e => { const el = e.target.closest('[data-tv]'); if(el && root.contains(el)) showVizTip(el, e.clientX, e.clientY); else hideVizTip(); });
+  root.addEventListener('pointerleave', hideVizTip);
+  root.addEventListener('focusin', e => { const el = e.target.closest('[data-tv]'); if(el){ const r = el.getBoundingClientRect(); showVizTip(el, r.left + r.width / 2, r.top); } });
+  root.addEventListener('focusout', hideVizTip);
+  addEventListener('scroll', hideVizTip, { passive: true });
 }
 const chartW = sel => { const w = Math.round($(sel).clientWidth); return w > 0 ? Math.max(240, w) : 600; };
-const chartH = W => Math.round(Math.min(220, Math.max(170, W * 0.42)));
+const chartH = W => Math.round(Math.min(230, Math.max(180, W * 0.36)));
 function renderChartsIfVisible(){
   if(S.comments.length && S.stats && $('#view-resultados').classList.contains('active') && $('#tp-summary').classList.contains('active')) renderCharts();
 }
 function renderCharts(){
-  const list=S.comments, st=S.stats;
-  const ts = list.map(c=>c.createdTs).filter(t=>!isNaN(t)).sort((a,b)=>a-b);
-  const approx = list.some(c=>c.dateApprox);
-  $('#tlApprox').innerHTML = approx ? '<span class="approx small" title="Facebook muestra tiempos relativos; las fechas son aproximadas">≈ aproximado</span>' : '';
+  const list = S.comments, st = S.stats;
+  const ts = list.map(c => c.createdTs).filter(t => !isNaN(t)).sort((a,b) => a - b);
+  const approx = list.some(c => c.dateApprox);
+  $('#tlApprox').innerHTML = approx ? '<span class="approx small" title="La red social muestra tiempos relativos; las fechas son aproximadas">≈ aproximado</span>' : '';
+  // --- Actividad en el tiempo ---
   if(ts.length){
-    const span = ts[ts.length-1]-ts[0];
-    const unit = span < 2*864e5 ? 'hour' : 'day';
-    const keyOf = t => { const d=new Date(t); return unit==='hour' ? new Date(d.getFullYear(),d.getMonth(),d.getDate(),d.getHours()).getTime() : new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime(); };
-    const counts = {}; ts.forEach(t=>{ const k=keyOf(t); counts[k]=(counts[k]||0)+1; });
-    const data=[]; const start=keyOf(ts[0]), end=keyOf(ts[ts.length-1]);
-    const nBuckets = unit==='hour' ? (end-start)/36e5 : (end-start)/864e5;
+    const span = ts[ts.length - 1] - ts[0];
+    const unit = span < 2 * 864e5 ? 'hour' : 'day';
+    const keyOf = t => { const d = new Date(t); return unit === 'hour' ? new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours()).getTime() : new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(); };
+    const counts = {}; ts.forEach(t => { const k = keyOf(t); counts[k] = (counts[k] || 0) + 1; });
+    const data = []; const start = keyOf(ts[0]), end = keyOf(ts[ts.length - 1]);
+    const nBuckets = unit === 'hour' ? (end - start) / 36e5 : (end - start) / 864e5;
+    let per = unit === 'hour' ? 'hora' : 'día';
     if(nBuckets > 120){
-      const wk={}; ts.forEach(t=>{ const d=new Date(t); d.setHours(0,0,0,0); d.setDate(d.getDate()-((d.getDay()+6)%7)); wk[d.getTime()]=(wk[d.getTime()]||0)+1; });
-      Object.keys(wk).sort((a,b)=>a-b).forEach(k=>data.push({l:new Date(+k).toLocaleDateString('es',{day:'numeric',month:'short'}), v:wk[k], title:'Semana del '+new Date(+k).toLocaleDateString('es')}));
-      $('#tlTitle').textContent='Comentarios por semana';
+      per = 'semana';
+      const wk = {}; ts.forEach(t => { const d = new Date(t); d.setHours(0,0,0,0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); wk[d.getTime()] = (wk[d.getTime()] || 0) + 1; });
+      Object.keys(wk).sort((a,b) => a - b).forEach(k => data.push({ l: dayTxt(+k), v: wk[k], tl: 'Semana del ' + new Date(+k).toLocaleDateString('es',{day:'numeric',month:'long',year:'numeric'}) }));
+      $('#tlTitle').textContent = 'Comentarios por semana';
     } else {
-      const d=new Date(start);
-      while(d.getTime()<=end){
-        const k=d.getTime();
-        data.push({ l: unit==='hour' ? d.getHours()+'h' : d.toLocaleDateString('es',{day:'numeric',month:'short'}), v:counts[k]||0, title:d.toLocaleString('es') });
-        unit==='hour' ? d.setHours(d.getHours()+1) : d.setDate(d.getDate()+1);
+      const d = new Date(start);
+      while(d.getTime() <= end){
+        const k = d.getTime();
+        data.push(unit === 'hour'
+          ? { l: d.getHours() + ' h', v: counts[k] || 0, tl: d.toLocaleDateString('es',{day:'numeric',month:'short'}) + ', ' + String(d.getHours()).padStart(2,'0') + ':00–' + String(d.getHours()).padStart(2,'0') + ':59' }
+          : { l: dayTxt(k), v: counts[k] || 0, tl: d.toLocaleDateString('es',{weekday:'long',day:'numeric',month:'long'}) });
+        unit === 'hour' ? d.setHours(d.getHours() + 1) : d.setDate(d.getDate() + 1);
       }
-      $('#tlTitle').textContent = unit==='hour' ? 'Comentarios por hora' : 'Comentarios por día';
+      $('#tlTitle').textContent = unit === 'hour' ? 'Comentarios por hora' : 'Comentarios por día';
     }
+    const pk = data.reduce((a, b) => b.v > a.v ? b : a, data[0]);
+    $('#tlSub').textContent = `Máximo: ${countTxt(pk.v,'comentario','comentarios')} · ${pk.tl} · media de ${fmtDec(ts.length / data.length)} por ${per}`;
     const W1 = chartW('#chartTimeline');
-    $('#chartTimeline').innerHTML = svgBars(data,{W:W1, h:chartH(W1), labelEvery:Math.ceil(data.length/Math.max(3,Math.floor(W1/60))), label:$('#tlTitle').textContent});
-    const precise = !approx || list.some(c=>/\d+\s*(min|h\b|hora|hr)/i.test(c.dateText||''));
-    const hours=Array(24).fill(0); ts.forEach(t=>hours[new Date(t).getHours()]++);
-    const W2 = chartW('#chartHours');
-    $('#chartHours').innerHTML = precise ? svgBars(hours.map((v,i)=>({l:i+'', v, title:i+':00 – '+i+':59'})),{W:W2, h:chartH(W2), labelEvery:W2<360?4:W2<520?3:2, label:'Actividad por hora'}) : '<div class="no-rows">Las fechas obtenidas no tienen precisión horaria.</div>';
+    const mode = PREF.get('tlMode', 'bars') === 'cum' ? 'cum' : 'bars';
+    $$('#tlMode [data-m]').forEach(b => b.setAttribute('aria-checked', b.dataset.m === mode));
+    $('#tlModeBars').textContent = 'Por ' + per;
+    const win = per === 'día' ? (data.length >= 14 ? 7 : 3) : per === 'semana' ? 4 : 3;   // pocos días: ventana corta
+    const avgName = `media móvil de ${win} ${{ 'día': 'días', 'hora': 'horas', 'semana': 'semanas' }[per]}`;
+    const vals = data.map(d => d.v);
+    $('#tlTrend').textContent = trendText(vals, per);
+    if(mode === 'cum'){
+      $('#chartTimeline').innerHTML = cumulativeChart(data, { W: W1, h: chartH(W1), label: 'Comentarios acumulados' });
+    } else {
+      const avg = data.length >= win + 1 ? movingAvg(vals, win) : null;
+      $('#chartTimeline').innerHTML = columnChart(data, { W: W1, h: chartH(W1), label: $('#tlTitle').textContent, avg, avgName })
+        + (avg ? `<div class="viz-key"><span><i class="k-bar"></i>Comentarios por ${per}</span><span><i class="k-line"></i>${cap(avgName)}</span></div>` : '');
+    }
+    $('#tlData > div').innerHTML = vizDataList(data.map(d => [d.tl, fmtN(d.v)]));
+    $('#tlData').hidden = false;
+    // --- Actividad por hora ---
+    const precise = !approx || list.some(c => /\d+\s*(min|h\b|hora|hr)/i.test(c.dateText || ''));
+    if(precise){
+      const hours = Array(24).fill(0); ts.forEach(t => hours[new Date(t).getHours()]++);
+      const hd = hours.map((v, i) => ({ l: String(i), v, tl: String(i).padStart(2,'0') + ':00–' + String(i).padStart(2,'0') + ':59' }));
+      const hp = hd.reduce((a, b) => b.v > a.v ? b : a, hd[0]);
+      $('#hrSub').textContent = `Hora con más actividad: ${hp.tl} (${countTxt(hp.v,'comentario','comentarios')})`;
+      const W2 = chartW('#chartHours');
+      $('#chartHours').innerHTML = columnChart(hd, { W: W2, h: chartH(W2), label: 'Actividad por hora del día' });
+      $('#hrData > div').innerHTML = vizDataList(hd.map(d => [d.tl, fmtN(d.v)])); $('#hrData').hidden = false;
+    } else {
+      $('#hrSub').textContent = '';
+      $('#chartHours').innerHTML = vizEmpty('schedule', 'Las fechas obtenidas no tienen precisión horaria', 'Ocurre con el extractor de Facebook y TikTok, que solo muestran tiempos relativos o el día.');
+      $('#hrData').hidden = true;
+    }
   } else {
-    $('#chartTimeline').innerHTML = $('#chartHours').innerHTML = '<div class="no-rows">Sin fechas disponibles</div>';
+    $('#tlSub').textContent = ''; $('#hrSub').textContent = ''; $('#tlTrend').textContent = '';
+    $('#chartTimeline').innerHTML = $('#chartHours').innerHTML = vizEmpty('event_busy', 'Sin fechas disponibles');
+    $('#tlData').hidden = $('#hrData').hidden = true;
   }
-  $('#topAuthors').innerHTML = hbars(st.authors.slice(0,8).map(a=>({l:a.name, v:a.count, label:a.count})), 'author');
-  const tot = Math.max(1,st.total);
-  const seg = [['Positivos',st.pos,'var(--success)'],['Neutrales',st.neu,'var(--outline)'],['Negativos',st.neg,'var(--error)']];
-  $('#sentBar').innerHTML = seg.filter(s=>s[1]).map(([,v,c])=>`<div style="width:${v/tot*100}%;background:${c}"></div>`).join('');
-  $('#sentBar').setAttribute('aria-label', seg.map(([l,v])=>`${l} ${Math.round(v/tot*100)}%`).join(', '));
-  $('#sentLegend').innerHTML = seg.map(([l,v,c])=>`<span><i style="background:${c}"></i>${l} <b>${Math.round(v/tot*100)}%</b> (${v})</span>`).join('');
-  const liked = list.filter(c=>c.reactions>0).sort((a,b)=>b.reactions-a.reactions).slice(0,5);
-  $('#topLiked').innerHTML = liked.length ? hbars(liked.map(c=>({l:`${c.authorName}: ${c.text.replace(/\s+/g,' ').slice(0,80)}`, v:c.reactions, key:c.id})),'open') : '<div class="muted small">Ningún comentario tiene reacciones registradas.</div>';
-  const chips = arr => arr.length ? arr.map(([w,n])=>`<button class="tchip" data-q="${esc(w)}">${esc(w)} <b>${n}</b></button>`).join('') : '<span class="muted small">Sin datos</span>';
-  $('#topWords').innerHTML = chips(st.words);
-  $('#topEmojis').innerHTML = chips(st.emojis);
-  $('#topTags').innerHTML = chips(st.tags);
+  // --- Autores ---
+  const au = st.authors.slice(0, 8);
+  $('#auSub').textContent = st.uniqueAuthors > au.length ? `Los ${au.length} con más comentarios de ${fmtN(st.uniqueAuthors)} autores` : `${countTxt(st.uniqueAuthors,'autor','autores')}`;
+  $('#topAuthors').innerHTML = rankedBars(au.map(a => ({ l: a.name, v: a.count })), 'author', { unit: 'comentarios' });
+  // --- Sentimiento (barra segmentada: negativo · neutro · positivo) ---
+  const tot = Math.max(1, st.total);
+  const parts = [['neg','Negativos',st.neg,'sentiment_dissatisfied'],['neu','Neutrales',st.neu,'sentiment_neutral'],['pos','Positivos',st.pos,'sentiment_satisfied']];
+  $('#sentSub').textContent = `${countTxt(st.pos,'positivo','positivos')} · ${countTxt(st.neu,'neutral','neutrales')} · ${countTxt(st.neg,'negativo','negativos')}`;
+  $('#sentBar').innerHTML = `<div class="segbar" role="group" aria-label="Sentimiento: ${parts.map(p => `${p[1]} ${Math.round(p[2]/tot*100)} %`).join(', ')}">`
+    + parts.filter(p => p[2] > 0).map(([k, name, v]) => `<div class="seg ${k}" style="flex:${v} 1 0" tabindex="0" role="img" aria-label="${name}: ${Math.round(v/tot*100)} %, ${fmtN(v)}" data-tv="${Math.round(v/tot*100)} % · ${fmtN(v)}" data-tl="${name}"><span>${Math.round(v/tot*100)} %</span></div>`).join('') + '</div>';
+  $('#sentLegend').innerHTML = parts.map(([k, name, , ic]) => `<span><i style="background:var(--viz-${k})"></i><span class="ms">${ic}</span>${name}</span>`).join('');
+  const byType = [['Comentarios', list.filter(c=>c.type==='comment')], ['Respuestas', list.filter(c=>c.type==='reply')]].filter(r=>r[1].length);
+  $('#sentByType').innerHTML = byType.map(([name, arr]) => {
+    const n = { neg:arr.filter(c=>c.sentiment==='negativo').length, neu:arr.filter(c=>c.sentiment==='neutral').length, pos:arr.filter(c=>c.sentiment==='positivo').length };
+    const t = arr.length, pc = v => Math.round(v/t*100);
+    const tip = pc(n.pos) + ' % positivos · ' + pc(n.neu) + ' % neutrales · ' + pc(n.neg) + ' % negativos';
+    return '<span class="sbt-name">' + name + '</span><span class="sbt-bar" tabindex="0" role="img" aria-label="' + name + ': ' + tip + '" data-tv="' + tip + '" data-tl="' + name + ' (' + fmtN(t) + ')">'
+      + ['neg','neu','pos'].filter(k=>n[k]).map(k=>'<i style="flex:' + n[k] + ' 1 0;background:var(--viz-' + k + ')"></i>').join('')
+      + '</span><span class="sbt-val">' + pc(n.pos) + ' % positivos</span>';
+  }).join('');
+  requestAnimationFrame(() => $$('#sentBar .seg').forEach(s => s.classList.toggle('nolabel', s.firstElementChild.scrollWidth + 14 > s.clientWidth)));
+  // --- Comentarios con más reacciones ---
+  const liked = list.filter(c => c.reactions > 0).sort((a,b) => b.reactions - a.reactions).slice(0, 5);
+  $('#lkSub').textContent = liked.length ? 'Pulsa un comentario para ver sus detalles' : '';
+  $('#topLiked').innerHTML = liked.length
+    ? `<ol class="toplist">${liked.map((c, i) => `<li><button class="tl-row" data-open="${esc(c.id)}" aria-label="${esc(c.authorName)}: ${fmtN(c.reactions)} ${PLATFORMS[c.platform]?.reactLabel?.toLowerCase() || 'reacciones'}"><span class="tl-rank">${i + 1}</span>${avatarHtml(c)}<span class="tl-body"><span class="tl-name">${esc(c.authorName || '(desconocido)')}</span><span class="tl-text">${esc(c.text.replace(/\s+/g,' ')) || '(sin texto)'}</span></span><span class="tl-count"><span class="ms">favorite</span>${fmtN(c.reactions)}</span></button></li>`).join('')}</ol>`
+    : vizEmpty('favorite', 'Ningún comentario tiene reacciones registradas');
+  // --- Palabras ---
+  const topW = st.words.slice(0, 10), restW = st.words.slice(10, 26);
+  $('#wdSub').textContent = topW.length ? 'Excluye palabras vacías · pulsa una para filtrar' : '';
+  $('#topWords').innerHTML = rankedBars(topW.map(([w, n]) => ({ l: w, v: n })), 'q', { unit: 'veces' });
+  $('#moreWords').innerHTML = restW.length ? '<span>Otras:</span>' + chipList(restW, '') : '';
+  // --- Emojis ---
+  const topE = st.emojis.slice(0, 8);
+  $('#emSub').textContent = topE.length ? `${countTxt(st.emojis.length,'emoji distinto','emojis distintos')}` : '';
+  $('#topEmojis').innerHTML = topE.length ? rankedBars(topE.map(([e, n]) => ({ l: e, v: n })), 'q', { emoji: true, unit: 'veces' }) : vizEmpty('mood', 'Sin emojis');
+  // --- Hashtags y menciones ---
+  $('#tgSub').textContent = st.hashtags.length ? 'Pulsa uno para filtrar' : '';
+  $('#topHashtags').innerHTML = chipList(st.hashtags, 'Sin hashtags');
+  $('#topMentions').innerHTML = chipList(st.mentions, 'Sin menciones', '@');
 }
 function highlight(text, q){
   const e = esc(text); if(!q) return e;
@@ -2889,7 +3353,7 @@ function showDetail(c){
     ['Tipo', c.type==='reply'?`Respuesta (nivel ${c.depth})`:'Comentario principal'], ['Responde a', c.replyTo],
     ['Fecha', c.createdAt ? fmtDate(c.createdAt)+(c.dateApprox?' (aproximada)':'') : ''], ['Fecha original', c.dateText],
     ['Plataforma', platName(c.platform)], [c.platform!=='facebook'?'Me gusta':'Reacciones', c.reactions], ...(c.platform!=='facebook'?[]:[['Me gusta', c.likes]]), ['Respuestas', c.repliesCount],
-    ['Sentimiento', `${c.sentiment} (puntuación ${c.sentimentScore})`], ['Caracteres / palabras', `${c.length} / ${c.words}`],
+    ['Sentimiento', `${c.sentiment} (puntuación ${c.sentimentScore}${c.sentimentFrom ? ` · por ${c.sentimentFrom}` : ''})`], ['Caracteres / palabras', `${c.length} / ${c.words}`],
     ['Hashtags', c.hashtags.join(' ')], ['Menciones', c.mentions.join(', ')], ['Emojis', c.emojis.join(' ')], ['Enlaces', c.urls.join('\n')],
     ['Adjuntos', c.attachments.map(a=>`${a.type}${a.url?': '+a.url:''}`).join('\n')], ['Editado', c.edited?'Sí':''], ['Oculto', c.hidden?'Sí':''],
     ['ID', c.id], ['ID del comentario padre', c.parentId], ['Enlace', c.permalink], ['Fuente', c.source]
@@ -3155,6 +3619,102 @@ function closeOnboarding(){
 }
 
 /* ----- ayuda ----- */
+/* ----- Centro de ayuda: contenido en Markdown ----- */
+// Formato admitido: "# Título {#id icon=nombre .clase}" (sección), "## Subtítulo {#id}", párrafos, listas (- / 1.) con un nivel
+// de anidación, tablas |…|, notas "> …", bloques ```, "??? Pregunta {#id}" con respuesta sangrada (4 espacios) y HTML en línea propia.
+// En línea: **negrita**, *cursiva*, `código`, [texto](enlace), [[Tecla]] y {ms:icono}.
+function mdInline(s){
+  s = esc(s);
+  const codes = [];
+  s = s.replace(/`([^`]+)`/g, (m, c) => { codes.push(c); return '\u0000' + (codes.length - 1) + '\u0000'; });
+  s = s.replace(/\[\[([^\]]+)\]\]/g, '<kbd>$1</kbd>')
+       .replace(/\{ms:([a-z_]+)\}/g, '<span class="ms sm" style="vertical-align:-4px">$1</span>')
+       .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+       .replace(/\*([^*]+)\*/g, '<i>$1</i>')
+       .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (m, t, u) => /^https?:/.test(u) ? `<a href="${u}" target="_blank" rel="noopener">${t}</a>` : `<a href="${u}">${t}</a>`);
+  return s.replace(/\u0000(\d+)\u0000/g, (m, n) => `<code>${codes[n]}</code>`);
+}
+function mdAttrs(t){
+  const a = { text: t.trim(), id: '', cls: [], icon: '' };
+  const m = t.match(/\s*\{([^}]*)\}\s*$/);
+  if(!m) return a;
+  a.text = t.slice(0, m.index).trim();
+  m[1].trim().split(/\s+/).forEach(x => { if(x[0] === '#') a.id = x.slice(1); else if(x[0] === '.') a.cls.push(x.slice(1)); else if(x.startsWith('icon=')) a.icon = x.slice(5); });
+  return a;
+}
+function mdList(){
+  const root = { ordered: null, items: [] };
+  return {
+    add(depth, ordered, text){
+      if(depth === 0 || !root.items.length){ if(root.ordered === null) root.ordered = ordered; root.items.push({ text, sub: null }); }
+      else { const last = root.items[root.items.length - 1]; last.sub ||= { ordered, items: [] }; last.sub.items.push({ text }); }
+    },
+    render(){ const r = l => `<${l.ordered ? 'ol' : 'ul'}>${l.items.map(it => `<li>${mdInline(it.text)}${it.sub ? r(it.sub) : ''}</li>`).join('')}</${l.ordered ? 'ol' : 'ul'}>`; return r(root); }
+  };
+}
+function mdToHelp(src){
+  const L = src.replace(/\r/g, '').split('\n').map(l => l.replace(/^ {10}(?=\S)/, ''));
+  let html = '', open = false, para = [], list = null;
+  const flushP = () => { if(para.length){ html += `<p>${mdInline(para.join(' '))}</p>`; para = []; } };
+  const closeList = () => { if(list){ html += list.render(); list = null; } };
+  const flush = () => { flushP(); closeList(); };
+  for(let i = 0; i < L.length; i++){
+    const line = L[i];
+    if(/^# /.test(line)){
+      flush(); if(open) html += '</article>';
+      const a = mdAttrs(line.slice(2));
+      html += `<article class="help-article ${a.cls.join(' ')}" id="h-${a.id}" data-title="${esc(a.text)}"><h2>${a.icon ? `<span class="ms">${a.icon}</span>` : ''}${mdInline(a.text)}</h2>`;
+      open = true; continue;
+    }
+    if(/^## /.test(line)){ flush(); const a = mdAttrs(line.slice(3)); html += `<h3${a.id ? ` id="h-${a.id}"` : ''}>${mdInline(a.text)}</h3>`; continue; }
+    if(/^```/.test(line)){ flush(); const buf = []; i++; while(i < L.length && !/^```/.test(L[i])) buf.push(L[i++]); html += `<pre><code>${esc(buf.join('\n'))}</code></pre>`; continue; }
+    if(/^\?\?\? /.test(line)){
+      flush(); const a = mdAttrs(line.slice(4)), ans = [];
+      while(i + 1 < L.length && /^ {4}\S/.test(L[i + 1])) ans.push(L[++i].trim());
+      html += `<details${a.id ? ` id="h-${a.id}"` : ''}><summary>${mdInline(a.text)}</summary><div class="ans"><p>${mdInline(ans.join(' '))}</p></div></details>`;
+      continue;
+    }
+    if(/^\|/.test(line)){
+      flush(); const rows = [];
+      while(i < L.length && /^\|/.test(L[i])) rows.push(L[i++]);
+      i--;
+      const cells = r => r.trim().replace(/^\||\|$/g, '').split('|').map(c => c.trim());
+      const head = cells(rows[0]), body = rows.slice(2).map(cells);
+      html += `<div class="cmp-wrap"><table class="cmp"><thead><tr>${head.map(c => `<th>${mdInline(c)}</th>`).join('')}</tr></thead><tbody>${body.map(r => `<tr>${r.map(c => `<td>${mdInline(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+      continue;
+    }
+    if(/^> /.test(line)){
+      flush(); const buf = [line.slice(2)];
+      while(i + 1 < L.length && /^> /.test(L[i + 1])) buf.push(L[++i].slice(2));
+      html += `<div class="help-note"><span class="ms">info</span><div>${mdInline(buf.join(' '))}</div></div>`;
+      continue;
+    }
+    if(/^</.test(line)){ flush(); html += line; continue; }
+    const li = line.match(/^(\s*)([-*]|\d+\.)\s+(.*)$/);
+    if(li){ flushP(); if(!list) list = mdList(); list.add(li[1].length >= 2 ? 1 : 0, /\d/.test(li[2]), li[3]); continue; }
+    if(!line.trim()){ flush(); continue; }
+    closeList(); para.push(line.trim());
+  }
+  flush(); if(open) html += '</article>';
+  return html;
+}
+function renderHelp(){
+  const srcEl = $('#helpSource'); if(!srcEl) return;
+  $('#helpEmpty').insertAdjacentHTML('beforebegin', mdToHelp(srcEl.textContent));
+}
+// Resaltado de la búsqueda en la ayuda
+function clearHelpMarks(){ $$('#helpContent mark.hl').forEach(m => { const p = m.parentNode; p.replaceChild(document.createTextNode(m.textContent), m); p.normalize(); }); }
+function markHelp(el, q){
+  const re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, { acceptNode: n => n.parentElement.closest('script,style,mark,.ms,button') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
+  const nodes = []; while(walker.nextNode()) nodes.push(walker.currentNode);
+  nodes.forEach(n => {
+    const t = n.nodeValue; re.lastIndex = 0; if(!re.test(t)) return;
+    const frag = document.createDocumentFragment(); let last = 0;
+    t.replace(re, (m, off) => { frag.append(t.slice(last, off)); const mk = document.createElement('mark'); mk.className = 'hl'; mk.textContent = m; frag.append(mk); last = off + m.length; return m; });
+    frag.append(t.slice(last)); n.parentNode.replaceChild(frag, n);
+  });
+}
 function buildToc(){
   $('#toc').innerHTML = $$('.help-article').map(a=>`<a href="#ayuda/${a.id.slice(2)}" data-toc="${a.id}">${esc(a.dataset.title)}</a>`).join('');
   const io = new IntersectionObserver(entries=>{
@@ -3162,15 +3722,23 @@ function buildToc(){
   },{ rootMargin:'-80px 0px -70% 0px' });
   $$('.help-article').forEach(a=>io.observe(a));
 }
-function filterHelp(q){
-  q = norm(q.trim().toLowerCase()); let any=false;
+function filterHelp(raw){
+  clearHelpMarks();
+  raw = (raw || '').trim();
+  const q = norm(raw.toLowerCase()); let n = 0;
   $$('.help-article').forEach(a=>{
     const hit = !q || norm(a.textContent.toLowerCase()).includes(q);
-    a.classList.toggle('hidden', !hit); any = any || hit;
+    a.classList.toggle('hidden', !hit); if(hit) n++;
     $(`#toc a[data-toc="${a.id}"]`)?.classList.toggle('hidden', !hit);
-    if(q && hit) a.querySelectorAll('details').forEach(d=>{ if(norm(d.textContent.toLowerCase()).includes(q)) d.open=true; });
+    if(q && hit){
+      a.querySelectorAll('details').forEach(d=>{ if(norm(d.textContent.toLowerCase()).includes(q)) d.open=true; });
+      if(raw.length >= 2) markHelp(a, raw);
+    }
   });
-  $('#helpEmpty').classList.toggle('hidden', any);
+  $('#helpEmpty').classList.toggle('hidden', n > 0);
+  const hc = $('#helpCount');
+  hc.classList.toggle('hidden', !q || !n);
+  hc.textContent = q && n ? `${n} ${n === 1 ? 'sección contiene' : 'secciones contienen'} “${raw}”` : '';
 }
 
 /* ----- init ----- */
@@ -3212,6 +3780,8 @@ function filterHelp(q){
 
   // router
   window.addEventListener('hashchange', route);
+  bindVizTips($('#tp-summary'));
+  $$('#tlMode [data-m]').forEach(b => b.onclick = () => { PREF.set('tlMode', b.dataset.m); renderChartsIfVisible(); });
   // redibuja los gráficos al girar el dispositivo o cambiar el tamaño de la ventana
   let rzT, lastW = window.innerWidth;
   window.addEventListener('resize', ()=>{ if(Math.abs(window.innerWidth-lastW) < 8) return; lastW = window.innerWidth; clearTimeout(rzT); rzT = setTimeout(renderChartsIfVisible, 150); });
@@ -3371,6 +3941,7 @@ function filterHelp(q){
   $('#onboarding').addEventListener('cancel', ()=>{ if($('#obDontShow').checked) PREF.set('onboarding','done'); });
 
   // ayuda
+  renderHelp();
   buildToc();
   $('#helpQ').addEventListener('input', e=>filterHelp(e.target.value));
 
