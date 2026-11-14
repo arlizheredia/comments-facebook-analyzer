@@ -1,4 +1,4 @@
-# Comments-Analyzer
+# Facebook Comments Analyzer
 
 Aplicación web en un único archivo HTML para obtener, analizar, copiar y exportar los comentarios de publicaciones de Facebook.
 
@@ -6,7 +6,7 @@ Aplicación web en un único archivo HTML para obtener, analizar, copiar y expor
 
 - **Tres formas de obtener comentarios**
   - **Conectar con Facebook** (Graph API + inicio de sesión): para páginas que administras; fechas exactas, reacciones y respuestas.
-  - **Extractor de navegador** (marcador *Comments-Analyzer*): para cualquier publicación visible con tu sesión.
+  - **Extractor de navegador** (marcador *Facebook Comments Analyzer*): para cualquier publicación visible con tu sesión.
   - **Importar** JSON o CSV.
 - **Vista de conversación** como en Facebook, con respuestas anidadas, o **vista de tabla** con todos los campos.
 - **Análisis**: actividad en el tiempo y por hora, autores más activos, sentimiento estimado, palabras, emojis, hashtags y menciones.

@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Obtén, analiza, filtra, copia y exporta los comentarios de publicaciones de Facebook.">
+<meta name="description" content="Facebook Comments Analyzer: obtén, analiza, filtra, copia y exporta los comentarios de publicaciones de Facebook.">
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#f8fafd" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#131314" media="(prefers-color-scheme: dark)">
-<title>Analizador de Comentarios</title>
+<title>Facebook Comments Analyzer</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2248%22 height=%2248%22 viewBox=%220 0 48 48%22%3E%3Cdefs%3E%3ClinearGradient id=%22g%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%232d88ff%22/%3E%3Cstop offset=%221%22 stop-color=%22%230b57d0%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2248%22 height=%2248%22 rx=%2212%22 fill=%22url(%23g)%22/%3E%3Cpath d=%22M11 8h26a5 5 0 0 1 5 5v16a5 5 0 0 1-5 5H23l-8.5 7v-7H11a5 5 0 0 1-5-5V13a5 5 0 0 1 5-5z%22 fill=%22%23fff%22/%3E%3Crect x=%2213%22 y=%2221%22 width=%225.5%22 height=%228%22 rx=%221.8%22 fill=%22%231877f2%22/%3E%3Crect x=%2221.25%22 y=%2216.5%22 width=%225.5%22 height=%2212.5%22 rx=%221.8%22 fill=%22%231877f2%22/%3E%3Crect x=%2229.5%22 y=%2212%22 width=%225.5%22 height=%2217%22 rx=%221.8%22 fill=%22%231877f2%22/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -98,6 +98,8 @@ kbd{border:1px solid var(--outline-variant);border-bottom-width:2px}
 /* ================== APP BAR / NAV ================== */
 .appbar{position:sticky;top:0;z-index:30;height:64px;display:flex;align-items:center;gap:4px;padding:0 8px 0 16px;background:var(--surface-dim)}
 .brand{display:flex;align-items:center;gap:12px;font-family:var(--font-display);font-size:20px;color:var(--on-surface-variant);text-decoration:none;padding-left:8px}
+.brand{min-width:0;white-space:nowrap}
+.brand-name{overflow:hidden;text-overflow:ellipsis}
 .brand-logo{width:36px;height:36px;display:grid;place-items:center;flex:none}
 .brand-logo svg{display:block;filter:drop-shadow(0 1px 1px rgba(0,0,0,.15))}
 .brand-logo .ms{font-size:22px}
@@ -123,6 +125,7 @@ main{background:var(--surface);border-radius:16px 16px 0 0;margin-right:16px;min
   .rail{position:fixed;top:auto;bottom:0;left:0;right:0;height:auto;flex-direction:row;justify-content:space-around;padding:12px 0 calc(12px + env(safe-area-inset-bottom));background:var(--surface-container);z-index:30;gap:0}
   main{margin:0;border-radius:16px 16px 0 0;padding:20px 16px 112px}
   .brand .long{display:none}
+  .brand{font-size:16px;gap:8px;padding-left:0}
   h1{font-size:24px;line-height:32px}
 }
 
@@ -195,6 +198,8 @@ input[type=checkbox]{accent-color:var(--primary);width:18px;height:18px;margin:0
 .dropzone:hover,.dropzone.over{background:var(--primary-container);border-color:var(--primary)}
 .dropzone .ms{font-size:40px;color:var(--primary)}
 .bookmarklet{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 20px;border-radius:20px;background:var(--fb);color:#fff;font-weight:500;text-decoration:none;cursor:grab;box-shadow:var(--elev1)}
+.bookmarklet{white-space:nowrap;max-width:100%}
+@media (max-width:720px){ .bookmarklet{padding:0 14px;gap:6px;font-size:13px} }
 .bookmarklet:active{cursor:grabbing}
 /* El icono va en CSS para que no forme parte del nombre del marcador al arrastrarlo */
 .bookmarklet::before{content:"";width:22px;height:22px;flex:none;border-radius:6px;background:#fff url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2248%22 height=%2248%22 viewBox=%220 0 48 48%22%3E%3Cdefs%3E%3ClinearGradient id=%22g%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%232d88ff%22/%3E%3Cstop offset=%221%22 stop-color=%22%230b57d0%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2248%22 height=%2248%22 rx=%2212%22 fill=%22url(%23g)%22/%3E%3Cpath d=%22M11 8h26a5 5 0 0 1 5 5v16a5 5 0 0 1-5 5H23l-8.5 7v-7H11a5 5 0 0 1-5-5V13a5 5 0 0 1 5-5z%22 fill=%22%23fff%22/%3E%3Crect x=%2213%22 y=%2221%22 width=%225.5%22 height=%228%22 rx=%221.8%22 fill=%22%231877f2%22/%3E%3Crect x=%2221.25%22 y=%2216.5%22 width=%225.5%22 height=%2212.5%22 rx=%221.8%22 fill=%22%231877f2%22/%3E%3Crect x=%2229.5%22 y=%2212%22 width=%225.5%22 height=%2217%22 rx=%221.8%22 fill=%22%231877f2%22/%3E%3C/svg%3E") center/22px 22px no-repeat;box-shadow:0 0 0 1.5px rgba(255,255,255,.9)}
@@ -601,9 +606,9 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
 <a href="#main" class="sr-only">Saltar al contenido</a>
 
 <header class="appbar">
-  <a class="brand" href="#obtener" aria-label="Analizador de Comentarios — inicio">
+  <a class="brand" href="#obtener" aria-label="Facebook Comments Analyzer — inicio">
     <span class="brand-logo"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 48 48"><defs><linearGradient id="brandGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2d88ff"/><stop offset="1" stop-color="#0b57d0"/></linearGradient></defs><rect width="36" height="36" rx="12" fill="url(#brandGrad)"/><path d="M11 8h26a5 5 0 0 1 5 5v16a5 5 0 0 1-5 5H23l-8.5 7v-7H11a5 5 0 0 1-5-5V13a5 5 0 0 1 5-5z" fill="#fff"/><rect x="13" y="21" width="5.5" height="8" rx="1.8" fill="#1877f2"/><rect x="21.25" y="16.5" width="5.5" height="12.5" rx="1.8" fill="#1877f2"/><rect x="29.5" y="12" width="5.5" height="17" rx="1.8" fill="#1877f2"/></svg></span>
-    <span>Comentarios <b class="long">Analyzer</b></span>
+    <span class="brand-name"><span class="long">Facebook </span>Comments <b>Analyzer</b></span>
   </a>
   <div class="spacer"></div>
   <button class="icon-btn" id="helpBtn" aria-label="Ayuda" title="Ayuda (?)"><span class="ms">help</span></button>
@@ -758,7 +763,7 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
             <h3>Ejecuta el extractor</h3>
             <div class="desc">Arrastra este botón a tu barra de marcadores y púlsalo estando en la publicación. Abre las respuestas y los comentarios ocultos por ti.</div>
             <div class="row">
-              <a class="bookmarklet" id="bookmarklet" href="#" title="Arrástrame a la barra de marcadores">Comments-Analyzer</a>
+              <a class="bookmarklet" id="bookmarklet" href="#" title="Arrástrame a la barra de marcadores">Facebook Comments Analyzer</a>
               <button class="btn text" id="copyScript"><span class="ms">content_copy</span>Copiar código para la consola</button>
             </div>
             <p class="small muted hide-touch" style="margin-top:8px">¿No ves la barra de marcadores? Pulsa <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> (<kbd>⌘</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> en Mac). <a href="#ayuda/ex-marcador">Ver guía</a></p>
@@ -1035,7 +1040,7 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
             <h3 id="h-ex-marcador">Con el marcador (recomendado)</h3>
             <ol>
               <li>Muestra la barra de marcadores (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd>).</li>
-              <li>Arrastra el botón azul <b>Comments-Analyzer</b> hasta la barra.</li>
+              <li>Arrastra el botón azul <b>Facebook Comments Analyzer</b> hasta la barra.</li>
               <li>Abre la publicación, elige <b>Todos los comentarios</b> y pulsa el marcador.</li>
               <li>Espera a que termine (puedes pulsar <i>Detener y extraer</i>) y pulsa <b>Copiar JSON</b>.</li>
             </ol>
@@ -1194,7 +1199,7 @@ function fbExtractor(){
     ic.appendChild(s('path', { d: 'M11 8h26a5 5 0 0 1 5 5v16a5 5 0 0 1-5 5H23l-8.5 7v-7H11a5 5 0 0 1-5-5V13a5 5 0 0 1 5-5z', fill: '#fff' }));
     [[13,21,8],[21.25,16.5,12.5],[29.5,12,17]].forEach(function(b){ ic.appendChild(s('rect', { x: b[0], y: b[1], width: 5.5, height: b[2], rx: 1.8, fill: '#1877f2' })); });
     ttl.appendChild(ic);
-    ttl.appendChild(el('span', '', 'Comments-Analyzer'));
+    ttl.appendChild(el('span', '', 'Facebook Comments Analyzer'));
   })();
   var st = el('div','min-height:40px;color:#444746','Iniciando…');
   var bar = el('div','display:flex;gap:8px;margin-top:12px;flex-wrap:wrap');
@@ -2402,7 +2407,7 @@ function route(){
   $$('.view').forEach(x=>x.classList.toggle('active', x.id==='view-'+view));
   $$('.nav-item').forEach(a=>a.toggleAttribute('aria-current', a.dataset.view===view) || a.dataset.view===view && a.setAttribute('aria-current','page'));
   $$('.nav-item').forEach(a=>{ if(a.dataset.view===view) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
-  document.title = {obtener:'Obtener comentarios', resultados:'Resultados', ayuda:'Ayuda'}[view] + ' · Analizador de Comentarios';
+  document.title = {obtener:'Obtener comentarios', resultados:'Resultados', ayuda:'Ayuda'}[view] + ' · Facebook Comments Analyzer';
   closeMenus();
   if(view==='ayuda' && sec){
     const t = document.getElementById('h-'+sec);
@@ -2441,7 +2446,7 @@ function setTheme(t){ applyTheme(t); t==='system'?PREF.del('theme'):PREF.set('th
 
 /* ----- onboarding ----- */
 const OB_STEPS = [
-  { icon:'waving_hand', title:'Te damos la bienvenida', html:`<p>Con esta herramienta puedes <b>obtener los comentarios</b> de una publicación de Facebook, <b>analizarlos</b> y <b>copiarlos o exportarlos</b> a Excel, CSV o JSON.</p>
+  { icon:'waving_hand', title:'Te damos la bienvenida a Facebook Comments Analyzer', html:`<p>Con esta herramienta puedes <b>obtener los comentarios</b> de una publicación de Facebook, <b>analizarlos</b> y <b>copiarlos o exportarlos</b> a Excel, CSV o JSON.</p>
     <div class="ob-list"><div class="ob-item"><span class="ms">lock</span><div><b>Privado</b><span>Todo se procesa en tu navegador. No hay ningún servidor intermedio.</span></div></div>
     <div class="ob-item"><span class="ms">bolt</span><div><b>Rápido</b><span>Unos pocos pasos, de la publicación al informe.</span></div></div></div>` },
   { icon:'alt_route', title:'Elige cómo obtenerlos', html:`<p>Hay tres métodos. Puedes cambiar de uno a otro cuando quieras:</p>
@@ -2455,7 +2460,7 @@ const OB_STEPS = [
     <p>Después inicias sesión, eliges tu página y tu publicación de una lista. El token de acceso se genera solo.</p>
     <p class="small">La guía completa está en <b>Ayuda → Conectar con Facebook</b>.</p>` },
   { icon:'travel_explore', title:'Para cualquier otra publicación', html:`<ol style="padding-left:20px">
-    <li>Arrastra el botón <b>Comments-Analyzer</b> a tu barra de marcadores.</li>
+    <li>Arrastra el botón <b>Facebook Comments Analyzer</b> a tu barra de marcadores.</li>
     <li>Abre la publicación en Facebook y elige <b>“Todos los comentarios”</b>.</li>
     <li>Pulsa el marcador: se abrirán las respuestas y los comentarios ocultos.</li>
     <li>Pulsa <b>Copiar JSON</b> y pégalo aquí.</li></ol>` },
