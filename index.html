@@ -790,7 +790,7 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
           </li>
           <li class="step">
             <h3>Ejecuta el extractor</h3>
-            <div class="desc">Arrastra este botón a tu barra de marcadores y púlsalo estando en la publicación. Abre las respuestas y los comentarios ocultos por ti.</div>
+            <div class="desc">Arrastra este botón a tu barra de marcadores y púlsalo estando en la publicación. <b>Sirve para Facebook e Instagram</b>: detecta solo en qué red estás. Abre las respuestas y los comentarios ocultos por ti.</div>
             <div class="row">
               <a class="bookmarklet" id="bookmarklet" href="#" title="Arrástrame a la barra de marcadores">Social Comments Analyzer</a>
               <button class="btn text" id="copyScript"><span class="ms">content_copy</span>Copiar código para la consola</button>
@@ -803,6 +803,7 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
             <textarea class="input" id="exPaste" placeholder="{&quot;source&quot;:&quot;fb-dom-extractor&quot;, …}" aria-label="JSON del extractor"></textarea>
             <div class="row" style="margin-top:12px">
               <button class="btn filled" id="exAnalyze"><span class="ms">analytics</span>Analizar comentarios</button>
+              <button class="btn text" data-clear="exPaste" disabled><span class="ms">clear_all</span>Limpiar</button>
             </div>
           </li>
         </ol>
@@ -821,6 +822,7 @@ dialog[open]{animation:dlg .2s cubic-bezier(.2,0,0,1)}
         <textarea class="input" id="impPaste" placeholder="Pega aquí un JSON o CSV con encabezados (autor, texto, fecha…)" aria-label="Contenido a importar"></textarea>
         <div class="row" style="margin-top:12px">
           <button class="btn filled" id="impAnalyze"><span class="ms">analytics</span>Analizar</button>
+          <button class="btn text" data-clear="impPaste" disabled><span class="ms">clear_all</span>Limpiar</button>
           <a class="btn text" href="#ayuda/importar"><span class="ms">help</span>Columnas reconocidas</a>
         </div>
       </div>
@@ -1453,12 +1455,52 @@ function fbExtractor(){
   var IG_USER_RE = /^\/([A-Za-z0-9._]{1,30})\/?$/;
   var IG_RESERVED = /^(p|reel|reels|explore|stories|accounts|direct|tv|about|legal|developer)$/i;
   var IG_UI = /^(responder|reply|ver traducci[oó]n|see translation|ocultar respuestas|hide replies|editado|edited|verificado|verified|autor|author|creador|creator|fijado|pinned|seguir|follow|•|·|\d[\d.,]*\s*(k|mil|m)?\s*(me gusta|likes?|curtidas?)|(—\s*)?(ver|view)\s.*(respuestas|replies).*)$/i;
-  function igRoot(){
-    var dlg = Array.prototype.slice.call(document.querySelectorAll('div[role="dialog"]')).filter(function(d){ return d.querySelector('time[datetime]'); });
-    if (dlg.length) return dlg[dlg.length - 1];
-    return document.querySelector('main article') || document.querySelector('main') || document.body;
+  // Código de la publicación abierta (instagram.com/p/CODIGO/ o /reel/CODIGO/)
+  function igCode(){ var m = location.pathname.match(/\/(?:p|reel|reels|tv)\/([A-Za-z0-9_-]+)/); return m ? m[1] : ''; }
+  // Una fecha pertenece a esta publicación si su enlace apunta a ella (descarta "Más publicaciones de…")
+  function igRelevant(t){
+    var code = igCode(); if (!code) return true;
+    var a = t.closest('a'); return !!(a && (a.getAttribute('href') || '').indexOf('/' + code + '/') >= 0);
   }
-  function igTimes(){ return Array.prototype.slice.call(igRoot().querySelectorAll('time[datetime]')); }
+  function igRoot(){
+    var dlg = Array.prototype.slice.call(document.querySelectorAll('div[role="dialog"]')).filter(function(d){
+      return Array.prototype.slice.call(d.querySelectorAll('time[datetime]')).some(igRelevant);
+    });
+    if (dlg.length) return dlg[dlg.length - 1];
+    // En la página propia de la publicación los comentarios pueden estar fuera de <article>: se busca en todo el documento
+    return document.body;
+  }
+  function igAllTimes(){ return Array.prototype.slice.call(igRoot().querySelectorAll('time[datetime]')); }
+  function igTimes(){ var all = igAllTimes(), rel = all.filter(igRelevant); return rel.length ? rel : all; }
+  var IG_BTN_EXCL = /(publicaciones|posts|seguidores|followers|seguidos|following|perfil|profile|audio|reels|historias|stories|etiquetad|tagged|sugerenc|suggest|traduc|transl)/i;
+  // Estructura de un nodo sin textos ni nombres (para diagnosticar cambios en la web de Instagram)
+  function igSkel(node, depth, budget){
+    if (!node || depth > 9 || budget.n <= 0) return '';
+    if (node.nodeType === 3){ var v = (node.textContent || '').trim(); return v ? '#' + v.length : ''; }
+    if (node.nodeType !== 1) return '';
+    var tag = node.tagName.toLowerCase();
+    if (tag === 'svg') return 'svg' + (node.getAttribute('aria-label') ? '[aria=' + node.getAttribute('aria-label').split(/\s+/).slice(0, 2).join(' ') + ']' : '');
+    var at = [];
+    ['role', 'dir'].forEach(function(k){ if (node.hasAttribute(k)) at.push(k + '=' + node.getAttribute(k)); });
+    if (node.hasAttribute('datetime')) at.push('datetime');
+    if (node.hasAttribute('aria-label')) at.push('aria=' + node.getAttribute('aria-label').split(/\s+/).slice(0, 2).join(' '));
+    if (tag === 'a'){
+      var hr = (node.getAttribute('href') || '').replace(/\?.*$/, '').replace(/\/(p|reel|reels|tv)\/[^/]+/, '/$1/{code}').replace(/\d{5,}/g, '{id}');
+      if (/^\/[^/]+\/?$/.test(hr) && !/^\/(p|reel|explore)\b/.test(hr)) hr = '/{user}/';
+      at.push('href=' + hr);
+    }
+    budget.n -= 1;
+    var kids = Array.prototype.slice.call(node.childNodes).map(function(c){ return igSkel(c, depth + 1, budget); }).filter(Boolean);
+    return tag + (at.length ? '[' + at.join(' ') + ']' : '') + (kids.length ? '{' + kids.join(',') + '}' : '');
+  }
+  function igDiag(extracted){
+    var all = igAllTimes(), rel = all.filter(igRelevant);
+    var firstC = rel.filter(function(t){ var a = t.closest('a'); return a && /\/c\/\d+/.test(a.getAttribute('href') || ''); })[0] || rel[0] || all[0];
+    var anc = firstC; for (var k = 0; k < 7 && anc && anc.parentElement && anc !== igRoot(); k++) anc = anc.parentElement;
+    return { code: igCode(), dialogs: document.querySelectorAll('div[role="dialog"]').length, articles: document.querySelectorAll('article').length,
+      timesAll: all.length, timesThisPost: rel.length, commentLinks: document.querySelectorAll('a[href*="/c/"]').length, extracted: extracted,
+      structure: anc ? igSkel(anc, 0, { n: 260 }).slice(0, 6000) : '' };
+  }
   // Bloque de un comentario: el ancestro más grande que contiene solo su propia fecha
   function igBlock(t){
     var r = igRoot(), b = t, p = t.parentElement;
@@ -1476,13 +1518,28 @@ function fbExtractor(){
     // El usuario sale del enlace del perfil (/usuario/); el texto puede incluir el "alt" de la foto de perfil
     var aLink = userLinks.filter(function(a){ return (a.textContent || '').trim(); })[0] || userLinks[0] || null;
     var username = aLink ? aLink.getAttribute('href').match(IG_USER_RE)[1] : '';
+    // Texto del comentario. Los textos de la interfaz ("Responder", "2 Me gusta", "Ver traducción"…) se descartan por su
+    // contenido, no por estar dentro de un botón: Instagram puede envolver toda la fila del comentario en un role="button".
+    var isUi = function(v){ v = (v || '').replace(/^[\s—–\-·•]+/, '').trim(); return !v || IG_UI.test(v) || v === username || v === '@' + username; };
     var cands = Array.prototype.slice.call(block.querySelectorAll('span[dir="auto"],div[dir="auto"],h1')).filter(function(s){
-      return !(aLink && (aLink.contains(s) || s.contains(aLink))) && !s.closest('button,[role="button"]') && !(tLink && tLink.contains(s)) && !s.querySelector('time');
+      return !(aLink && (aLink.contains(s) || s.contains(aLink))) && !(tLink && (tLink.contains(s) || s.contains(tLink))) && !s.querySelector('time');
     });
     var best = null, text = '';
-    cands.forEach(function(s){ var v = txt(s); if (v && !IG_UI.test(v) && v !== username && v.length > text.length){ text = v; best = s; } });
-    var mentions = best ? Array.prototype.slice.call(best.querySelectorAll('a')).map(function(a){ return txt(a); })
-      .filter(function(v){ return /^@/.test(v); }).map(function(v){ return v.replace(/^@/, ''); }) : [];
+    cands.forEach(function(s){ var v = txt(s); if (!isUi(v) && v.length > text.length){ text = v; best = s; } });
+    if (!text){
+      // Respaldo: todo el texto del bloque salvo usuario, fecha, iconos y textos de la interfaz (incluye emojis en <img alt>)
+      var parts = [], walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+      while (walker.nextNode()){
+        var n = walker.currentNode, el = n.nodeType === 1 ? n : n.parentElement;
+        if (!el || el.closest('svg') || (tLink && tLink.contains(el)) || (aLink && aLink.contains(el))) continue;
+        if (n.nodeType === 1){ if (n.tagName === 'IMG' && n.getAttribute('alt') && n.getAttribute('alt').length <= 8 && !userLinks.some(function(a){ return a.contains(n); })) parts.push(n.getAttribute('alt')); continue; }
+        var v = (n.textContent || '').trim(); if (v) parts.push(v);
+      }
+      text = parts.filter(function(v){ return !isUi(v); }).join(' ').replace(/\s+([,.!?:;)])/g, '$1').replace(/(\p{Extended_Pictographic}\uFE0F?)\s+(?=\p{Extended_Pictographic})/gu, '$1').replace(/\s{2,}/g, ' ').trim();
+      best = block;
+    }
+    var mentions = Array.prototype.slice.call((best || block).querySelectorAll('a')).filter(function(a){ return a !== aLink; }).map(function(a){ return txt(a); })
+      .filter(function(v){ return /^@/.test(v); }).map(function(v){ return v.replace(/^@/, ''); });
     var likes = 0;
     Array.prototype.slice.call(block.querySelectorAll('button,span,a,div[role="button"]')).forEach(function(n){
       if (n.children.length > 2) return;
@@ -1491,6 +1548,8 @@ function fbExtractor(){
     });
     // Foto de perfil: la imagen dentro del enlace al perfil del autor (respaldo: imagen pequeña fuera del texto)
     var img = (function(){ for (var k = 0; k < userLinks.length; k++){ var im = userLinks[k].querySelector('img'); if (im && (userLinks[k].getAttribute('href') || '').match(IG_USER_RE)[1] === username) return im; } return null; })()
+      // Instagram pone la foto en un <span role="link">, no en un enlace: se reconoce por su texto alternativo
+      || (username ? Array.prototype.slice.call(block.querySelectorAll('img[alt]')).filter(function(i){ var al = (i.getAttribute('alt') || '').toLowerCase(); return al.indexOf(username.toLowerCase()) >= 0 && al.length > username.length; })[0] : null)
       || Array.prototype.slice.call(block.querySelectorAll('img')).filter(function(i){
       var w = i.width || +i.getAttribute('width') || Math.round(i.getBoundingClientRect().width); return w > 0 && w <= 64 && !(i.closest('span[dir="auto"]'));
     })[0];
@@ -1513,7 +1572,7 @@ function fbExtractor(){
     igTimes().forEach(function(t, i){
       try {
         var c = igExtractOne(t);
-        if (c.isCaption){ if (!cap) cap = c; return; }   // la descripción de la publicación no es un comentario
+        if (c.isCaption){ if (!cap || (!cap.text && c.text) || (!cap.authorName && c.authorName)) cap = c; return; }   // la descripción no es un comentario
         var key = c.id || (c.authorName + '|' + c.text);
         if (seen[key]) return; seen[key] = 1;
         c.order = i; res.push(c);
@@ -1528,10 +1587,12 @@ function fbExtractor(){
     else { comments = extractAll(); var h = root().querySelector('h2 a, h3 a, strong a'); if (h) postAuthor = txt(h); }
     var data = { source: 'social-dom-extractor', platform: IG ? 'instagram' : 'facebook', version: 3, url: location.href, title: document.title,
       postAuthor: postAuthor, postCaption: postCaption, postDate: postDate, extractedAt: new Date().toISOString(), userAgentLang: navigator.language, count: comments.length, comments: comments };
+    if (IG) data.diag = igDiag(comments.length);
     var json = JSON.stringify(data, null, 2);
     out.value = json; out.style.display = 'block';
     bStop.style.display = 'none'; bCopy.style.display = ''; bDl.style.display = '';
-    status('✓ ' + comments.length + ' comentarios extraídos. Copia el JSON y pégalo en el analizador.');
+    status(comments.length ? '✓ ' + comments.length + ' comentarios extraídos. Copia el JSON y pégalo en el analizador.'
+      : '⚠ No se encontraron comentarios. Abre la publicación en su propia página y vuelve a intentarlo. Si sigue fallando, envía el JSON: incluye un diagnóstico sin textos ni nombres.');
     bCopy.onclick = function(){
       var ok = function(){ bCopy.textContent = '¡Copiado!'; setTimeout(function(){ bCopy.textContent = 'Copiar JSON'; }, 1500); };
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(json).then(ok, function(){ out.select(); document.execCommand('copy'); ok(); });
@@ -1553,8 +1614,9 @@ function fbExtractor(){
       var btns = Array.prototype.slice.call(r.querySelectorAll(IG ? 'button,div[role="button"],span[role="button"]' : 'div[role="button"],span[role="button"]')).filter(function(b){
         if ((clicks.get(b) || 0) >= 4) return false;
         if (!b.offsetParent) return false;
-        var t = (b.innerText || '').trim();
+        var t = (b.innerText || '').trim().replace(/^[\s—–\-·•]+/, '');
         if (!t || t.length > 80 || EXCL.test(t)) return false;
+        if (IG && IG_BTN_EXCL.test(t)) return false;
         return EXP.some(function(re){ return re.test(t); });
       });
       if (IG){ // "Cargar más comentarios" es un botón con solo un icono
@@ -2921,13 +2983,25 @@ function filterHelp(q){
   $('#exAnalyze').onclick = ()=>tryLoad($('#exPaste').value);
 
   // importar + arrastrar y soltar
-  const readFile = async f => { $('#impPaste').value = await f.text(); toast('Archivo cargado: '+f.name); tryLoad($('#impPaste').value); };
+  const readFile = async f => { $('#impPaste').value = await f.text(); $('#impPaste').dispatchEvent(new Event('input')); toast('Archivo cargado: '+f.name); tryLoad($('#impPaste').value); };
   $('#fileIn').onchange = e=>{ const f=e.target.files[0]; if(f) readFile(f); e.target.value=''; };
   const dz=$('#dropzone');
   ['dragenter','dragover'].forEach(ev=>dz.addEventListener(ev,e=>{ e.preventDefault(); dz.classList.add('over'); }));
   ['dragleave','drop'].forEach(ev=>dz.addEventListener(ev,e=>{ e.preventDefault(); dz.classList.remove('over'); }));
   dz.addEventListener('drop', e=>{ const f=e.dataTransfer.files[0]; if(f) readFile(f); });
   $('#impAnalyze').onclick = ()=>tryLoad($('#impPaste').value);
+  // Botones "Limpiar" de los cuadros de texto (con opción de deshacer)
+  const syncClear = id => { const b = document.querySelector('[data-clear="'+id+'"]'); if(b) b.disabled = !$('#'+id).value.trim(); };
+  $$('[data-clear]').forEach(b=>{
+    const id = b.dataset.clear, ta = $('#'+id);
+    ta.addEventListener('input', ()=>syncClear(id));
+    b.onclick = ()=>{
+      const prev = ta.value; if(!prev) return;
+      ta.value = ''; syncClear(id); setStatus('#globalStatus',''); ta.focus();
+      toast('Texto borrado', { label:'Deshacer', run:()=>{ ta.value = prev; syncClear(id); } });
+    };
+    syncClear(id);
+  });
   $('#demoBtn').onclick = ()=>loadData(demoData(curPlatform()));
 
   // Graph / login
